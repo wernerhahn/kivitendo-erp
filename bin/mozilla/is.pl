@@ -462,7 +462,10 @@ sub form_footer {
       }
     }
   }
-  $form->{invtotal} = $form->round_amount($form->{invtotal}, 2, 1);
+
+  my $total = $form->round_amount( $form->{invtotal}, 2, 1 );
+  $form->{rounding} = $form->round_amount( $total-$form->{invtotal}, 2 );
+  $form->{invtotal} = $total;
 
   # follow ups
   if ($form->{id}) {

@@ -1,0 +1,9 @@
+- parent: ar
+  id: ar_add_sales_order_new
+  name: Add Sales Order (new)
+  icon: sales_order_add
+  order: 350
+  access: sales_order_edit
+  params:
+    action: Order/add
+    type: sales_order

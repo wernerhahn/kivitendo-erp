@@ -170,7 +170,7 @@ sub action_set_item_values {
     ->val( '#' . $::form->{unit_dom_id},      $item->unit)
     ->val( '#' . $::form->{sellprice_dom_id}, $item->sellprice_as_number)
     ->val( '#' . $::form->{discount_dom_id},  $item->discount_as_percent)
-    ->run('recalc_linetotal', $::form->{item_id}, $::form->format_amount(\%::myconfig, $item->{linetotal}, -2))
+    ->run('display_linetotal', $::form->{item_id}, $::form->format_amount(\%::myconfig, $item->{linetotal}, -2))
     ->render($self);
 }
 

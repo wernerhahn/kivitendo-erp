@@ -217,7 +217,7 @@ function set_item_values(event) {
   $.post("controller.pl", data, kivi.eval_json_result);
 }
 
-function recalc_linetotal(item_id, amount) {
+function display_linetotal(item_id, amount) {
   $('#item_' + item_id).parents("tr").first().find('[name="linetotal"]').html(amount);
 }
 

@@ -269,16 +269,8 @@ sub _setup {
                                 tax    => $tax });
   }
 
-  $self->{totalweight}  = 0;
   foreach my $item ($self->order->items) {
     $item->{linetotal} = _linetotal($self->order, $item);
-    my $item_unit = SL::DB::Manager::Unit->find_by(name => $item->unit);
-    my $part_unit = SL::DB::Manager::Unit->find_by(name => $item->part->unit);
-    my $base_qty = $item_unit->convert_to($item->qty, $part_unit);
-    $item->{weight} = $base_qty * $item->part->weight;
-
-    # Calculate total weight/tare weight
-    $self->{totalweight} += $item->{weight};
   }
 }
 
@@ -306,7 +298,6 @@ sub _pre_render {
                                                              sort_by => 'projectnumber');
 
   $self->{current_employee_id} = SL::DB::Manager::Employee->current->id;
-  $self->{show_weight}         = SL::DB::Default->get()->show_weight;
 }
 
 # The following subs are more or less copied/pasted from SL::DB::Helper::PriceTaxCalculator.

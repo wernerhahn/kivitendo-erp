@@ -297,7 +297,7 @@ sub _save {
 sub _pre_render {
   my ($self) = @_;
 
-  $self->{all_taxzones}  = SL::DB::Manager::TaxZone->get_all();
+  $self->{all_taxzones}  = SL::DB::Manager::TaxZone->get_all_sorted();
   $self->{all_employees} = SL::DB::Manager::Employee->get_all(where => [ or => [ id => $self->order->employee_id,
                                                                                  deleted => 0 ] ],
                                                               sort_by => 'name');

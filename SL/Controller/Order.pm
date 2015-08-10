@@ -123,7 +123,7 @@ sub action_customer_vendor_changed {
     ->replaceWith('#order_cp_id',     $self->build_contact_select)
     ->replaceWith('#order_shipto_id', $self->build_shipto_select)
     ->val('#order_taxzone_id', $self->order->{$self->cv}->taxzone_id)
-    ->focus('#order_cv_id')
+    ->focus('#order_' . $self->cv . ' _id')
     ->render($self);
 }
 
@@ -151,7 +151,7 @@ sub action_set_item_values {
   my $item    = SL::DB::Manager::OrderItem->find_by_or_create(id => $item_id);
 
   my $cv_class    = "SL::DB::" . ucfirst($self->cv);
-  my $cv_discount = $::form->{cv_id}? $cv_class->new(id => $::form->{cv_id})->load->discount :0.0;
+  my $cv_discount = $::form->{cv_id}? $cv_class->new(id => $::form->{$self->cv . '_id'})->load->discount :0.0;
 
   $item->assign_attributes(
     parts_id  => $part->id,
@@ -255,7 +255,6 @@ sub _load_or_new_order {
 sub _setup {
   my ($self) = @_;
 
-  $::form->{order}->{ $self->cv . '_id' } = delete $::form->{order}->{cv_id} if $::form->{order}->{cv_id};
   $self->order->assign_attributes(%{$::form->{order}});
 
   # bb: todo: currency later

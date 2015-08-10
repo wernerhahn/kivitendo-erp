@@ -171,6 +171,10 @@ sub action_set_item_values {
     ->val( '#' . $::form->{sellprice_dom_id}, $item->sellprice_as_number)
     ->val( '#' . $::form->{discount_dom_id},  $item->discount_as_percent)
     ->run('display_linetotal', $::form->{item_id}, $::form->format_amount(\%::myconfig, $item->{linetotal}, -2))
+    ->html('#netamount_id', $::form->format_amount(\%::myconfig, $self->order->netamount, -2))
+    ->html('#amount_id',    $::form->format_amount(\%::myconfig, $self->order->amount,    -2))
+    ->remove('.tax_row')
+    ->insertBefore($self->build_tax_rows, '#amount_row_id')
     ->render($self);
 }
 
@@ -249,6 +253,17 @@ sub build_shipto_select {
                        style      => 'width: 300px',
   );
 }
+
+sub build_tax_rows {
+  my ($self) = @_;
+
+  my $rows_as_html;
+  foreach my $tax (@{ $self->{taxes} }) {
+    $rows_as_html .= $self->p->render('order/tabs/_tax_row', TAX => $tax);
+  }
+  return $rows_as_html;
+}
+
 
 sub _make_order {
   my ($self) = @_;

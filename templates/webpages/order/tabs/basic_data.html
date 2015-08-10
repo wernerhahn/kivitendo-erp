@@ -147,18 +147,18 @@
           [%- IF NOT taxincluded %]
           <tr>
             <th align="right">[%- 'Subtotal' | $T8 %]</th>
-            <td align="right">[%- SELF.order.netamount_as_number %]</td>
+            <td align="right">
+              [%- L.div_tag(SELF.order.netamount_as_number, id='netamount_id') %]
+            </td>
           </tr>
           [%- END %]
           [%- FOREACH tax = SELF.taxes %]
-          <tr>
-            <th align="right">[%- tax.tax.description %] [% tax.tax.rate_as_percent %]%</th>
-            <td align="right">[%- LxERP.format_amount(tax.amount, 2, 0) %]</td>
-          </tr>
+            [%- PROCESS order/tabs/_tax_row.html TAX=tax %]
           [%- END %]
-          <tr>
+          <tr id="amount_row_id">
             <th align="right">[%- 'Total' | $T8 %]</th>
-            <td align="right">[%- SELF.order.amount_as_number %]</td>
+            <td align="right">
+              [%- L.div_tag(SELF.order.amount_as_number, id='amount_id') %]
           </tr>
         </table>
       </td>

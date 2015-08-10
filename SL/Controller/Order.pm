@@ -18,21 +18,17 @@ use SL::DB::Unit;
 
 use SL::Helper::DateTime;
 
-use List::Util qw(max);
-use List::MoreUtils qw(none);
+use List::Util qw(max first);
+use List::MoreUtils qw(none pairwise);
 
 use Rose::Object::MakeMethods::Generic
 (
- 'scalar' => [ qw(order) ],
- 'scalar --get_set_init' => [ qw(valid_types type cv js p) ],
+ 'scalar --get_set_init' => [ qw(order valid_types type cv js p) ],
 );
 
 
 # safety
 __PACKAGE__->run_before('_check_auth');
-
-__PACKAGE__->run_before('_load_or_new_order',
-                        only => [ qw(add edit update save customer_vendor_changed set_item_values) ]);
 
 __PACKAGE__->run_before('_setup',
                         only => [ qw(edit update save) ]);
@@ -100,10 +96,10 @@ sub action_save {
 sub action_customer_vendor_changed {
   my ($self) = @_;
 
-  if ($self->type eq _sales_order_type()) {
+  if ($self->cv eq 'customer') {
     $self->order->customer(SL::DB::Manager::Customer->find_by_or_create(id => $::form->{cv_id}));
 
-  } elsif ($self->type eq _purchase_order_type()) {
+  } elsif ($self->cv eq 'vendor') {
     $self->order->vendor(SL::DB::Manager::Vendor->find_by_or_create(id => $::form->{cv_id}));
   }
 
@@ -144,33 +140,37 @@ sub action_add_item_row {
 sub action_set_item_values {
   my ($self) = @_;
 
-  my $part = SL::DB::Part->new(id => $::form->{parts_id})->load;
-
   my $is_new  = $::form->{item_id} =~ m{^new_};
-  my $item_id = $is_new ? undef : $::form->{item_id};
-  my $item    = SL::DB::Manager::OrderItem->find_by_or_create(id => $item_id);
+  my $item_id = $::form->{item_id};
+
+  my $item      = first {$_->id   eq $::form->{item_id}} @{$self->order->items};
+  my $form_attr = first {$_->{id} eq $::form->{item_id}} @{ $::form->{order}->{orderitems} };
+
+  delete $form_attr->{id};
+
+  my $part = SL::DB::Part->new(id => $form_attr->{parts_id})->load;
 
   my $cv_class    = "SL::DB::" . ucfirst($self->cv);
   my $cv_discount = $::form->{cv_id}? $cv_class->new(id => $::form->{$self->cv . '_id'})->load->discount :0.0;
 
-  $item->assign_attributes(
-    parts_id  => $part->id,
-    qty       => $::form->{qty}       ? $::form->parse_amount(\%::myconfig, $::form->{qty})       : 1.0,
-    unit      => $part->unit,
-    discount  => $::form->{discount}  ? $::form->parse_amount(\%::myconfig, $::form->{discount})  : $cv_discount,
-    sellprice => $::form->{sellprice} ? $::form->parse_amount(\%::myconfig, $::form->{sellprice}) : $part->sellprice,
-  );
 
-  $self->order->add_items([$item]);
+  my %new_attr;
+  $new_attr{sellprice} = $part->sellprice  if ! $form_attr->{sellprice_as_number};
+  $new_attr{discount}  = $cv_discount      if ! $form_attr->{discount_as_percent};
+  $new_attr{unit}      = $part->unit       if ! $form_attr->{unit};
+  $new_attr{qty}       = 1.0               if ! $form_attr->{qty_as_number};
+
+  $item->assign_attributes(%new_attr);
+
+
   $self->_setup();
-  my $linetotal = _linetotal($self->order, $item);
 
   $self->js
     ->val( '#' . $::form->{qty_dom_id},       $item->qty_as_number)
     ->val( '#' . $::form->{unit_dom_id},      $item->unit)
     ->val( '#' . $::form->{sellprice_dom_id}, $item->sellprice_as_number)
-    ->val( '#' . $::form->{discount_dom_id},  $item->discount_as_number)
-    ->run('recalc_linetotal', $::form->{item_id}, $::form->format_amount(\%::myconfig, $linetotal, -2))
+    ->val( '#' . $::form->{discount_dom_id},  $item->discount_as_percent)
+    ->run('recalc_linetotal', $::form->{item_id}, $::form->format_amount(\%::myconfig, $item->{linetotal}, -2))
     ->render($self);
 }
 
@@ -211,6 +211,10 @@ sub init_p {
   SL::Presenter->get;
 }
 
+sub init_order {
+  _make_order();
+}
+
 sub _check_auth {
   my ($self) = @_;
 
@@ -246,16 +250,19 @@ sub build_shipto_select {
   );
 }
 
-sub _load_or_new_order {
+sub _make_order {
   my ($self) = @_;
 
-  return $self->order(SL::DB::Manager::Order->find_by_or_create(id => $::form->{id}));
+  my $order = SL::DB::Manager::Order->find_by_or_create(id => $::form->{id});
+
+  $order->assign_attributes(%{$::form->{order}});
+
+  return $order;
 }
+
 
 sub _setup {
   my ($self) = @_;
-
-  $self->order->assign_attributes(%{$::form->{order}});
 
   # bb: todo: currency later
   $self->order->currency_id($::instance_conf->get_currency_id());
@@ -268,9 +275,7 @@ sub _setup {
                                 tax    => $tax });
   }
 
-  foreach my $item ($self->order->items) {
-    $item->{linetotal} = _linetotal($self->order, $item);
-  }
+  pairwise { $a->{linetotal} = $b->{linetotal} } @{$self->order->items}, @{$pat{items}};
 }
 
 sub _save {
@@ -297,43 +302,6 @@ sub _pre_render {
                                                              sort_by => 'projectnumber');
 
   $self->{current_employee_id} = SL::DB::Manager::Employee->current->id;
-}
-
-# The following subs are more or less copied/pasted from SL::DB::Helper::PriceTaxCalculator.
-sub _linetotal {
-  my ($order, $item) = @_;
-
-  # bb: todo: currencies are not handled by now
-  my $exchangerate = _get_exchangerate($order);
-
-  my $num_dec   = max 2, _num_decimal_places($item->sellprice);
-  my $discount  = _round($item->sellprice * ($item->discount || 0),           $num_dec);
-  my $sellprice = _round($item->sellprice - $discount,                        $num_dec);
-  my $linetotal = _round($sellprice * $item->qty / $item->price_factor,       2       ) * $exchangerate;
-  $linetotal    = _round($linetotal,                                          2       );
-
-  return $linetotal;
-}
-
-sub _get_exchangerate {
-  my ($order) = @_;
-  require SL::DB::Default;
-
-  my $exchangerate = 1;
-  my $currency = $order->currency_id ? $order->currency->name || '' : '';
-  if ($currency ne SL::DB::Default->get_default_currency) {
-    $exchangerate = $::form->check_exchangerate(\%::myconfig, $currency, $order->transdate, $order->is_sales ? 'buy' : 'sell');
-  }
-
-  return $exchangerate;
-}
-
-sub _num_decimal_places {
-  return length( (split(/\./, '' . ($_[0] * 1), 2))[1] || '' );
-}
-
-sub _round {
-  return $::form->round_amount(@_);
 }
 
 sub _sales_order_type {

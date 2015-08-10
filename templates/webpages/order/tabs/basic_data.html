@@ -199,25 +199,22 @@ function set_item_values(event) {
   var parts_id = $(event.target).val();
   var row = $(event.target).parents("tr").first();
 
-  var item_id_dom = $(row).find('[name="item_id"]');
+  var item_id_dom = $(row).find('[name="order.orderitems[+].id"]');
   var qty_dom = $(row).find('[id^="order_orderitems"][id$="qty_as_number"]');
   var unit_dom = $(row).find('[id^="order_orderitems"][id$="unit"]');
   var sellprice_dom = $(row).find('[id^="order_orderitems"][id$="sellprice_as_number"]');
   var discount_dom = $(row).find('[id^="order_orderitems"][id$="discount_as_percent"]');
 
-  $.post("controller.pl", { 'action': 'Order/set_item_values',
-                            'item_id': item_id_dom.val(),
-                            'cv_id': cv_id,
-                            'parts_id': parts_id,
-                            'qty': qty_dom.val(),
-                            'discount': discount_dom.val(),
-                            'sellprice': sellprice_dom.val(),
-                            'qty_dom_id': qty_dom.attr("id"),
-                            'unit_dom_id': unit_dom.attr("id"),
-                            'sellprice_dom_id': sellprice_dom.attr("id"),
-                            'discount_dom_id': discount_dom.attr("id"),
-                            'type': function(){ return $('#type').val() }
-                          }, kivi.eval_json_result);
+  var data = $('#order_form').serialize();
+  data += '&action=Order/set_item_values';
+  data += '&type=' + $('#type').val();
+  data += '&item_id=' + item_id_dom.val();
+  data += '&qty_dom_id=' + qty_dom.attr("id");
+  data += '&unit_dom_id=' + unit_dom.attr("id");
+  data += '&sellprice_dom_id=' + sellprice_dom.attr("id");
+  data += '&discount_dom_id=' + discount_dom.attr("id");
+
+  $.post("controller.pl", data, kivi.eval_json_result);
 }
 
 function recalc_linetotal(item_id, amount) {

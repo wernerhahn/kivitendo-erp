@@ -2,7 +2,7 @@
 [%- USE LxERP %]
 [%- USE L %]
 
-<form method="post" action="controller.pl">
+<form method="post" action="controller.pl" id="order_form">
   <div class="listtop">[% FORM.title %]</div>
 
   [% L.hidden_tag('callback', FORM.callback) %]

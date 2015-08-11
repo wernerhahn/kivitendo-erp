@@ -102,6 +102,30 @@
     </tr>
   </table>
 
+ <div>
+  <table id="input_row_table_id">
+    <thead>
+      <tr class="listheading">
+        <th class="listheading" nowrap >[%- 'Part'         | $T8 %] </th>
+        <th class="listheading" nowrap width="5" >[%- 'Qty'          | $T8 %] </th>
+        <th class="listheading" nowrap width="15">[%- 'Price'        | $T8 %] </th>
+        <th class="listheading" nowrap width="5" >[%- 'Discount'     | $T8 %] </th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr valign="top" class="listrow">
+        <td>[% L.part_picker('add_item.parts_id', '', style='width: 300px') %]</td>
+        <td>[% L.input_tag('add_item.qty_as_number', '', size = 5, style='text-align:right') %]</td>
+        <td>[% L.input_tag('add_item.sellprice_as_number', '', size = 10, style='text-align:right') %]</td>
+        <td>[% L.input_tag('add_item.discount_as_percent', '', size = 5, style='text-align:right') %]</td>
+        <td>[% L.button_tag('add_item()', LxERP.t8('Add part')) %]</td>
+      </tr>
+    </tbody>
+  </table>
+
+ </div>
+
   <table width="100%">
     <tr>
       <td>
@@ -125,9 +149,6 @@
             [%- FOREACH item = SELF.order.items_sorted %]
               [%- PROCESS order/tabs/_row.html ITEM=item %]
             [%- END %]
-            [%- IF !SELF.order.items.size %]
-              [%- PROCESS order/tabs/_row.html ITEM='' %]
-            [%- END %]
           </tbody>
 
         </table>
@@ -135,10 +156,6 @@
     </tr>
 
     <tr>
-    </tr>
-
-    <tr>
-      <td>[%- L.button_tag('add_order_item_row()', LxERP.t8("Add Row")) -%]</td>
     </tr>
 
     <tr>
@@ -183,10 +200,12 @@ function reload_cv_dependend_selections() {
                           }, kivi.eval_json_result);
 }
 
-function add_order_item_row() {
-  $.post("controller.pl", { 'action': 'Order/add_item_row',
-                            'type'  : function(){ return $('#type').val() }
-                          }, kivi.eval_json_result);
+function add_item() {
+  var data = $('#order_form').serialize();
+  data += '&action=Order/add_item';
+  data += '&type=' + $('#type').val();
+
+  $.post("controller.pl", data, kivi.eval_json_result);
 }
 
 function delete_order_item_row(clicked) {

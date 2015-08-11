@@ -123,17 +123,46 @@ sub action_customer_vendor_changed {
     ->render($self);
 }
 
-sub action_add_item_row {
+sub action_add_item {
   my ($self) = @_;
 
-  my $random_id = join('_', 'new', Time::HiRes::gettimeofday(), int rand 1000000000000);
-  my $row_as_html = $self->p->render('order/tabs/_row', ITEM => {id => $random_id});
+  my $form_attr = $::form->{add_item};
+  my $item      = SL::DB::OrderItem->new;
+  $item->assign_attributes(%$form_attr);
+
+  my $part        = SL::DB::Part->new(id => $form_attr->{parts_id})->load;
+  my $cv_class    = "SL::DB::" . ucfirst($self->cv);
+  my $cv_discount = $::form->{$self->cv . '_id'}? $cv_class->new(id => $::form->{$self->cv . '_id'})->load->discount :0.0;
+
+  my %new_attr;
+  $new_attr{id}        = join('_', 'new', Time::HiRes::gettimeofday(), int rand 1000000000000);
+  $new_attr{part}      = $part;
+  $new_attr{qty}       = 1.0               if ! $item->{qty};
+  $new_attr{unit}      = $part->unit;
+  $new_attr{sellprice} = $part->sellprice  if ! $item->{sellprice};
+  $new_attr{discount}  = $cv_discount      if ! $item->{discount};
+  $item->assign_attributes(%new_attr);
+
+  # add_items seems to fail if no items had been added before
+  if ($self->order->items) {
+    $self->order->add_items($item);
+  } else {
+    $self->order->items([$item]);
+  }
+
+  $self->_setup();
+
+  my $row_as_html = $self->p->render('order/tabs/_row', ITEM => $item);
 
   $self->js
     ->append('#row_table_id tbody', $row_as_html)
     ->focus('#row_table_id tr:last [id$="parts_id_name"]')
     ->off('[id^="order_orderitems"][id$="parts_id"]', 'change', 'set_item_values')
     ->on('[id^="order_orderitems"][id$="parts_id"]', 'change', 'set_item_values')
+    ->html('#netamount_id', $::form->format_amount(\%::myconfig, $self->order->netamount, -2))
+    ->html('#amount_id',    $::form->format_amount(\%::myconfig, $self->order->amount,    -2))
+    ->remove('.tax_row')
+    ->insertBefore($self->build_tax_rows, '#amount_row_id')
     ->render($self);
 }
 

@@ -30,7 +30,7 @@ use Rose::Object::MakeMethods::Generic
 # safety
 __PACKAGE__->run_before('_check_auth');
 
-__PACKAGE__->run_before('_setup',
+__PACKAGE__->run_before('_recalc',
                         only => [ qw(edit update save) ]);
 
 
@@ -145,7 +145,7 @@ sub action_add_item {
 
   $self->order->add_items($item);
 
-  $self->_setup();
+  $self->_recalc();
 
   my $row_as_html = $self->p->render('order/tabs/_row', ITEM => $item);
 
@@ -192,7 +192,7 @@ sub action_set_item_values {
   $item->assign_attributes(%new_attr);
 
 
-  $self->_setup();
+  $self->_recalc();
 
   $self->js
     ->val( '#' . $::form->{qty_dom_id},       $item->qty_as_number)
@@ -207,6 +207,19 @@ sub action_set_item_values {
     ->render($self);
 }
 
+
+sub action_recalc_amounts_and_taxes {
+  my ($self) = @_;
+
+  $self->_recalc();
+
+  $self->js
+    ->html('#netamount_id', $::form->format_amount(\%::myconfig, $self->order->netamount, -2))
+    ->html('#amount_id',    $::form->format_amount(\%::myconfig, $self->order->amount,    -2))
+    ->remove('.tax_row')
+    ->insertBefore($self->build_tax_rows, '#amount_row_id')
+    ->render($self);
+}
 
 #
 # helpers
@@ -310,7 +323,7 @@ sub _make_order {
 }
 
 
-sub _setup {
+sub _recalc {
   my ($self) = @_;
 
   # bb: todo: currency later

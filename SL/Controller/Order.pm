@@ -158,12 +158,10 @@ sub action_add_item {
     ->val('#add_item_discount_as_percent', '')
     ->focus('#add_item_parts_id_name')
     ->off('[id^="order_orderitems"][id$="parts_id"]', 'change', 'set_item_values')
-    ->on('[id^="order_orderitems"][id$="parts_id"]', 'change', 'set_item_values')
-    ->html('#netamount_id', $::form->format_amount(\%::myconfig, $self->order->netamount, -2))
-    ->html('#amount_id',    $::form->format_amount(\%::myconfig, $self->order->amount,    -2))
-    ->remove('.tax_row')
-    ->insertBefore($self->build_tax_rows, '#amount_row_id')
-    ->render($self);
+    ->on('[id^="order_orderitems"][id$="parts_id"]', 'change', 'set_item_values');
+
+  $self->_js_redisplay_amounts_and_taxes;
+  $self->js->render($self);
 }
 
 sub action_set_item_values {
@@ -199,12 +197,10 @@ sub action_set_item_values {
     ->val( '#' . $::form->{unit_dom_id},      $item->unit)
     ->val( '#' . $::form->{sellprice_dom_id}, $item->sellprice_as_number)
     ->val( '#' . $::form->{discount_dom_id},  $item->discount_as_percent)
-    ->run('display_linetotal', $::form->{item_id}, $::form->format_amount(\%::myconfig, $item->{linetotal}, -2))
-    ->html('#netamount_id', $::form->format_amount(\%::myconfig, $self->order->netamount, -2))
-    ->html('#amount_id',    $::form->format_amount(\%::myconfig, $self->order->amount,    -2))
-    ->remove('.tax_row')
-    ->insertBefore($self->build_tax_rows, '#amount_row_id')
-    ->render($self);
+    ->run('display_linetotal', $::form->{item_id}, $::form->format_amount(\%::myconfig, $item->{linetotal}, -2));
+
+  $self->_js_redisplay_amounts_and_taxes;
+  $self->js->render($self);
 }
 
 
@@ -213,12 +209,18 @@ sub action_recalc_amounts_and_taxes {
 
   $self->_recalc();
 
+  $self->_js_redisplay_amounts_and_taxes;
+  $self->js->render($self);
+}
+
+sub _js_redisplay_amounts_and_taxes {
+  my ($self) = @_;
+
   $self->js
     ->html('#netamount_id', $::form->format_amount(\%::myconfig, $self->order->netamount, -2))
     ->html('#amount_id',    $::form->format_amount(\%::myconfig, $self->order->amount,    -2))
     ->remove('.tax_row')
-    ->insertBefore($self->build_tax_rows, '#amount_row_id')
-    ->render($self);
+    ->insertBefore($self->build_tax_rows, '#amount_row_id');
 }
 
 #

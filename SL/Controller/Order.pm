@@ -151,7 +151,12 @@ sub action_add_item {
 
   $self->js
     ->append('#row_table_id tbody', $row_as_html)
-    ->focus('#row_table_id tr:last [id$="parts_id_name"]')
+    ->val('#add_item_parts_id', '')
+    ->val('#add_item_parts_id_name', '')
+    ->val('#add_item_qty_as_number', '')
+    ->val('#add_item_sellprice_as_number', '')
+    ->val('#add_item_discount_as_percent', '')
+    ->focus('#add_item_parts_id_name')
     ->off('[id^="order_orderitems"][id$="parts_id"]', 'change', 'set_item_values')
     ->on('[id^="order_orderitems"][id$="parts_id"]', 'change', 'set_item_values')
     ->html('#netamount_id', $::form->format_amount(\%::myconfig, $self->order->netamount, -2))

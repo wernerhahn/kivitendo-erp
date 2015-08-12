@@ -143,12 +143,7 @@ sub action_add_item {
   $new_attr{discount}  = $cv_discount      if ! $item->{discount};
   $item->assign_attributes(%new_attr);
 
-  # add_items seems to fail if no items had been added before
-  if ($self->order->items) {
-    $self->order->add_items($item);
-  } else {
-    $self->order->items([$item]);
-  }
+  $self->order->add_items($item);
 
   $self->_setup();
 
@@ -297,7 +292,12 @@ sub build_tax_rows {
 sub _make_order {
   my ($self) = @_;
 
-  my $order = SL::DB::Manager::Order->find_by_or_create(id => $::form->{id});
+  # add_items adds items to an order with no items for saving, but they cannot
+  # be retrieved via items until the order is saved. Adding empty items to new
+  # order here solves this problem.
+  my $order;
+  $order   = SL::DB::Manager::Order->find_by(id => $::form->{id}) if $::form->{id};
+  $order ||= SL::DB::Order->new(orderitems => []);
 
   $order->assign_attributes(%{$::form->{order}});
 

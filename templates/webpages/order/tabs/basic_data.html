@@ -232,5 +232,13 @@ function display_linetotal(item_id, amount) {
 $(function(){
   $('#order_[%- cv_id %]').change(reload_cv_dependend_selections);
   $('[id^="order_orderitems"][id$="parts_id"]').change(set_item_values);
+  $('.add_item_input').keydown(function(event) {
+    if(event.keyCode == 13) {
+      event.preventDefault();
+      add_item();
+      return false;
+    }
+  });
 });
+
 </script>

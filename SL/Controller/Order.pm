@@ -125,7 +125,7 @@ sub action_customer_vendor_changed {
     ->replaceWith('#order_cp_id',     $self->build_contact_select)
     ->replaceWith('#order_shipto_id', $self->build_shipto_select)
     ->val('#order_taxzone_id', $self->order->{$self->cv}->taxzone_id)
-    ->focus('#order_' . $self->cv . ' _id')
+    ->focus('#order_' . $self->cv . '_id')
     ->render($self);
 }
 

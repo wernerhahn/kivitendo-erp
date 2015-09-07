@@ -140,7 +140,8 @@ sub action_add_item {
   $item->assign_attributes(%$form_attr);
 
   my $part        = SL::DB::Part->new(id => $form_attr->{parts_id})->load;
-  my $cv_discount = $self->order->customer? $self->order->customer->discount : 0.0;
+  my $cv_method   = $self->cv;
+  my $cv_discount = $self->order->$cv_method? $self->order->$cv_method->discount : 0.0;
 
   my %new_attr;
   $new_attr{part}        = $part;

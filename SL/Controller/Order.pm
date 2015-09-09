@@ -161,7 +161,7 @@ sub action_add_item {
   my $row_as_html = $self->p->render('order/tabs/_row', ITEM => $item);
 
   $self->js
-    ->append('#row_table_id tbody', $row_as_html)
+    ->append('#row_table_id', $row_as_html)
     ->val('#add_item_parts_id', '')
     ->val('#add_item_parts_id_name', '')
     ->val('#add_item_description', '')

@@ -136,11 +136,9 @@
               </tr>
             </thead>
 
-            <tbody>
-              [%- FOREACH item = SELF.order.items_sorted %]
-                [%- PROCESS order/tabs/_row.html ITEM=item %]
-              [%- END %]
-            </tbody>
+            [%- FOREACH item = SELF.order.items_sorted %]
+              [%- PROCESS order/tabs/_row.html ITEM=item %]
+            [%- END %]
 
           </table>
         </div>
@@ -183,7 +181,7 @@
 </div>
 
 
-[% L.sortable_element('#row_table_id tbody') %]
+[% L.sortable_element('#row_table_id') %]
 
 <script type='text/javascript'>
 function reload_cv_dependend_selections() {

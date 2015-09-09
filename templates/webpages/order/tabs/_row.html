@@ -5,7 +5,7 @@
 
 <tr valign="top" class="listrow">
   <td style='display:none'>
-    [% L.hidden_tag("order.orderitems[+].id", ITEM.id, id='item_' _ ITEM.id, ) %]
+    [% L.hidden_tag("order.orderitems[+].id", ITEM.id, id='item_' _ ITEM.id) %]
     [% L.hidden_tag("order.orderitems[].parts_id", ITEM.parts_id) %]
   </td>
   <td align="center" class="dragdrop">
@@ -15,6 +15,7 @@
     [%- L.button_tag("delete_order_item_row(this)",
                      LxERP.t8("X"),
                      confirm=LxERP.t8("Are you sure?")) %]
+  </td>
   <td>
     [% HTML.escape(ITEM.part.partnumber) %]
   </td>

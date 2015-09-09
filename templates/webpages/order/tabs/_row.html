@@ -5,79 +5,79 @@
 
 <tbody>
 
-<tr class="listrow0">
-  <td style='display:none'>
-    [% L.hidden_tag("order.orderitems[+].id", ITEM.id, id='item_' _ ITEM.id) %]
-    [% L.hidden_tag("order.orderitems[].parts_id", ITEM.parts_id) %]
-  </td>
-  <td align="center">
-    <img src="image/updown.png" alt="[%- LxERP.t8('reorder item') %]"  class="dragdrop">
-  </td>
-  <td align="center">
-    [%- L.button_tag("delete_order_item_row(this)",
-                     LxERP.t8("X"),
-                     confirm=LxERP.t8("Are you sure?")) %]
-  </td>
-  <td>
-    [% HTML.escape(ITEM.part.partnumber) %]
-  </td>
-  <td>
-    [% L.input_tag("order.orderitems[].description",
-                   ITEM.description,
-                   style='width: 300px') %]
-  </td>
-  <td>
-    [%- L.input_tag("order.orderitems[].qty_as_number",
-                    ITEM.qty_as_number,
-                    size = 5,
-                    style='text-align:right') %]
-  </td>
-  <td>
-    [%- L.input_tag("order.orderitems[].price_factor",
-                    ITEM.price_factor,
-                    size = 5,
-                    style='text-align:right') %]
-  </td>
-  <td nowrap>
-    [%- L.input_tag("order.orderitems[].unit",
-                    ITEM.unit,
-                    size = 5) %]
-  </td>
-  <td>
-    [%- L.input_tag("order.orderitems[].sellprice_as_number",
-                    ITEM.sellprice_as_number,
-                    size = 10,
-                    style='text-align:right') %]
-  </td>
-  <td>
-    [%- L.input_tag("order.orderitems[].discount_as_percent",
-                    ITEM.discount_as_percent,
-                    size = 5,
-                    style='text-align:right') %]
-  </td>
-  <td align="right">
-    [%- L.div_tag(LxERP.format_amount(ITEM.linetotal, 2, 0), name="linetotal") %]
-  </td>
+  <tr class="listrow0">
+    <td style='display:none'>
+      [% L.hidden_tag("order.orderitems[+].id", ITEM.id, id='item_' _ ITEM.id) %]
+      [% L.hidden_tag("order.orderitems[].parts_id", ITEM.parts_id) %]
+    </td>
+    <td align="center">
+      <img src="image/updown.png" alt="[%- LxERP.t8('reorder item') %]"  class="dragdrop">
+    </td>
+    <td align="center">
+      [%- L.button_tag("delete_order_item_row(this)",
+                       LxERP.t8("X"),
+                       confirm=LxERP.t8("Are you sure?")) %]
+    </td>
+    <td>
+      [% HTML.escape(ITEM.part.partnumber) %]
+    </td>
+    <td>
+      [% L.input_tag("order.orderitems[].description",
+                     ITEM.description,
+                     style='width: 300px') %]
+    </td>
+    <td>
+      [%- L.input_tag("order.orderitems[].qty_as_number",
+                      ITEM.qty_as_number,
+                      size = 5,
+                      style='text-align:right') %]
+    </td>
+    <td>
+      [%- L.input_tag("order.orderitems[].price_factor",
+                      ITEM.price_factor,
+                      size = 5,
+                      style='text-align:right') %]
+    </td>
+    <td nowrap>
+      [%- L.input_tag("order.orderitems[].unit",
+                      ITEM.unit,
+                      size = 5) %]
+    </td>
+    <td>
+      [%- L.input_tag("order.orderitems[].sellprice_as_number",
+                      ITEM.sellprice_as_number,
+                      size = 10,
+                      style='text-align:right') %]
+    </td>
+    <td>
+      [%- L.input_tag("order.orderitems[].discount_as_percent",
+                      ITEM.discount_as_percent,
+                      size = 5,
+                      style='text-align:right') %]
+    </td>
+    <td align="right">
+      [%- L.div_tag(LxERP.format_amount(ITEM.linetotal, 2, 0), name="linetotal") %]
+    </td>
 
-</tr>
+  </tr>
 
-<tr class="listrow1">
-  <td colspan="100%">
-    <table>
-      <tr class="listrow1">
-        <td>hi1</td>
-        <td>hi2</td>
-        <td>hi3</td>
-        <td>[%- ITEM.description %]</td>
-      </tr>
-      <tr class="listrow1">
-        <td>ho1</td>
-        <td>ho2</td>
-        <td>ho3</td>
-        <td>[%- ITEM.longdescription %]</td>
-      </tr>
-    </table>
-  </td>
-</tr>
+  <tr class="listrow1">
+    <td colspan="100%">
+      <table>
+        <tr class="listrow1">
+          <td>hi1</td>
+          <td>hi2</td>
+          <td>hi3</td>
+          <td>[%- ITEM.description %]</td>
+        </tr>
+        <tr class="listrow1">
+          <td>ho1</td>
+          <td>ho2</td>
+          <td>ho3</td>
+          <td>[%- ITEM.longdescription %]</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
 
 </tbody>

@@ -205,7 +205,7 @@ function delete_order_item_row(clicked) {
   var row = $(clicked).parents("tr").first();
   $(row).remove();
 
-  recalc_amounts_and_taxes()
+  recalc_amounts_and_taxes();
 }
 
 function recalc_amounts_and_taxes() {

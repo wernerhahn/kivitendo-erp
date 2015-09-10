@@ -220,6 +220,33 @@ function row_table_scroll_down() {
   $('#row_table_scroll_id').scrollTop($('#row_table_scroll_id')[0].scrollHeight);
 }
 
+function row_set_keyboard_events_by_id(item_id) {
+  var row = $('#item_' + item_id).parents("tbody").first();
+
+  row_set_keyboard_events(row);
+}
+
+function row_set_keyboard_events(rows) {
+  console.log(rows);
+
+  $(rows).keydown(function(event) {
+    if(event.keyCode == 40 && event.shiftKey == true) {
+      // shift arrow down
+      event.preventDefault();
+      var row = $(event.target).parents("tbody").first();
+      $(row).children().not(':first').show();
+      return false;
+    }
+    if(event.keyCode == 38 && event.shiftKey == true) {
+      // shift arrow up
+      event.preventDefault();
+      var row = $(event.target).parents("tbody").first();
+      $(row).children().not(':first').hide();
+      return false;
+    }
+  });
+}
+
 $(function(){
   $('#order_[%- cv_id %]').change(reload_cv_dependend_selections);
   $('#add_item_parts_id').on('set_item:PartPicker', function(e,o) { $('#add_item_sellprice_as_number').val(kivi.format_amount(o.sellprice, -2)) });
@@ -231,6 +258,7 @@ $(function(){
       return false;
     }
   });
+  row_set_keyboard_events($('.row_entry'));
 });
 
 </script>

@@ -89,7 +89,7 @@ sub action_save {
     return $self->js->render($self);
   }
 
-  flash_later('info', 'The order has been saved');
+  flash_later('info', $::locale->text('The order has been saved'));
   my @redirect_params = (
     action => 'edit',
     type   => $self->type,

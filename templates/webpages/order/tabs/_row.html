@@ -7,7 +7,7 @@
 
   <tr class="listrow0">
     <td style='display:none'>
-      [% L.hidden_tag("order.orderitems[+].id", ITEM.id, id='item_' _ ITEM.id) %]
+      [% L.hidden_tag("order.orderitems[+].id", ITEM.id, id='item_' _ ID) %]
       [% L.hidden_tag("order.orderitems[].parts_id", ITEM.parts_id) %]
     </td>
     <td align="center">
@@ -65,16 +65,21 @@
     <td colspan="100%">
       <table>
         <tr class="listrow1">
-          <td>hi1</td>
-          <td>hi2</td>
-          <td>hi3</td>
-          <td>[%- ITEM.description %]</td>
-        </tr>
-        <tr class="listrow1">
-          <td>ho1</td>
-          <td>ho2</td>
-          <td>ho3</td>
-          <td>[%- ITEM.longdescription %]</td>
+          [%- SET n = 0 %]
+          [%- FOREACH var = ITEM.cvars_by_config %]
+            [%- NEXT UNLESS (var.config.processed_flags.editable && ITEM.part.cvar_by_name(var.config.name).is_valid) %]
+            [%- SET n = n + 1 %]
+            <th>
+              [% var.config.description %]
+            </th>
+            <td>
+              [% L.hidden_tag('order.orderitems[].custom_variables[+].config_id', var.config.id) %]
+              [% INCLUDE 'common/render_cvar_input.html' var_name='order.orderitems[].custom_variables[].unparsed_value' %]
+            </td>
+            [%- IF (n % (MYCONFIG.form_cvars_nr_cols || 3)) == 0 %]
+              </tr><tr class="listrow1">
+            [%- END %]
+          [%- END %]
         </tr>
       </table>
     </td>

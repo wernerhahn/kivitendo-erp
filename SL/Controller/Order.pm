@@ -152,13 +152,13 @@ sub action_add_item {
   $new_attr{discount}    = $cv_discount       if ! $item->discount;
 
   $item->assign_attributes(%new_attr);
-  $item->id(join('_', 'new', Time::HiRes::gettimeofday(), int rand 1000000000000)) if !$item->id;
 
   $self->order->add_items($item);
 
   $self->_recalc();
 
-  my $row_as_html = $self->p->render('order/tabs/_row', ITEM => $item);
+  my $item_id = join('_', 'new', Time::HiRes::gettimeofday(), int rand 1000000000000);
+  my $row_as_html = $self->p->render('order/tabs/_row', ITEM => $item, ID => $item_id);
 
   $self->js
     ->append('#row_table_id', $row_as_html)
@@ -169,7 +169,7 @@ sub action_add_item {
     ->val('#add_item_sellprice_as_number', '')
     ->val('#add_item_discount_as_percent', '')
     ->run('row_table_scroll_down')
-    ->run('row_set_keyboard_events_by_id', $item->id)
+    ->run('row_set_keyboard_events_by_id', $item_id)
     ->focus('#add_item_parts_id_name');
 
   $self->_js_redisplay_amounts_and_taxes;

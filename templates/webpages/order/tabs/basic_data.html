@@ -245,6 +245,13 @@ function row_set_keyboard_events(rows) {
       return false;
     }
   });
+
+  $(rows).dblclick(function(event) {
+      event.preventDefault();
+      var row = $(event.target).parents(".row_entry").first();
+      $(row).children().not(':first').toggle();
+      return false;
+  });
 }
 
 $(function(){

@@ -322,6 +322,11 @@ sub _recalc {
 sub _save {
   my ($self) = @_;
 
+  # autovivify all cvars that are not in the form (cvars_by_config can do it)
+  foreach my $item (@{ $self->order->items }) {
+    $item->cvars_by_config;
+  }
+
   my $errors = [];
   my $db = $self->order->db;
 

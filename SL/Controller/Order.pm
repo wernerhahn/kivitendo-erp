@@ -151,6 +151,11 @@ sub action_add_item {
   $new_attr{sellprice}   = $part->sellprice   if ! $item->sellprice;
   $new_attr{discount}    = $cv_discount       if ! $item->discount;
 
+  # add_custom_variables adds cvars to an orderitem with no cvars for saving, but
+  # they cannot be retrieved via custom_variables until the order/orderitem is
+  # saved. Adding empty custom_variables to new orderitem here solves this problem.
+  $new_attr{custom_variables} = [];
+
   $item->assign_attributes(%new_attr);
 
   $self->order->add_items($item);

@@ -30,30 +30,35 @@
       [%- L.input_tag("order.orderitems[].qty_as_number",
                       ITEM.qty_as_number,
                       size = 5,
-                      style='text-align:right') %]
+                      style='text-align:right',
+                      class="recalc") %]
     </td>
     <td>
       [%- L.input_tag("order.orderitems[].price_factor",
                       ITEM.price_factor,
                       size = 5,
-                      style='text-align:right') %]
+                      style='text-align:right',
+                      class="recalc") %]
     </td>
     <td nowrap>
       [%- L.input_tag("order.orderitems[].unit",
                       ITEM.unit,
-                      size = 5) %]
+                      size = 5,
+                      class="recalc") %]
     </td>
     <td>
       [%- L.input_tag("order.orderitems[].sellprice_as_number",
                       ITEM.sellprice_as_number,
                       size = 10,
-                      style='text-align:right') %]
+                      style='text-align:right',
+                      class="recalc") %]
     </td>
     <td>
       [%- L.input_tag("order.orderitems[].discount_as_percent",
                       ITEM.discount_as_percent,
                       size = 5,
-                      style='text-align:right') %]
+                      style='text-align:right',
+                      class="recalc") %]
     </td>
     <td align="right">
       [%- L.div_tag(LxERP.format_amount(ITEM.linetotal, 2, 0), name="linetotal") %]

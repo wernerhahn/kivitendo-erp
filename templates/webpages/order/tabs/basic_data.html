@@ -216,6 +216,12 @@ function recalc_amounts_and_taxes() {
   $.post("controller.pl", data, kivi.eval_json_result);
 }
 
+function redisplay_linetotals(data) {
+  $('.row_entry [name="linetotal"]').each(function(idx, elt) {
+    $(elt).html(data[idx]);    
+  });
+}
+
 function row_table_scroll_down() {
   $('#row_table_scroll_id').scrollTop($('#row_table_scroll_id')[0].scrollHeight);
 }
@@ -264,6 +270,7 @@ $(function(){
     }
   });
   row_set_keyboard_events($('.row_entry'));
+  $('.recalc').change(recalc_amounts_and_taxes);
 });
 
 </script>

@@ -14,7 +14,7 @@
             <td>[% L.customer_vendor_picker("order.${SELF.cv}" _ '_id', SELF.order.$cv_id, type=SELF.cv, style='width: 300px') %]</td>
           </tr>
 
-          <tr id='cp_row' [%- IF !SELF.order.${SELF.cv}.contacts.size %]style='display:none;'[%- END %]>
+          <tr id='cp_row' [%- IF !SELF.order.${SELF.cv}.contacts.size %]style='display:none'[%- END %]>
             <th align="right">[% 'Contact Person' | $T8 %]</th>
             <td>[% L.select_tag('order.cp_id',
                                 SELF.order.${SELF.cv}.contacts,
@@ -25,7 +25,7 @@
                                 style='width: 300px') %]</td>
           </tr>
 
-          <tr id='shipto_row' [%- IF !SELF.order.${SELF.cv}.shipto.size %]style='display:none;'[%- END %]>
+          <tr id='shipto_row' [%- IF !SELF.order.${SELF.cv}.shipto.size %]style='display:none'[%- END %]>
             <th align="right">[% 'Shipping Address' | $T8 %]</th>
             <td>[% L.select_tag('order.shipto_id',
                                 SELF.order.${SELF.cv}.shipto,
@@ -128,7 +128,7 @@
     <tr>
       <td>
 
-        <div id="row_table_scroll_id" style="overflow-y: auto; height: 45vh;">
+        <div id="row_table_scroll_id" style="overflow-y: auto; height: 45vh">
           <table id="row_table_id" width="100%">
             <thead>
               <tr class="listheading">
@@ -171,10 +171,10 @@
                 </tr>
                 <tr valign="top">
                   <td>
-                    [% L.textarea_tag('order.notes', SELF.order.notes, wrap="soft", style="width: 350px; height: 150px;", class="texteditor") %]
+                    [% L.textarea_tag('order.notes', SELF.order.notes, wrap="soft", style="width: 350px; height: 150px", class="texteditor") %]
                   </td>
                   <td>
-                    [% L.textarea_tag('order.intnotes', SELF.order.intnotes, wrap="soft", style="width: 350px; height: 150px;") %]
+                    [% L.textarea_tag('order.intnotes', SELF.order.intnotes, wrap="soft", style="width: 350px; height: 150px") %]
                   </td>
                 </tr>
               </table>
@@ -189,7 +189,7 @@
                                       default = SELF.order.payment_id,
                                       with_empty = 1,
                                       title_key = 'description',
-                                      style = 'width: 250px;') %]</td>
+                                      style = 'width: 250px') %]</td>
                 </tr>
                 <tr>
                   <th align="right">[% 'Delivery Terms' | $T8 %]</th>
@@ -198,7 +198,7 @@
                                       default = SELF.order.delivery_term_id,
                                       with_empty = 1,
                                       title_key = 'description',
-                                      style = 'width: 250px;') %]</td>
+                                      style = 'width: 250px') %]</td>
                 </tr>
               </table>
             </td>
@@ -230,7 +230,7 @@
     </tr>
 
     <tr>
-      <td><hl></td>
+      <td><hr></td>
     </tr>
 
   </table>

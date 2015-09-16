@@ -352,13 +352,15 @@ sub _save {
 sub _pre_render {
   my ($self) = @_;
 
-  $self->{all_taxzones}  = SL::DB::Manager::TaxZone->get_all_sorted();
-  $self->{all_employees} = SL::DB::Manager::Employee->get_all(where => [ or => [ id => $self->order->employee_id,
-                                                                                 deleted => 0 ] ],
-                                                              sort_by => 'name');
-  $self->{all_projects}  = SL::DB::Manager::Project->get_all(where => [ or => [ id => $self->order->globalproject_id,
-                                                                                active => 1 ] ],
-                                                             sort_by => 'projectnumber');
+  $self->{all_taxzones}        = SL::DB::Manager::TaxZone->get_all_sorted();
+  $self->{all_employees}       = SL::DB::Manager::Employee->get_all(where => [ or => [ id => $self->order->employee_id,
+                                                                                       deleted => 0 ] ],
+                                                                    sort_by => 'name');
+  $self->{all_projects}        = SL::DB::Manager::Project->get_all(where => [ or => [ id => $self->order->globalproject_id,
+                                                                                      active => 1 ] ],
+                                                                   sort_by => 'projectnumber');
+  $self->{all_payment_terms}   = SL::DB::Manager::PaymentTerm->get_all_sorted();
+  $self->{all_delivery_terms}  = SL::DB::Manager::DeliveryTerm->get_all_sorted();
 
   $self->{current_employee_id} = SL::DB::Manager::Employee->current->id;
 }

@@ -363,6 +363,8 @@ sub _pre_render {
   $self->{all_delivery_terms}  = SL::DB::Manager::DeliveryTerm->get_all_sorted();
 
   $self->{current_employee_id} = SL::DB::Manager::Employee->current->id;
+
+  $::request->{layout}->use_javascript("${_}.js")  for qw(ckeditor/ckeditor ckeditor/adapters/jquery);
 }
 
 sub _sales_order_type {

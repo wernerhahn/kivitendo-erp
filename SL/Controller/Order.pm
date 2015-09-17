@@ -124,6 +124,11 @@ sub action_create_pdf {
       $pdf = SL::Helper::CreatePDF->create_pdf(
         template  => SL::Helper::CreatePDF->find_template(name => $print_form->{formname}),
         variables => $print_form,
+        variable_content_types => {
+          longdescription => 'html',
+          partnotes       => 'html',
+          notes           => 'html',
+        },
       );
       1;
     } || push @errors, ref($EVAL_ERROR) eq 'SL::X::FormError' ? $EVAL_ERROR->getMessage : $EVAL_ERROR;

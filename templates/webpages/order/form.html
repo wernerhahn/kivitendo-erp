@@ -31,6 +31,7 @@
   [% L.hidden_tag('action', 'Order/dispatch') %]
 
   [% L.button_tag('save()', LxERP.t8('Save')) %]
+  [% L.button_tag('create_pdf()', LxERP.t8('Create PDF')) %]
 
 </form>
 
@@ -42,6 +43,21 @@ function save() {
   data += '&action=Order/save';
 
   $.post("controller.pl", data, kivi.eval_json_result);
+}
+
+function create_pdf() {
+  var data = $('#order_form').serialize();
+  data += '&action=Order/create_pdf';
+
+  $.post("controller.pl", data, kivi.eval_json_result);
+}
+
+function download_pdf(tmp_filename, pdf_filename) {
+  var data = 'action=Order/download_pdf';
+  data += '&type=' + $('#type').val();
+  data += '&tmp_filename=' + tmp_filename;
+  data += '&pdf_filename=' + pdf_filename;
+  $.download("controller.pl", data);
 }
 
 </script>

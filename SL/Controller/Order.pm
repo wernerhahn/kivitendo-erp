@@ -6,6 +6,9 @@ use parent qw(SL::Controller::Base);
 use SL::Helper::Flash;
 use SL::ClientJS;
 use SL::Presenter;
+use SL::Locale::String;
+use SL::SessionFile::Random;
+use SL::Form;
 
 use SL::DB::Order;
 use SL::DB::Customer;
@@ -17,9 +20,11 @@ use SL::DB::Default;
 use SL::DB::Unit;
 
 use SL::Helper::DateTime;
+use SL::Helper::CreatePDF qw(:all);
 
 use List::Util qw(max first);
 use List::MoreUtils qw(none pairwise);
+use English qw(-no_match_vars);
 
 use Rose::Object::MakeMethods::Generic
 (
@@ -31,7 +36,7 @@ use Rose::Object::MakeMethods::Generic
 __PACKAGE__->run_before('_check_auth');
 
 __PACKAGE__->run_before('_recalc',
-                        only => [ qw(edit update save) ]);
+                        only => [ qw(edit update save create_pdf) ]);
 
 
 #
@@ -97,6 +102,57 @@ sub action_save {
   );
 
   $self->redirect_to(@redirect_params);
+}
+
+sub action_create_pdf {
+  my ($self) = @_;
+
+  my $print_form = Form->new('');
+  $print_form->{type}     = 'sales_order';
+  $print_form->{formname} = 'sales_order',
+  $print_form->{format}   = 'pdf',
+  $print_form->{media}    = 'file';
+
+  $self->order->flatten_to_form($print_form, format_amounts => 1);
+
+  my $pdf;
+  my @errors;
+  $print_form->throw_on_error(sub {
+    eval {
+      $print_form->prepare_for_printing;
+
+      $pdf = SL::Helper::CreatePDF->create_pdf(
+        template  => SL::Helper::CreatePDF->find_template(name => $print_form->{formname}),
+        variables => $print_form,
+      );
+      1;
+    } || push @errors, ref($EVAL_ERROR) eq 'SL::X::FormError' ? $EVAL_ERROR->getMessage : $EVAL_ERROR;
+  });
+
+  if (scalar @errors) {
+    return $self->js->flash('error', t8('Conversion to PDF failed: #1', $errors[0]))->render($self);
+  }
+
+  my $sfile = SL::SessionFile::Random->new(mode => "w");
+  $sfile->fh->print($pdf);
+  $sfile->fh->close;
+
+  my $tmp_filename = $sfile->file_name;
+  my $pdf_filename = t8('Sales Order') . '_' . $self->order->ordnumber . '.pdf';
+
+  $self->js
+    ->run('download_pdf', $tmp_filename, $pdf_filename)
+    ->flash('info', t8('The PDF has been created'))->render($self);
+}
+
+sub action_download_pdf {
+  my ($self) = @_;
+
+  return $self->send_file(
+    $::form->{tmp_filename},
+    type => 'application/pdf',
+    name => $::form->{pdf_filename},
+  );
 }
 
 sub action_customer_vendor_changed {

@@ -205,16 +205,21 @@
 
             <td align="right">
               <table>
-                [%- IF NOT taxincluded %]
-                <tr>
+                <tr id="taxincluded_row_id" [%- IF !SELF.taxes.size %]style="display:none"[%- END %]>
+                  <td align=right colspan="2">
+                    <label for="order.taxincluded"><b>[% 'Tax Included' | $T8 %]</b></label>
+                    [% L.yes_no_tag('order.taxincluded', SELF.order.taxincluded, class='recalc') %]
+                  </td>
+                </tr>
+
+                <tr id="subtotal_row_id" [%- IF SELF.order.taxincluded %]style="display:none"[%- END %]>
                   <th align="right">[%- 'Subtotal' | $T8 %]</th>
                   <td align="right">
                     [%- L.div_tag(SELF.order.netamount_as_number, id='netamount_id') %]
                   </td>
                 </tr>
-                [%- END %]
                 [%- FOREACH tax = SELF.taxes %]
-                  [%- PROCESS order/tabs/_tax_row.html TAX=tax %]
+                  [%- PROCESS order/tabs/_tax_row.html TAX=tax TAXINCLUDED=SELF.order.taxincluded %]
                 [%- END %]
                 <tr id="amount_row_id">
                   <th align="right">[%- 'Total' | $T8 %]</th>

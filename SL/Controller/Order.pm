@@ -264,6 +264,18 @@ sub _js_redisplay_linetotals {
 sub _js_redisplay_amounts_and_taxes {
   my ($self) = @_;
 
+  if (scalar @{ $self->{taxes} }) {
+    $self->js->show('#taxincluded_row_id');
+  } else {
+    $self->js->hide('#taxincluded_row_id');
+  }
+
+  if ($self->order->taxincluded) {
+    $self->js->hide('#subtotal_row_id');
+  } else {
+    $self->js->show('#subtotal_row_id');
+  }
+
   $self->js
     ->html('#netamount_id', $::form->format_amount(\%::myconfig, $self->order->netamount, -2))
     ->html('#amount_id',    $::form->format_amount(\%::myconfig, $self->order->amount,    -2))
@@ -351,7 +363,7 @@ sub build_tax_rows {
 
   my $rows_as_html;
   foreach my $tax (@{ $self->{taxes} }) {
-    $rows_as_html .= $self->p->render('order/tabs/_tax_row', TAX => $tax);
+    $rows_as_html .= $self->p->render('order/tabs/_tax_row', TAX => $tax, TAXINCLUDED => $self->order->taxincluded);
   }
   return $rows_as_html;
 }
@@ -380,11 +392,13 @@ sub _recalc {
   $self->order->currency_id($::instance_conf->get_currency_id());
 
   my %pat = $self->order->calculate_prices_and_taxes();
-
   foreach my $tax_chart_id (keys %{ $pat{taxes} }) {
     my $tax = SL::DB::Manager::Tax->find_by(chart_id => $tax_chart_id);
-    push(@{ $self->{taxes} }, { amount => $pat{taxes}->{$tax_chart_id},
-                                tax    => $tax });
+
+    my @amount_keys = grep { $pat{amounts}->{$_}->{tax_id} == $tax->id } keys $pat{amounts};
+    push(@{ $self->{taxes} }, { amount    => $pat{taxes}->{$tax_chart_id},
+                                netamount => $pat{amounts}->{$amount_keys[0]}->{amount},
+                                tax       => $tax });
   }
 
   pairwise { $a->{linetotal} = $b->{linetotal} } @{$self->order->items}, @{$pat{items}};

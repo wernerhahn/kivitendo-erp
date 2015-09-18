@@ -79,8 +79,8 @@
           [% IF SELF.cv == 'customer' %]
           <tr>
             <th align="right">[% 'Salesman' | $T8 %]</th>
-            <td>[% L.select_tag('order.employee_id',
-              SELF.all_employees,
+            <td>[% L.select_tag('order.salesman_id',
+              SELF.all_salesmen,
               default=(SELF.order.salesman_id ? SELF.order.salesman_id : SELF.current_employee_id),
               title_key='safe_name') %]</td>
           </tr>

@@ -29,6 +29,9 @@
 [%- IF LANGUAGES.size %]
  [% PROCESS 'ic/tabs/_edit_translations.html' %]
 [%- END %]
+[%- IF shop %]
+ [% PROCESS 'ic/tabs/_shop.html' %]
+[%- END %]
 
 [%- IF id %]
 <div id="sales_price_information">

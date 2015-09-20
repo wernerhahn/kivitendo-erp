@@ -109,6 +109,7 @@ use SL::DB::SepaExport;
 use SL::DB::SepaExportItem;
 use SL::DB::SepaExportMessageId;
 use SL::DB::Shipto;
+use SL::DB::ShopPart;
 use SL::DB::Status;
 use SL::DB::Tax;
 use SL::DB::TaxKey;

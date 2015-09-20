@@ -548,6 +548,31 @@ SQL
   # commit
   my $rc = $dbh->commit;
 
+  # if ( $form->{shop} ) { # && $previous_values->{"shop_part_id"} ) {
+  #   my $part = SL::DB::Manager::Part->find_by( id  => $form->{"id"} );
+  #   die "no part" unless $part;
+  #   my %shophash = map { ( $_ =~ m/^shop_(.*)/ ) => $form->{$_} }  grep { $_ =~ /^shop_/ } keys %$::form;
+  #   delete $shophash{show_date} unless $shophash{show_date};
+  #   delete $shophash{sortorder} unless $shophash{sortorder};
+  #
+  #   my $shop_part;
+  #   if ( $part->shop_part ) {
+  #     # update existing shop_port
+  #     $shop_part = $part->shop_part;
+  #     foreach ( keys %shophash ) {
+  #       $shop_part->$_( $shophash{$_} );
+  #     };
+  #   } else {
+  #     # shop_part didn't exist yet
+  #     $shop_part = SL::DB::ShopPart->new( %shophash )->save;
+  #     $part->shop_part_id( $shop_part->id );
+  #     $part->save;
+  #   };
+  #   # TODO: make part of request
+  #   $shop_part->save;
+  # };
+
+
   $main::lxdebug->leave_sub();
 
   return $rc;

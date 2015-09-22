@@ -1,0 +1,180 @@
+[%- USE HTML -%][%- USE LxERP -%][%- USE L -%][%- USE T8 -%]
+[% L.stylesheet_tag('webshop') %]
+
+<h1>[% title %]</h1>
+
+<form method="post" action="controller.pl">
+  <div class="table main">
+    <div class="table-row listheading">
+      <div class="table-cell">
+        <div class="table" style="margin:150px,15px,15px,15px;">
+          <div class="table-row listheading">
+            <div class="table-cell">[% 'Shop Customer Address' | $T8 %]</div>
+          </div>
+          <div class="table-row"><div class="table-cell">[% 'Greeting' | $T8 %]</div><div class="table-cell">[% L.input_tag('customer_greeting', IMPORT.customer_greeting) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Firstname' | $T8 %]</div><div class="table-cell">[% L.input_tag('customer_firstname', IMPORT.customer_firstname) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Lastname' | $T8 %]</div><div class="table-cell">[% L.input_tag('customer_lastname', IMPORT.customer_lastname) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Company' | $T8 %]</div><div class="table-cell">[% L.input_tag('customer_company', IMPORT.customer_company) %]</div></div>
+          [% IF IMPORT.customer_company == '' %]
+            [% SET customer = IMPORT.customer_firstname _ ' ' _ IMPORT.customer_lastname %]
+          [% ELSE %]
+            [% SET customer = IMPORT.customer_company %]
+          [% END %]
+          <hr>
+          <div class="table-row"><div class="table-cell">[% 'Customer' | $T8 %]</div><div class="table-cell">[% L.input_tag('customer_name', customer) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Street' | $T8 %]</div><div class="table-cell">[% L.input_tag('customer_street', IMPORT.customer_street) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Zipcode' | $T8 %]</div><div class="table-cell">[% L.input_tag('customer_zipcode', IMPORT.customer_zipcode) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'City' | $T8 %]</div><div class="table-cell">[% L.input_tag('customer_city', IMPORT.customer_city) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Country' | $T8 %]</div><div class="table-cell">[% L.input_tag('customer_country', IMPORT.customer_country) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Email' | $T8 %]</div><div class="table-cell">[% L.input_tag('customer_email', IMPORT.customer_email) %]</div></div>
+          [% IF C_ADDRESS %]
+          <div>[% C_ADDRESS.customernumber %]</div>
+          [% ELSE %]
+          <div>[% L.radio_button_tag('create_customer', value='customer') %]</div>
+          [% END %]
+        </div>
+      </div>
+      <div class="table-cell">
+        <div class="table">
+          <div class="table-row listheading">
+            <div class="table-cell">[% 'Shop Billing  Address' | $T8 %]</div>
+          </div>
+          <div class="table-row"><div class="table-cell">[% 'Greeting' | $T8 %]</div><div class="table-cell">[% L.input_tag('billing_greeting', IMPORT.billing_greeting) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Firstname' | $T8 %]</div><div class="table-cell">[% L.input_tag('billing_firstname', IMPORT.billing_firstname) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Lastname' | $T8 %]</div><div class="table-cell">[% L.input_tag('billing_lastname', IMPORT.billing_lastname) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Company' | $T8 %]</div><div class="table-cell">[% L.input_tag('billing_company', IMPORT.billing_company) %]</div></div>
+          [% IF IMPORT.billing_company == '' %]
+            [% SET billing = IMPORT.billing_firstname _ ' ' _ IMPORT.billing_lastname %]
+          [% ELSE %]
+            [% SET billing = IMPORT.billing_company %]
+          [% END %]
+          <hr>
+          <div class="table-row"><div class="table-cell">[% 'Customer' | $T8 %]</div><div class="table-cell">[% L.input_tag('billing_name', billing) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Street' | $T8 %]</div><div class="table-cell">[% L.input_tag('billing_street', IMPORT.billing_street) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Zipcode' | $T8 %]</div><div class="table-cell">[% L.input_tag('billing_zipcode', IMPORT.billing_zipcode) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'City' | $T8 %]</div><div class="table-cell">[% L.input_tag('billing_city', IMPORT.billing_city) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Country' | $T8 %]</div><div class="table-cell">[% L.input_tag('billing_country', IMPORT.billing_country) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Email' | $T8 %]</div><div class="table-cell">[% L.input_tag('billing_email', IMPORT.billing_email) %]</div></div>
+          [% IF B_ADDRESS %]
+          <div>[% B_ADDRESS.customernumber %]</div>
+          [% ELSE %]
+          <div>[% L.radio_button_tag('create_customer', value='billing') %]</div>
+          [% END %]
+        </div>
+      </div>
+      <div class="table-cell">
+        <div style="display:table;">
+          <div class="table-row listheading">
+            <div class="table-cell">[% 'Shop Delivery Address' | $T8 %]</div>
+          </div>
+          <div class="table-row"><div class="table-cell">[% 'Greeting' | $T8 %]</div><div class="table-cell">[% L.input_tag('delivery_greeting', IMPORT.billing_greeting) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Firstname' | $T8 %]</div><div class="table-cell">[% L.input_tag('delivery_firstname', IMPORT.delivery_firstname) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Lastname' | $T8 %]</div><div class="table-cell">[% L.input_tag('delivery_lastname', IMPORT.delivery_lastname) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Company' | $T8 %]</div><div class="table-cell">[% L.input_tag('delivery_company', IMPORT.delivery_company) %]</div></div>
+          [% IF IMPORT.delivery_company == '' %]
+            [% SET delivery = IMPORT.delivery_firstname _ ' ' _ IMPORT.delivery_lastname %]
+          [% ELSE %]
+            [% SET delivery = IMPORT.delivery_company %]
+          [% END %]
+          <hr>
+          <div class="table-row"><div class="table-cell">[% 'Customer' | $T8 %]</div><div class="table-cell">[% L.input_tag('delivery_name', delivery) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Street' | $T8 %]</div><div class="table-cell">[% L.input_tag('delivery_street', IMPORT.delivery_street) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Zipcode' | $T8 %]</div><div class="table-cell">[% L.input_tag('delivery_zipcode', IMPORT.delivery_zipcode) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'City' | $T8 %]</div><div class="table-cell">[% L.input_tag('delivery_city', IMPORT.delivery_city) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Country' | $T8 %]</div><div class="table-cell">[% L.input_tag('delivery_country', IMPORT.delivery_country) %]</div></div>
+          <div class="table-row"><div class="table-cell">[% 'Email' | $T8 %]</div><div class="table-cell">[% L.input_tag('delivery_email', IMPORT.delivery_email) %]</div></div>
+          [% IF D_ADDRESS %]
+          <div>[% D_ADDRESS.customernumber %]</div>
+          [% ELSE %]
+          <div>[% L.radio_button_tag('create_customer', value='delivery') %]</div>
+          <div>[% L.submit_tag('action_apply_customer', LxERP.t8('Create customer')) %]</div>
+          [% END %]
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr>
+  <table width="100%">
+    <tr>
+      <td width="35%">
+        <table>
+          <tr class="listheading">
+            <th colspan="2">[% 'Shop Headdata' | $T8 %]</th>
+          </tr>
+          <tr><td><b>[% 'Shop Ordernumber' | $T8 %]</b></td><td>[% HTML.escape(IMPORT.shop_ordernumber) %]</td></tr>
+          <tr><td><b>[% 'Shop Orderdate' | $T8 %]</b></td><td>[% HTML.escape(IMPORT.order_date.dmy('.')) _ ' ' _ HTML.escape(IMPORT.order_date.hms(':')) %]</td></tr>
+          <tr><td><b>[% 'Shop Host' | $T8 %]</b></td><td>[% HTML.escape(IMPORT.host) %]</td></tr>
+          <tr><td><b>[% 'Shop OrderIP' | $T8 %]</b></td><td>[% HTML.escape(IMPORT.remote_ip) %]</td></tr>
+          <tr><td><b>[% 'Shop Ordernotes' | $T8 %]</b></td><td>[% HTML.escape(IMPORT.shop_customer_comment) %]</td></tr>
+          <tr><td><b>[% 'Shop Orderamount' | $T8 %]</b></td><td>[% HTML.escape(IMPORT.amount_as_number) %]</td></tr>
+          <tr><td><b>[% 'Shipping costs' | $T8 %]</b></td><td>[% HTML.escape(IMPORT.shipping_costs_as_number) %]</td></tr>
+        </table>
+      </td>
+      <td style="padding-left: 20px; vertical-align: top;">
+        [% UNLESS IMPORT.tranferred %]
+        [% IF PROPOSALS %]
+        <div style="height: 120px; overflow:auto;">
+          <table>
+            <tr class="listheading">
+              <th colspan="7">Customer Proposals</td>
+            </tr>
+            [% FOREACH prop = PROPOSALS %]
+            <tr>
+              <td>[% L.radio_button_tag('customer', value=prop.id) %]</td>
+              <td>[% HTML.escape(prop.customernumber) %]</td>
+              <td>[% HTML.escape(prop.name) %]</td>
+              <td>[% HTML.escape(prop.street) %]</td>
+              <td>[% HTML.escape(prop.zipcode) %]</td>
+              <td>[% HTML.escape(prop.city) %]</td>
+              <td>[% HTML.escape(prop.email) %]</td>
+            </tr>
+            [% END %]
+          </table>
+       [% END # PROPOSALS %]
+        </div>
+        [% L.hidden_tag('action', 'ShopOrder/dispatch') %]
+        [% L.hidden_tag('import_id', IMPORT.id) %]
+        [%- L.submit_tag('action_transfer', LxERP.t8('Create order')) %]
+       [% ELSE %]
+        <div>
+          Wurde schon übernommen
+        </div>
+        [% END %]
+      </td>
+    </tr>
+  </table>
+  <hr>
+  <div style="height: 250px; overflow:auto; margin:15px;">
+    <table width="99%">
+      <tr class="listheading">
+        <th>[% 'Position' | $T8 %]</th>
+        <th>[% 'Partnumber' | $T8 %]</th>
+        <th>[% 'Partdescriptipion' | $T8 %]</th>
+        <th>[% 'Qty' | $T8 %]</th>
+        <th>[% 'Price' | $T8 %]</th>
+        <th>[% 'Extended' | $T8 %]</th>
+      </tr>
+      [% SET counter = 1 %]
+      [% FOREACH pos = IMPORT.shop_order_items %]
+      <tr class="listrow">
+        <td>[% counter %]</td>
+        <td>[% HTML.escape(pos.partnumber) %]</td>
+        <td>[% HTML.escape(pos.description) %]</td>
+        <td>[% pos.quantity_as_number%]</td>
+        <td>[% pos.price_as_number%]</td>
+        [% SET extended = pos.price * pos.quantity %]
+        <td>[% LxERP.format_amount(extended,2) %]</td>
+      </tr>
+      [% SET counter = counter + 1 %]
+      [% END %]
+    </table>
+  </div>
+  <hr>
+</form>
+<script type="text/javascript">
+  function apply_customer(address) {
+    alert('Hallo ' + address);
+    $.post("controller.pl", { action: 'ShopOrder/list'});
+  }
+</script>
+[% L.dump(IMPORT) %] 

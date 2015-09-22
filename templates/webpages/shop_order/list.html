@@ -1,0 +1,158 @@
+[%- USE HTML -%][%- USE LxERP -%][%- USE L -%][%- USE T8 -%]
+[% USE Dumper %]
+
+<h1>[% title %]</h1>
+[%- PROCESS 'shop_order/_filter.html' filter=SELF.models.filtered.laundered %]
+<hr>
+ <table id="shoplist">
+  <thead>
+   <tr class="listheading">
+    <th>[% 'Shop Host' | $T8 %]</th>
+    <th>[% IF FORM.sort_by == 'order_date' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=order_date&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Shop orderdate' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>
+    [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=order_date&sort_dir=0" class="sort_link">
+        [% 'Shop orderdate' | $T8 %]</a>
+    [% END %]
+    </th>
+    <th>[% IF FORM.sort_by == 'shop_ordernumber' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=shop_ordernumber&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Shop ordernumber' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>
+    [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=shop_ordernumber&sort_dir=0" class="sort_link">
+        [% 'Shop ordernumber' | $T8 %]</a>
+    [% END %]
+    </th>
+    <th>[% IF FORM.sort_by == 'shop_customer_number' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=shop_customer_number&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Shop customernumber' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>
+    [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=shop_customer_number&sort_dir=0" class="sort_link">
+        [% 'Shop customernumber' | $T8 %]</a>
+    [% END %]
+    </th>
+    <th>[% 'Shop Customer Address' | $T8 %]<br>
+    [% IF FORM.sort_by == 'customer_lastname' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=customer_lastname&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Name' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>|
+    [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=customer_lastname&sort_dir=0" class="sort_link">
+        [% 'Name' | $T8 %]</a>|
+    [% END %]
+    [% IF FORM.sort_by == 'customer_zipcode' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=customer_zipcode&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Zip' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>|
+    [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=customer_zipcode&sort_dir=0" class="sort_link">
+        [% 'Zip' | $T8 %]</a>|
+    [% END %]
+    [% IF FORM.sort_by == 'customer_country' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=customer_country&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Country' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>
+    [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=customer_country&sort_dir=0" class="sort_link">
+        [% 'Country' | $T8 %]</a>
+    [% END %]
+      </th>
+    <th>[% 'Shop Billing Address' | $T8 %]</br>
+    [% IF FORM.sort_by == 'billing_lastname' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=billing_lastname&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Name' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>|
+    [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=billing_lastname&sort_dir=0" class="sort_link">
+        [% 'Name' | $T8 %]</a>|
+    [% END %]
+    [% IF FORM.sort_by == 'billing_zipcode' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=billing_zipcode&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Zip' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>|
+    [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=billing_zipcode&sort_dir=0" class="sort_link">
+        [% 'Zip' | $T8 %]</a>|
+    [% END %]
+    [% IF FORM.sort_by == 'billing_country' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=billing_country&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Country' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>
+    [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=billing_country&sort_dir=0" class="sort_link">
+        [% 'Country' | $T8 %]</a>
+    [% END %]
+      </th>
+    <th>[% 'Shop Delivery Address' | $T8 %]</br>
+    [% IF FORM.sort_by == 'delivery_lastname' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=delivery_lastname&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Name' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>|
+    [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=delivery_lastname&sort_dir=0" class="sort_link">
+        [% 'Name' | $T8 %]</a>|
+    [% END %]
+    [% IF FORM.sort_by == 'delivery_zipcode' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=delivery_zipcode&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Zip' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>|
+    [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=delivery_zipcode&sort_dir=0" class="sort_link">
+        [% 'Zip' | $T8 %]</a>|
+    [% END %]
+    [% IF FORM.sort_by == 'delivery_country' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=delivery_country&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Country' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>
+    [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=delivery_country&sort_dir=0" class="sort_link">
+        [% 'Country' | $T8 %]</a>
+    [% END %]
+      </th>
+    <th>[% IF FORM.sort_by == 'shop_customer_comment' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=shop_customer_comment&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Notes' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>
+    [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=shop_customer_comment&sort_dir=0" class="sort_link">
+        [% 'Notes' | $T8 %]</a>
+    [% END %]
+    </th>
+    <th>
+      [% 'Positions' | $T8 %]<br>
+      [% IF FORM.sort_by == 'amount' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=amount&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Amount' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>
+      [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=amount&sort_dir=0" class="sort_link"> [% 'Amount' | $T8 %]</a><br>
+      [% END %]
+      [% IF FORM.sort_by == 'shipping_costs' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=shipping_costs&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
+        [% 'Shippingcosts' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>
+      [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=shipping_costs&sort_dir=0" class="sort_link"> [% 'Shippingcosts' | $T8 %]</a><br>
+      [% END %]
+    </th>
+    <th></th>
+   </tr>
+  </thead>
+  [% FOREACH shop_order = SHOPORDERS %]
+  <tr class="listrow">
+    <td>[% HTML.escape(shop_order.host) %]</td>
+    <td>[% shop_order.order_date.dmy('.') _ ' ' _ shop_order.order_date.hms(':') %]</td>
+    <td>[% HTML.escape(shop_order.shop_ordernumber) %]</td>
+    <td>[% HTML.escape(shop_order.shop_customer_number) %]</td>
+    <td>[% IF shop_order.customer_company %]<b>[% HTML.escape(shop_order.customer_company) %]</b><br>[% END %]
+      <b>[% HTML.escape(shop_order.customer_lastname) %],&nbsp;[% HTML.escape(shop_order.customer_firstname) %]</b>
+      <br>[% HTML.escape(shop_order.customer_street) %]
+      <br>[% HTML.escape(shop_order.customer_zipcode) %]&nbsp;[% HTML.escape(shop_order.customer_city) %]
+      <br>[% HTML.escape(shop_order.customer_country) %] </td>
+    <td>[% IF shop_order.customer_company %]<b>[% HTML.escape(shop_order.customer_company) %]</b><br>[% END %]
+      <b>[% HTML.escape(shop_order.billing_lastname) %],&nbsp;[% HTML.escape(shop_order.billing_firstname) %]</b>
+      <br>[% HTML.escape(shop_order.billing_street) %]
+      <br>[% HTML.escape(shop_order.billing_zipcode) %]&nbsp;[% HTML.escape(shop_order.billing_city) %]
+      <br>[% HTML.escape(shop_order.billing_country) %] </td>
+    [% IF (shop_order.delivery_lastname != shop_order.billing_lastname || shop_order.delivery_firstname != shop_order.billing_firstname || shop_order.delivery_street != shop_order.billing_street || shop_order.delivery_city != shop_order.billing_city) %] [% SET deliveryclass = 'style="background-color:red;"' %] [% ELSE %] [% SET deliveryclass = '' %] [% END %]
+    <td [% deliveryclass %]>[% IF shop_order.customer_company %]<b>[% HTML.escape(shop_order.customer_company) %]</b><br>[% END %]
+      <b>[% HTML.escape(shop_order.delivery_lastname) %],&nbsp;[% HTML.escape(shop_order.delivery_firstname) %]</b>
+      <br>[% HTML.escape(shop_order.delivery_street) %]
+      <br>[% HTML.escape(shop_order.delivery_zipcode) %]&nbsp;[% HTML.escape(shop_order.delivery_city) %]
+      <br>[% HTML.escape(shop_order.delivery_country) %] </td>
+    <td>[% HTML.escape(shop_order.shop_customer_comment) %]</td>
+    <td>[% shop_order.shop_order_items.size %]<br>[% shop_order.amount_as_number %]<br>[% shop_order.shipping_costs_as_number %]</td>
+    <td>[% IF shop_order.transferred == 1 %]<a href="controller.pl?id=[% shop_order.id %]&action=ShopOrder/show">[% 'Show order' | $T8 %]<br>[% shop_order.transferred_date_as_date %]</a>
+        [% ELSE %]<a href="controller.pl?id=[% shop_order.id %]&action=ShopOrder/show">[% 'Create order' | $T8 %][% END %]</a></td>
+  </tr>
+  [% END %]
+ </table>

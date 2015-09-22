@@ -1,0 +1,34 @@
+[%- USE T8 %]
+[%- USE L %]
+[%- USE LxERP %]
+[%- USE HTML %]
+<form action='controller.pl' method='post'>
+ [% L.submit_tag('action_get_orders',LxERP.t8('New shop orders')) %]
+ <table id='filter_table'>
+
+    <tr>
+     <th align="right">[% 'Status' | $T8 %]</th>
+     <td>[% L.select_tag('filter.transferred:eq_ignore_empty', SELF.transferred, value_key = 'value', title_key = 'title', default=TOOK) %]</td>
+    </tr>
+
+
+    <tr>
+     <th align="right">[% 'from' | $T8 %]</th>
+     <td>[% L.date_tag('filter.order_date:date::ge', filter.order_date_date__ge) %]</td>
+    </tr>
+
+    <tr>
+     <th align="right">[% 'to' | $T8 %]</th>
+     <td>[% L.date_tag('filter.order_date:date::le', filter.order_date_date__le) %]</td>
+    </tr>
+
+ </table>
+
+
+<a href='#' onClick='javascript:$("#filter_table input").val("");$("#filter_table input[type=checkbox]").prop("checked", 0);'>[% 'Reset' | $T8 %]</a>
+<br>
+
+ [% L.hidden_tag('action', 'ShopOrder/dispatch') %]
+ [% L.submit_tag('action_list',LxERP.t8('renew')) %]
+
+</form>

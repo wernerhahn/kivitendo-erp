@@ -12,6 +12,7 @@ use SL::DB::Manager::Part;
 use SL::DB::Chart;
 use SL::DB::Helper::AttrHTML;
 use SL::DB::Helper::TransNumberGenerator;
+use Rose::DB::Object::Helpers qw(clone_and_reset);
 use SL::DB::Helper::CustomVariables (
   module      => 'IC',
   cvars_alias => 1,

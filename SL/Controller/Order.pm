@@ -36,7 +36,7 @@ use Rose::Object::MakeMethods::Generic
 __PACKAGE__->run_before('_check_auth');
 
 __PACKAGE__->run_before('_recalc',
-                        only => [ qw(edit update save create_pdf) ]);
+                        only => [ qw(edit update save create_pdf send_email) ]);
 
 
 #
@@ -107,33 +107,8 @@ sub action_save {
 sub action_create_pdf {
   my ($self) = @_;
 
-  my $print_form = Form->new('');
-  $print_form->{type}     = 'sales_order';
-  $print_form->{formname} = 'sales_order',
-  $print_form->{format}   = 'pdf',
-  $print_form->{media}    = 'file';
-
-  $self->order->flatten_to_form($print_form, format_amounts => 1);
-
   my $pdf;
-  my @errors;
-  $print_form->throw_on_error(sub {
-    eval {
-      $print_form->prepare_for_printing;
-
-      $pdf = SL::Helper::CreatePDF->create_pdf(
-        template  => SL::Helper::CreatePDF->find_template(name => $print_form->{formname}),
-        variables => $print_form,
-        variable_content_types => {
-          longdescription => 'html',
-          partnotes       => 'html',
-          notes           => 'html',
-        },
-      );
-      1;
-    } || push @errors, ref($EVAL_ERROR) eq 'SL::X::FormError' ? $EVAL_ERROR->getMessage : $EVAL_ERROR;
-  });
-
+  my @errors = _create_pdf($self->order, \$pdf);
   if (scalar @errors) {
     return $self->js->flash('error', t8('Conversion to PDF failed: #1', $errors[0]))->render($self);
   }
@@ -159,6 +134,84 @@ sub action_download_pdf {
     name => $::form->{pdf_filename},
   );
 }
+
+sub action_show_email_dialog {
+  my ($self) = @_;
+
+  my $cv_method = $self->cv;
+
+  if (!$self->order->$cv_method) {
+    return $self->js->flash('error', t8('Cannot send E-mail without ' . $self->cv))
+                    ->render($self);
+  }
+
+  $self->{email}->{to}   = $self->order->contact->cp_email if $self->order->contact;
+  $self->{email}->{to} ||= $self->order->$cv_method->email;
+  $self->{email}->{cc}   = $self->order->$cv_method->cc;
+  $self->{email}->{bcc}  = join ', ', grep $_, $self->order->$cv_method->bcc, SL::DB::Default->get->global_bcc;
+  # Todo: get addresses from shipto, if any
+
+  my $form = Form->new;
+  $form->{ordnumber} = $self->order->ordnumber;
+  $form->{formname}  = $self->type;
+  $form->{type}      = $self->type;
+  $form->{language} = 'de';
+  $form->{format}   = 'pdf';
+
+  $self->{email}->{subject}             = $form->generate_email_subject();
+  $self->{email}->{attachment_filename} = $form->generate_attachment_filename();
+  $self->{email}->{message}             = $form->create_email_signature();
+
+  my $dialog_html = $self->render('order/tabs/_email_dialog', { output => 0 });
+  $self->js
+      ->run('show_email_dialog', $dialog_html)
+      ->reinit_widgets
+      ->render($self);
+}
+
+# Todo: handling error messages: flash is not displayed in dialog, but in the main form
+sub action_send_email {
+  my ($self) = @_;
+
+  my $mail      = Mailer->new;
+  $mail->{from} = qq|"$::myconfig{name}" <$::myconfig{email}>|;
+  $mail->{$_}   = $::form->{email}->{$_} for qw(to cc bcc subject message);
+
+  my $pdf;
+  my @errors = _create_pdf($self->order, \$pdf, {media => 'email'});
+  if (scalar @errors) {
+    return $self->js->flash('error', t8('Conversion to PDF failed: #1', $errors[0]))->render($self);
+  }
+
+  my $sfile = SL::SessionFile::Random->new(mode => "w");
+  $sfile->fh->print($pdf);
+  $sfile->fh->close;
+
+  $mail->{attachments} = [{ "filename" => $sfile->file_name,
+                            "name"     => $::form->{email}->{attachment_filename} }];
+
+  if (my $err = $mail->send) {
+    return $self->js->flash('error', t8('Sending E-mail: ') . $err)
+                    ->render($self);
+  }
+
+  # internal notes
+  my $intnotes = $self->order->intnotes;
+  $intnotes   .= "\n\n" if $self->order->intnotes;
+  $intnotes   .= t8('[email]')                                                                                        . "\n";
+  $intnotes   .= t8('Date')       . ": " . $::locale->format_date_object(DateTime->now_local, precision => 'seconds') . "\n";
+  $intnotes   .= t8('To (email)') . ": " . $mail->{to}                                                                . "\n";
+  $intnotes   .= t8('Cc')         . ": " . $mail->{cc}                                                                . "\n"    if $mail->{cc};
+  $intnotes   .= t8('Bcc')        . ": " . $mail->{bcc}                                                               . "\n"    if $mail->{bcc};
+  $intnotes   .= t8('Subject')    . ": " . $mail->{subject}                                                           . "\n\n";
+  $intnotes   .= t8('Message')    . ": " . $mail->{message};
+
+  $self->js
+      ->val('#order_intnotes', $intnotes)
+      ->run('close_email_dialog')
+      ->render($self);
+}
+
 
 sub action_customer_vendor_changed {
   my ($self) = @_;
@@ -443,6 +496,38 @@ sub _pre_render {
   $self->{current_employee_id} = SL::DB::Manager::Employee->current->id;
 
   $::request->{layout}->use_javascript("${_}.js")  for qw(ckeditor/ckeditor ckeditor/adapters/jquery);
+}
+
+sub _create_pdf {
+  my ($order, $pdf_ref, $params) = @_;
+
+  my $print_form = Form->new('');
+  $print_form->{type}     = 'sales_order';
+  $print_form->{formname} = 'sales_order',
+  $print_form->{format}   = $params->{format} || 'pdf',
+  $print_form->{media}    = $params->{media}  || 'file';
+
+  $order->flatten_to_form($print_form, format_amounts => 1);
+
+  my @errors = ();
+  $print_form->throw_on_error(sub {
+    eval {
+      $print_form->prepare_for_printing;
+
+      $$pdf_ref = SL::Helper::CreatePDF->create_pdf(
+        template  => SL::Helper::CreatePDF->find_template(name => $print_form->{formname}),
+        variables => $print_form,
+        variable_content_types => {
+          longdescription => 'html',
+          partnotes       => 'html',
+          notes           => 'html',
+        },
+      );
+      1;
+    } || push @errors, ref($EVAL_ERROR) eq 'SL::X::FormError' ? $EVAL_ERROR->getMessage : $EVAL_ERROR;
+  });
+
+  return @errors;
 }
 
 sub _sales_order_type {

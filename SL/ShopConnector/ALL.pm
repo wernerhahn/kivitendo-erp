@@ -2,7 +2,7 @@ package SL::ShopConnector::ALL;
 
 use strict;
 use SL::ShopConnector::XTCommerce;
-# use SL::ShopConnector::Shopware;
+use SL::ShopConnector::Shopware;
 # use SL::ShopConnector::ideal;
 
 my %shop_connector_by_name = (

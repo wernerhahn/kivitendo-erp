@@ -1,0 +1,11 @@
+---
+- id: webshop
+  name: Webshop
+  order: 250
+- parent: webshop
+  id: webshop_import
+  name: Webshop Import
+  params:
+    action: ShopOrder/list
+    db: shop_orders
+    sort_by: shop_ordernumber

@@ -395,7 +395,7 @@ sub _recalc {
   foreach my $tax_chart_id (keys %{ $pat{taxes} }) {
     my $tax = SL::DB::Manager::Tax->find_by(chart_id => $tax_chart_id);
 
-    my @amount_keys = grep { $pat{amounts}->{$_}->{tax_id} == $tax->id } keys $pat{amounts};
+    my @amount_keys = grep { $pat{amounts}->{$_}->{tax_id} == $tax->id } keys %{ $pat{amounts} };
     push(@{ $self->{taxes} }, { amount    => $pat{taxes}->{$tax_chart_id},
                                 netamount => $pat{amounts}->{$amount_keys[0]}->{amount},
                                 tax       => $tax });

@@ -532,6 +532,8 @@ sub _create_pdf {
   $print_form->{media}    = $params->{media}  || 'file';
 
   $order->flatten_to_form($print_form, format_amounts => 1);
+  # flatten_to_form sets payment_terms from customer/vendor - we do not want that here
+  delete $print_form->{payment_terms} if !$print_form->{payment_id};
 
   my @errors = ();
   $print_form->throw_on_error(sub {

@@ -33,6 +33,7 @@
   [% L.button_tag('save()', LxERP.t8('Save')) %]
   [% L.button_tag('create_pdf()', LxERP.t8('Create PDF')) %]
   [% L.button_tag('email()', LxERP.t8('E-mail')) %]
+  [% L.button_tag('save_and_delivery_order()', LxERP.t8('Save and Delivery Order')) %]
 
 </form>
 
@@ -64,6 +65,13 @@ function download_pdf(tmp_filename, pdf_filename) {
 function email() {
   var data = $('#order_form').serialize();
   data += '&action=Order/show_email_dialog';
+
+  $.post("controller.pl", data, kivi.eval_json_result);
+}
+
+function save_and_delivery_order() {
+  var data = $('#order_form').serialize();
+  data += '&action=Order/save_and_delivery_order';
 
   $.post("controller.pl", data, kivi.eval_json_result);
 }

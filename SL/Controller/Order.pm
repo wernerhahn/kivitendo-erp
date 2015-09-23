@@ -445,6 +445,7 @@ sub _recalc {
   $self->order->currency_id($::instance_conf->get_currency_id());
 
   my %pat = $self->order->calculate_prices_and_taxes();
+  $self->{taxes} = [];
   foreach my $tax_chart_id (keys %{ $pat{taxes} }) {
     my $tax = SL::DB::Manager::Tax->find_by(chart_id => $tax_chart_id);
 

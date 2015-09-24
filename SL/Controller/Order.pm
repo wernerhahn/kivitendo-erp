@@ -587,3 +587,22 @@ sub _purchase_order_type {
 }
 
 1;
+
+__END__
+
+=encoding utf-8
+
+=head1 NAME
+
+SL::Controller::Order - controller for orders
+
+=head1 TODO
+
+Testing, PriceSources, pricefactor, units, currency, delivered, delivery order created, ...
+
+=head1 AUTHOR
+
+Bernd Bleßmann E<lt>bernd@kivitendo-premium.deE<gt>
+
+=cut
+

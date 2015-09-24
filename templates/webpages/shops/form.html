@@ -1,0 +1,84 @@
+[%- USE HTML -%][%- USE LxERP -%][%- USE L -%][%- USE T8 -%]
+
+[% SET style="width: 400px" %]
+[% SET size=34 %]
+
+<h1>[% HTML.escape(title) %]</h1>
+
+<form action="controller.pl" method="post">
+
+[%- INCLUDE 'common/flash.html' %]
+
+[%- L.hidden_tag("id", SELF.shop.id) %]
+
+<table>
+  <tr>
+    <th align="right">[% 'Description' | $T8 %]</th>
+    <td>[%- L.input_tag("shop.description", SELF.shop.description, size=size) %]</td>
+  </tr>
+  <tr>
+    <th align="right">[% 'Shop type' | $T8 %]</th>
+    <td>[% L.select_tag('shop.connector', SELF.connectors, value_key = 'id', title_key = 'description', with_empty = 1, default = SELF.shop.connector, default_value_key='id' ) %]</td>
+  <tr>
+  <tr>
+    <th align="right">[% 'Price type' | $T8 %]</th>
+    <td>[% L.select_tag('shop.pricetype', SELF.price_types, value_key = 'id', title_key = 'name', with_empty = 1, default = SELF.shop.pricetype, default_value_key='id' ) %]</td>
+  </tr>
+  <tr>
+    <th align="right">[% 'Price Source' | $T8 %]</th>
+    <td>[% L.select_tag('shop.price_source', SELF.price_sources, value_key = 'id', title_key = 'name', with_empty = 1, default = SELF.shop.price_source, default_value_key='id' ) %]</td>
+  </tr>
+  <tr>
+    <th align="right">[% 'URL' | $T8 %]</th>
+    <td>[%- L.input_tag("shop.url", SELF.shop.url, size=size) %]</td>
+  </tr>
+  <tr>
+    <th align="right">[% 'Port' | $T8 %]</th>
+    <td>[%- L.input_tag("shop.port", SELF.shop.port, size=5) %]</td>
+   <tr>
+    <th align="right">[% 'User' | $T8 %]</th>
+    <td>[%- L.input_tag("shop.login", SELF.shop.login, size=12) %]</td>
+  </tr>
+    <tr>
+    <th align="right">[% 'Password' | $T8 %]</th>
+    <td>[%- L.input_tag("shop.password", SELF.shop.password, size=12) %]</td>
+  </tr>
+ </tr>
+  <tr>
+    <th align="right">[% 'Obsolete' | $T8 %]</th>
+    <td>[% L.checkbox_tag('shop.obsolete', checked = SELF.shop.obsolete, for_submit=1) %]</td>
+  </tr>
+</table>
+
+ <p>
+  [% L.hidden_tag("action", "Shop/dispatch") %]
+  [% L.submit_tag("action_" _  (SELF.shop.id ? "update" : "create"), LxERP.t8('Save'), onclick="return check_prerequisites();") %]
+  [%- IF SELF.shop.id -%]
+    [% L.submit_tag("action_delete", LxERP.t8('Delete')) %]
+  [%- END %]
+  <a href="[% SELF.url_for(action='list') %]">[%- LxERP.t8("Cancel") %]</a>
+ </p>
+
+ <hr>
+
+<script type="text/javascript">
+<!--
+function check_prerequisites() {
+  if ($('#shop_description').val() === "") {
+    alert(kivi.t8('The name is missing.'));
+    return false;
+  }
+  if ($('#shop_url').val() === "") {
+    alert(kivi.t8('The URL is missing.'));
+    return false;
+  }
+  if ($('#shop_port').val() === "") {
+    alert(kivi.t8('The port is missing.'));
+    return false;
+  }
+
+  return true;
+}
+-->
+</script>
+</form>

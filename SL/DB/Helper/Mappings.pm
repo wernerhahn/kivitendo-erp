@@ -189,6 +189,7 @@ my %kivitendo_package_names = (
   sepa_export_message_ids        => 'SepaExportMessageId',
   schema_info                    => 'schema_info',
   shipto                         => 'shipto',
+  shops                          => 'shop',
   shop_parts                     => 'shop_part',
   status                         => 'status',
   tax                            => 'tax',
@@ -202,6 +203,7 @@ my %kivitendo_package_names = (
   units                          => 'unit',
   units_language                 => 'units_language',
   vendor                         => 'vendor',
+  web_shops                      => 'web_shop',
   warehouse                      => 'warehouse',
 );
 

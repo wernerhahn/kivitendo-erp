@@ -1195,6 +1195,12 @@
   params:
     action: list_warehouses
 - parent: system
+  id: system_shops
+  name: Web shops
+  order: 2350
+  params:
+    action: Shop/list
+- parent: system
   id: system_import_csv
   name: Import CSV
   order: 2400

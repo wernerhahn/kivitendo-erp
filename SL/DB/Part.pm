@@ -39,6 +39,11 @@ __PACKAGE__->meta->add_relationships(
     class        => 'SL::DB::Translation',
     column_map   => { id => 'parts_id' },
   },
+  shop_parts     => {
+    type         => 'one to many',
+    class        => 'SL::DB::ShopPart',
+    column_map   => { id => 'part_id' },
+  },
 );
 
 __PACKAGE__->meta->initialize;

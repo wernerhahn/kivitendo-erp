@@ -9,6 +9,14 @@ use SL::DB::MetaSetup::Shop;
 use SL::DB::Manager::Shop;
 use SL::DB::Helper::ActsAsList;
 
+__PACKAGE__->meta->add_relationships(
+  shop_parts     => {
+    type         => 'one to many',
+    class        => 'SL::DB::ShopPart',
+    column_map   => { id => 'shop_id' },
+  },
+);
+
 __PACKAGE__->meta->initialize;
 
 sub validate {

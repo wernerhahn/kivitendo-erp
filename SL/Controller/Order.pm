@@ -8,6 +8,7 @@ use SL::ClientJS;
 use SL::Presenter;
 use SL::Locale::String;
 use SL::SessionFile::Random;
+use SL::PriceSource;
 use SL::Form;
 
 use SL::DB::Order;
@@ -38,6 +39,8 @@ __PACKAGE__->run_before('_check_auth');
 __PACKAGE__->run_before('_recalc',
                         only => [ qw(edit update save save_and_delivery_order create_pdf send_email) ]);
 
+__PACKAGE__->run_before('_get_unalterable_data',
+                        only => [ qw(save save_and_delivery_order create_pdf send_email) ]);
 
 #
 # actions
@@ -480,6 +483,25 @@ sub _recalc {
 
   pairwise { $a->{linetotal} = $b->{linetotal} } @{$self->order->items}, @{$pat{items}};
 }
+
+
+sub _get_unalterable_data {
+  my ($self) = @_;
+
+  foreach my $item (@{ $self->order->items }) {
+    if ($item->id) {
+      # load data from orderitems (db)
+      my $db_item = SL::DB::OrderItem->new(id => $item->id)->load;
+      $item->$_($db_item->$_) for qw(active_discount_source active_price_source longdescription);
+    } else {
+      # set data from part (or other sources)
+      $item->longdescription($item->part->notes);
+      #$item->active_price_source('');
+      #$item->active_discount_source('');
+    }
+  }
+}
+
 
 sub _save {
   my ($self) = @_;

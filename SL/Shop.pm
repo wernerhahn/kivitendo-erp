@@ -3,6 +3,7 @@ package SL::Shop;
 use strict;
 
 use parent qw(Rose::Object);
+use SL::ShopConnector::ALL;
 
 # __PACKAGE__->run_before('check_auth');
 

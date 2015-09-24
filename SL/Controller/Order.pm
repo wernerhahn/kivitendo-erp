@@ -186,12 +186,8 @@ sub action_send_email {
     return $self->js->flash('error', t8('Conversion to PDF failed: #1', $errors[0]))->render($self);
   }
 
-  my $sfile = SL::SessionFile::Random->new(mode => "w");
-  $sfile->fh->print($pdf);
-  $sfile->fh->close;
-
-  $mail->{attachments} = [{ "filename" => $sfile->file_name,
-                            "name"     => $::form->{email}->{attachment_filename} }];
+  $mail->{attachments} = [{ "content" => $pdf,
+                            "name"    => $::form->{email}->{attachment_filename} }];
 
   if (my $err = $mail->send) {
     return $self->js->flash('error', t8('Sending E-mail: ') . $err)

@@ -4,7 +4,6 @@ use strict;
 use parent qw(SL::Controller::Base);
 
 use SL::Helper::Flash;
-use SL::ClientJS;
 use SL::Presenter;
 use SL::Locale::String;
 use SL::SessionFile::Random;
@@ -29,7 +28,7 @@ use English qw(-no_match_vars);
 
 use Rose::Object::MakeMethods::Generic
 (
- 'scalar --get_set_init' => [ qw(order valid_types type cv js p) ],
+ 'scalar --get_set_init' => [ qw(order valid_types type cv p) ],
 );
 
 
@@ -94,7 +93,7 @@ sub action_save {
 
   if (scalar @{ $errors }) {
     $self->js->flash('error', $_) foreach @{ $errors };
-    return $self->js->render($self);
+    return $self->js->render();
   }
 
   flash_later('info', $::locale->text('The order has been saved'));
@@ -218,7 +217,7 @@ sub action_save_and_delivery_order {
 
   if (scalar @{ $errors }) {
     $self->js->flash('error', $_) foreach @{ $errors };
-    return $self->js->render($self);
+    return $self->js->render();
   }
 
   my $delivery_order = $self->order->convert_to_delivery_order($self->order);
@@ -315,7 +314,7 @@ sub action_add_item {
     ->focus('#add_item_parts_id_name');
 
   $self->_js_redisplay_amounts_and_taxes;
-  $self->js->render($self);
+  $self->js->render();
 }
 
 sub action_recalc_amounts_and_taxes {
@@ -325,7 +324,7 @@ sub action_recalc_amounts_and_taxes {
 
   $self->_js_redisplay_linetotals;
   $self->_js_redisplay_amounts_and_taxes;
-  $self->js->render($self);
+  $self->js->render();
 }
 
 sub _js_redisplay_linetotals {
@@ -384,10 +383,6 @@ sub init_cv {
          : die "Not a valid type for order";
 
   return $cv;
-}
-
-sub init_js {
-  SL::ClientJS->new;
 }
 
 sub init_p {

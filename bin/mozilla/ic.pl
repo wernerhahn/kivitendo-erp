@@ -1640,6 +1640,13 @@ sub form_header {
   CVar->render_inputs('variables' => $form->{CUSTOM_VARIABLES}, show_disabled_message => 1, partsgroup_id => $partsgroup_id)
     if (scalar @{ $form->{CUSTOM_VARIABLES} });
 
+  my $active_shops = SL::DB::Manager::Shop->get_all(query => [ obsolete => 0 ], sort_by => 'sortkey');
+  $form->{ACTIVE_SHOPS} = $active_shops;
+  foreach my $shop ( @$active_shops ) {
+    my ($shop_part) =  $part->find_shop_parts( { shop_id => $shop->id } );
+    push( @{ $form->{SHOP_PARTS} }, $shop_part );
+  };
+
   $::request->layout->use_javascript("${_}.js") for qw(ckeditor/ckeditor ckeditor/adapters/jquery kivi.PriceRule);
   $::request->layout->add_javascripts_inline("\$(function(){kivi.PriceRule.load_price_rules_for_part(@{[ $::form->{id} * 1 ]})});") if $::form->{id};
   $form->header;

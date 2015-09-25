@@ -1,10 +1,45 @@
 [%- USE HTML %][%- USE L -%][%- USE P -%][%- USE LxERP -%]
 
 <div id="shop_variables">
+[% LxERP.t8("Active shops:") %]
+ <table>
+  <thead>
+  <tr>
+   <th>[% LxERP.t8("Description") %]</th>
+   <th>[% LxERP.t8("Description") %]</th>
+  </tr>
+  </thead>
+  [%- FOREACH shop = ACTIVE_SHOPS %]
+  <tr>
+   <td>[% HTML.escape( shop.description ) %]</td>
+   <td>[% HTML.escape( shop.description ) %]</td>
+  </tr>
+  [%- END %]
+</table>
+
+ <table>
+  <thead>
+  <tr>
+   <th>[% LxERP.t8("Shop") %]</th>
+   <th>[% LxERP.t8("Shop part") %]</th>
+   <th>[% LxERP.t8("Last update") %]</th>
+  </tr>
+  </thead>
+  [%- FOREACH shop_part = SHOP_PARTS %]
+  <tr>
+   <td>[% HTML.escape( shop_part.shop.description ) %]</td>
+   <td>[% HTML.escape( shop_part.shop_description ) %]</td>
+   <td>[% HTML.escape( shop_part.last_update.to_kivitendo('precision' => 'minute') ) %]</td>
+  </tr>
+  [%- END %]
+</table>
+
+<br><br>
+
  <table>
   <tr>
    <td>[% LxERP.t8("Description") %]</td>
-   <td>[% L.textarea_tag("shop_shop_description", shop_part.shop_description) %]</td>
+   <td>[% L.textarea_tag("shop_description", shop_part.shop_description) %]</td>
   </tr>
   <tr>
    <td>[% LxERP.t8("Sort order") %]</td>

@@ -31,6 +31,8 @@ clear_up();
 
 my $VERBOSE = 0;
 my $DEBUG   = 0;
+my $DANCER  = 0; # activate the mock shop
+
 
 # initialise data:
 my $pricegroup_a = SL::DB::Pricegroup->new(pricegroup => "typ a")->save;
@@ -110,21 +112,21 @@ my $config2 = SL::DB::Shop->new( description => 'TestShop 2',
 
 my $shop       = SL::Shop->new( config => $config1 );
 my $shop2      = SL::Shop->new( config => $config2 );
-my $result     = $shop->connector->get_order('1');
-my $new_orders = $shop->connector->get_new_orders;
+my $result     = $shop->connector->get_order('1') if $DANCER;
+my $new_orders = $shop->connector->get_new_orders if $DANCER;
 
 # printf("order %s has amount %s\n", $result->{ordnumber}, $result->{amount});
 
 is( $config1->connector,  'xtcommerce', 'created shop object');
 is( $shop->config->connector,  'xtcommerce', 'created SL::Shop');
-is( $result->{amount}, '12.34' , 'fetched amount for order 1234');
+is( $result->{amount}, '12.34' , 'fetched amount for order 1234') if $DANCER;
 is( $shop->connector->url, "http://localhost:3000", 'connector url');
-is( scalar keys %{ $new_orders } , 2, '2 new orders');
+is( scalar keys %{ $new_orders } , 2, '2 new orders') if $DANCER;
 
 my $active_shops = SL::DB::Manager::Shop->get_all(query => [ obsolete => 0 ]);
 foreach my $shop_config ( @{ $active_shops } ) {
   my $shop = SL::Shop->new( config => $shop_config );
-  my $new_orders = $shop->connector->get_new_orders;
+  my $new_orders = $shop->connector->get_new_orders if $DANCER;
   # printf("Shop \"%s\" has %s new orders\n", $shop->config->description, scalar keys %{ $new_orders });
 };
 
@@ -185,7 +187,7 @@ my $s1p2 = SL::DB::ShopPart->new( part => $part2,
 my $s2p1 = SL::DB::ShopPart->new( part => $part,
                                   shop => $config2,
                                   last_update => $dt2,
-                                  shop_description => 'marketing speak for part 1 shop 2',
+                                  shop_description => 'marketing speak for part 1 in shop 2',
                                   itime => $part_itime,
                                 )->save;
 

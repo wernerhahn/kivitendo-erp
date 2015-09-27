@@ -32,7 +32,6 @@ namespace('kivi.shop_part', function(ns) {
     // save existing shop_part_id with new params from form, calls create_or_update and saves to db
     ns.save_shop_part = function(shop_part_id) {
       var form = $('form').serializeArray();
-      // alert(form);
       form.push( { name: 'action', value: 'ShopPart/update' }
                , { name: 'shop_part_id',  value: shop_part_id }
       );
@@ -55,35 +54,17 @@ namespace('kivi.shop_part', function(ns) {
 
   // this is called from tabs/_shop.html, opens edit_window (render)
   ns.edit_shop_part = function(shop_part_id) {
-    // alert(shop_part_id);
-    var form = $('form').serializeArray();
-    form.push( { name: 'action', value: 'ShopPart/create_or_edit_popup' }
-             , { name: 'shop_part_id', value: shop_part_id }
-    );
-
-    $.post('controller.pl', form, function(data) {
+    $.post('controller.pl', { action: 'ShopPart/create_or_edit_popup', shop_part_id: shop_part_id }, function(data) {
       kivi.eval_json_result(data);
     });
   }
 
   // does the same as edit_shop_part (existing), but with part_id and shop_id, opens edit window (render)
   ns.create_shop_part = function(part_id, shop_id) {
-    var form = $('form').serializeArray();
-    form.push( { name: 'action', value: 'ShopPart/create_or_edit_popup' }
-             , { name: 'part_id', value: part_id }
-             , { name: 'shop_id', value: shop_id }
-    );
-
-    $.post('controller.pl', form, function(data) {
+    $.post('controller.pl', { action: 'ShopPart/create_or_edit_popup', part_id: part_id, shop_id: shop_id }, function(data) {
       kivi.eval_json_result(data);
     });
   }
-
-  // ns.update_partnumber = function() {
-  //   $('#partnumber').val('barfoo');
-  //   $('#update_button').click();
-  //   // $dialog.dialog("close");
-  // }
 
   ns.update_discount_source = function(row, source, discount_str) {
     $('#active_discount_source_' + row).val(source);

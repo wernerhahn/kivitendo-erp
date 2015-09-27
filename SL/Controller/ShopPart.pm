@@ -28,16 +28,17 @@ sub action_create_or_edit_popup {
 
 
 # old:
-sub action_edit {
-  my ($self) = @_;
-
-  $self->render('shop_part/edit'); #, { output => 0 }); #, price_source => $price_source)
-}
-
+# sub action_edit {
+#   my ($self) = @_;
+# 
+#   $self->render('shop_part/edit'); #, { output => 0 }); #, price_source => $price_source)
+# }
+#
 # used when saving existing ShopPart
+
 sub action_update {
   my ($self) = @_;
-  
+
   $self->create_or_update;
 }
 
@@ -83,6 +84,7 @@ sub render_shop_part_edit_dialog {
 # internal stuff
 #
 sub add_javascripts  {
+  # is this needed?
   $::request->{layout}->add_javascripts(qw(kivi.shop_part.js));
 }
 
@@ -92,8 +94,8 @@ sub check_auth {
 }
 
 sub init_shop_part {
-  if ($::form->{shop_part_id}) { 
-    SL::DB::ShopPart->new(id => $::form->{shop_part_id})->load;
+  if ($::form->{shop_part_id}) {
+    SL::DB::Manager::ShopPart->find_by(id => $::form->{shop_part_id});
   } else {
     SL::DB::ShopPart->new(shop_id => $::form->{shop_id}, part_id => $::form->{part_id});
   };

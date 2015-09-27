@@ -5,57 +5,34 @@
  <table>
   <thead>
   <tr>
-   <th>[% LxERP.t8("Description") %]</th>
-   <th>[% LxERP.t8("Description") %]</th>
-  </tr>
-  </thead>
-  [%- FOREACH shop = ACTIVE_SHOPS %]
-  <tr>
-   <td>[% HTML.escape( shop.description ) %]</td>
-   <td>[% HTML.escape( shop.description ) %]</td>
-  </tr>
-  [%- END %]
-</table>
-
- <table>
-  <thead>
-  <tr>
    <th>[% LxERP.t8("Shop") %]</th>
+   <th>[% LxERP.t8("Active") %]</th>
    <th>[% LxERP.t8("Shop part") %]</th>
    <th>[% LxERP.t8("Last update") %]</th>
+   <th>[% LxERP.t8("Action") %]</th>
   </tr>
   </thead>
   [%- FOREACH shop_part = SHOP_PARTS %]
   <tr>
    <td>[% HTML.escape( shop_part.shop.description ) %]</td>
-   <td>[% HTML.escape( shop_part.shop_description ) %]</td>
+   <td>[% L.html_tag('span', shop_part.active, id => 'shop_part_active_' _ shop_part.id ) %]</td>
+   <td>[% L.html_tag('span', shop_part.shop_description, id => 'shop_part_description_' _ shop_part.id ) %]</td>
    <td>[% HTML.escape( shop_part.last_update.to_kivitendo('precision' => 'minute') ) %]</td>
+   <td>[% L.button_tag("kivi.shop_part.edit_shop_part(" _ shop_part.id _ ")", LxERP.t8("Edit"))  %]</td>
+  </tr>
+  [%- END %]
+  [%- FOREACH shop = SHOPS_NOT_ASSIGNED %]
+  <tr>
+   <td>[% HTML.escape( shop.description ) %]</td>
+   <td></td>
+   <td></td>
+   <td></td>
+   <td>[% L.button_tag("kivi.shop_part.create_shop_part(" _ id _ ", " _ shop.id _ ")", LxERP.t8("Add"))  %]</td>
   </tr>
   [%- END %]
 </table>
 
-<br><br>
 
- <table>
-  <tr>
-   <td>[% LxERP.t8("Description") %]</td>
-   <td>[% L.textarea_tag("shop_description", shop_part.shop_description) %]</td>
-  </tr>
-  <tr>
-   <td>[% LxERP.t8("Sort order") %]</td>
-   <td>[% L.input_tag("shop_sortorder", shop_part.sortorder, size=2) %]</td>
-  </tr>
-  <tr>
-   <td>[% LxERP.t8("Date") %]</td>
-   <td>[% L.date_tag("shop_show_date", shop_part.show_date) %]</td>
-  </tr>
-  <tr>
-   <td>[% LxERP.t8("Front page") %]</td>
-   <td>[% L.yes_no_tag('shop_front_page', shop_part.front_page) %]</td>
-  </tr>
-  </tr>
-  
-</table>
 [% # L.dump(shop_part) %]
 </div>
 

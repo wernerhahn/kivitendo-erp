@@ -1641,13 +1641,17 @@ sub form_header {
     if (scalar @{ $form->{CUSTOM_VARIABLES} });
 
   my $active_shops = SL::DB::Manager::Shop->get_all(query => [ obsolete => 0 ], sort_by => 'sortkey');
-  $form->{ACTIVE_SHOPS} = $active_shops;
-  foreach my $shop ( @$active_shops ) {
-    my ($shop_part) =  $part->find_shop_parts( { shop_id => $shop->id } );
-    push( @{ $form->{SHOP_PARTS} }, $shop_part );
-  };
+  $form->{SHOP_PARTS} = SL::DB::Manager::ShopPart->get_all( query => [ part_id => $part->id , 'shop.obsolete' => 0 ], with_objects => ['shop'] );
 
-  $::request->layout->use_javascript("${_}.js") for qw(ckeditor/ckeditor ckeditor/adapters/jquery kivi.PriceRule);
+  # $form->{ACTIVE_SHOPS} = $active_shops;
+  # foreach my $shop ( @$active_shops ) {
+  #   my ($shop_part) =  $part->find_shop_parts( { shop_id => $shop->id } );
+  #   push( @{ $form->{SHOP_PARTS} }, $shop_part );
+  # };
+  my @used_shop_ids = map { $_->shop->id } @{ $form->{SHOP_PARTS} };
+  $form->{SHOPS_NOT_ASSIGNED} = SL::DB::Manager::Shop->get_all( query => [ obsolete => 0, '!id' => \@used_shop_ids ], sort_by => 'sortkey' );
+
+  $::request->layout->use_javascript("${_}.js") for qw(ckeditor/ckeditor ckeditor/adapters/jquery kivi.PriceRule kivi.shop_part);
   $::request->layout->add_javascripts_inline("\$(function(){kivi.PriceRule.load_price_rules_for_part(@{[ $::form->{id} * 1 ]})});") if $::form->{id};
   $form->header;
   #print $form->parse_html_template('ic/form_header', { ALL_PRICE_FACTORS => $form->{ALL_PRICE_FACTORS},

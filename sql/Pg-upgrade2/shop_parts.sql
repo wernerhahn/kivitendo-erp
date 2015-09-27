@@ -6,8 +6,8 @@
 
 CREATE TABLE shop_parts (
   id               SERIAL PRIMARY KEY,
-  shop_id          INTEGER REFERENCES shops(id),
-  part_id          INTEGER REFERENCES parts(id),
+  shop_id          INTEGER NOT NULL REFERENCES shops(id),
+  part_id          INTEGER NOT NULL REFERENCES parts(id),
   shop_description TEXT,
   itime            TIMESTAMP DEFAULT now(),
   mtime            TIMESTAMP,
@@ -17,6 +17,7 @@ CREATE TABLE shop_parts (
   front_page       BOOLEAN NOT NULL DEFAULT false,
   active           BOOLEAN NOT NULL DEFAULT false,  -- rather than obsolete
   shop_category    TEXT,
+  meta_tags        TEXT,
   UNIQUE (part_id, shop_id)  -- make sure a shop_part appears only once per shop and part
 );
 

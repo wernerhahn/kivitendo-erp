@@ -490,17 +490,16 @@ sub _get_unalterable_data {
       #$item->active_price_source('');
       #$item->active_discount_source('');
     }
+
+    # autovivify all cvars that are not in the form (cvars_by_config can do it).
+    $item->cvars_by_config;
+    $item->parse_custom_variable_values;
   }
 }
 
 
 sub _save {
   my ($self) = @_;
-
-  # autovivify all cvars that are not in the form (cvars_by_config can do it)
-  foreach my $item (@{ $self->order->items }) {
-    $item->cvars_by_config;
-  }
 
   my $errors = [];
   my $db = $self->order->db;

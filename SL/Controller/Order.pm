@@ -492,7 +492,10 @@ sub _get_unalterable_data {
     }
 
     # autovivify all cvars that are not in the form (cvars_by_config can do it).
-    $item->cvars_by_config;
+    # workaround to pre-parse number-cvars (parse_custom_variable_values does not parse number values).
+    foreach my $var (@{ $item->cvars_by_config }) {
+      $var->unparsed_value($::form->parse_amount(\%::myconfig, $var->{__unparsed_value})) if ($var->config->type eq 'number' && exists($var->{__unparsed_value}));
+    }
     $item->parse_custom_variable_values;
   }
 }

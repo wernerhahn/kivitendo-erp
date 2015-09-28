@@ -25,6 +25,7 @@ use SL::Helper::CreatePDF qw(:all);
 use List::Util qw(max first);
 use List::MoreUtils qw(none pairwise);
 use English qw(-no_match_vars);
+use File::Spec;
 
 use Rose::Object::MakeMethods::Generic
 (
@@ -119,8 +120,9 @@ sub action_create_pdf {
   $sfile->fh->print($pdf);
   $sfile->fh->close;
 
-  my $tmp_filename = $sfile->file_name;
-  my $pdf_filename = t8('Sales Order') . '_' . $self->order->ordnumber . '.pdf';
+  # get temporary session filename with stripped path
+  my (undef, undef, $tmp_filename) = File::Spec->splitpath($sfile->file_name);
+  my $pdf_filename =  t8('Sales Order') . '_' . $self->order->ordnumber . '.pdf';
 
   $self->js
     ->run('download_pdf', $tmp_filename, $pdf_filename)
@@ -130,8 +132,11 @@ sub action_create_pdf {
 sub action_download_pdf {
   my ($self) = @_;
 
+  # given tmp_filename should contain no path, so strip if any
+  my (undef, undef, $tmp_filename) = File::Spec->splitpath($::form->{tmp_filename});
+  my $tmp_filename = File::Spec->catfile(SL::SessionFile->new->get_path, $tmp_filename);
   return $self->send_file(
-    $::form->{tmp_filename},
+    $tmp_filename,
     type => 'application/pdf',
     name => $::form->{pdf_filename},
   );

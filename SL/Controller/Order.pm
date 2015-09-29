@@ -120,21 +120,21 @@ sub action_create_pdf {
   $sfile->fh->print($pdf);
   $sfile->fh->close;
 
-  # get temporary session filename with stripped path
-  my (undef, undef, $tmp_filename) = File::Spec->splitpath($sfile->file_name);
+  my $key = join('_', Time::HiRes::gettimeofday(), int rand 1000000000000);
+  $::auth->set_session_value("Order::create_pdf-${key}" => $sfile->file_name);
+
   my $pdf_filename =  t8('Sales Order') . '_' . $self->order->ordnumber . '.pdf';
 
   $self->js
-    ->run('download_pdf', $tmp_filename, $pdf_filename)
+    ->run('download_pdf', $pdf_filename, $key)
     ->flash('info', t8('The PDF has been created'))->render($self);
 }
 
 sub action_download_pdf {
   my ($self) = @_;
 
-  # given tmp_filename should contain no path, so strip if any
-  my (undef, undef, $tmp_filename) = File::Spec->splitpath($::form->{tmp_filename});
-  my $tmp_filename = File::Spec->catfile(SL::SessionFile->new->get_path, $tmp_filename);
+  my $key = $::form->{key};
+  my $tmp_filename = $::auth->get_session_value("Order::create_pdf-${key}");
   return $self->send_file(
     $tmp_filename,
     type => 'application/pdf',

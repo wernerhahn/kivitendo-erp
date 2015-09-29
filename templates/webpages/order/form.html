@@ -54,11 +54,11 @@ function create_pdf() {
   $.post("controller.pl", data, kivi.eval_json_result);
 }
 
-function download_pdf(tmp_filename, pdf_filename) {
+function download_pdf(pdf_filename, key) {
   var data = 'action=Order/download_pdf';
   data += '&type=' + $('#type').val();
-  data += '&tmp_filename=' + tmp_filename;
   data += '&pdf_filename=' + pdf_filename;
+  data += '&key=' + key;
   $.download("controller.pl", data);
 }
 

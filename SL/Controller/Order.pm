@@ -18,6 +18,7 @@ use SL::DB::Employee;
 use SL::DB::Project;
 use SL::DB::Default;
 use SL::DB::Unit;
+use SL::DB::Price;
 
 use SL::Helper::DateTime;
 use SL::Helper::CreatePDF qw(:all);
@@ -283,12 +284,17 @@ sub action_add_item {
   my $cv_method   = $self->cv;
   my $cv_discount = $self->order->$cv_method? $self->order->$cv_method->discount : 0.0;
 
+  my $price = $item->sellprice;
+  $price  ||= ($self->order->$cv_method && $self->order->$cv_method->klass)
+            ? (SL::DB::Manager::Price->find_by(parts_id => $part->id, pricegroup_id => $self->order->$cv_method->klass)->price || $part->sellprice)
+            : $part->sellprice;
+
   my %new_attr;
   $new_attr{part}        = $part;
   $new_attr{description} = $part->description if ! $item->description;
   $new_attr{qty}         = 1.0                if ! $item->qty;
   $new_attr{unit}        = $part->unit;
-  $new_attr{sellprice}   = $part->sellprice   if ! $item->sellprice;
+  $new_attr{sellprice}   = $price;
   $new_attr{discount}    = $cv_discount       if ! $item->discount;
 
   # add_custom_variables adds cvars to an orderitem with no cvars for saving, but

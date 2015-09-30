@@ -243,31 +243,37 @@ sub action_save_and_delivery_order {
 sub action_customer_vendor_changed {
   my ($self) = @_;
 
-  if ($self->cv eq 'customer') {
-    $self->order->customer(SL::DB::Manager::Customer->find_by_or_create(id => $::form->{cv_id}));
+  my $cv_method = $self->cv;
 
-  } elsif ($self->cv eq 'vendor') {
-    $self->order->vendor(SL::DB::Manager::Vendor->find_by_or_create(id => $::form->{cv_id}));
-  }
-
-  if ($self->order->{$self->cv}->contacts && scalar @{ $self->order->{$self->cv}->contacts } > 0) {
+  if ($self->order->$cv_method->contacts && scalar @{ $self->order->$cv_method->contacts } > 0) {
     $self->js->show('#cp_row');
   } else {
     $self->js->hide('#cp_row');
   }
 
-  if ($self->order->{$self->cv}->shipto && scalar @{ $self->order->{$self->cv}->shipto } > 0) {
+  if ($self->order->$cv_method->shipto && scalar @{ $self->order->$cv_method->shipto } > 0) {
     $self->js->show('#shipto_row');
   } else {
     $self->js->hide('#shipto_row');
   }
 
+  $self->order->taxzone_id($self->order->$cv_method->taxzone_id);
+
+  $self->order->taxincluded(defined($self->order->$cv_method->taxincluded_checked)
+                            ? $self->order->$cv_method->taxincluded_checked
+                            : $::myconfig{taxincluded_checked});
+
+  $self->_recalc();
+
   $self->js
-    ->replaceWith('#order_cp_id',     $self->build_contact_select)
-    ->replaceWith('#order_shipto_id', $self->build_shipto_select)
-    ->val('#order_taxzone_id', $self->order->{$self->cv}->taxzone_id)
-    ->focus('#order_' . $self->cv . '_id')
-    ->render($self);
+    ->replaceWith('#order_cp_id',       $self->build_contact_select)
+    ->replaceWith('#order_shipto_id',   $self->build_shipto_select)
+    ->val(        '#order_taxzone_id',  $self->order->taxzone_id)
+    ->val(        '#order_taxincluded', $self->order->taxincluded)
+    ->focus(      '#order_' . $self->cv . '_id');
+
+  $self->_js_redisplay_amounts_and_taxes;
+  $self->js->render();
 }
 
 sub action_add_item {

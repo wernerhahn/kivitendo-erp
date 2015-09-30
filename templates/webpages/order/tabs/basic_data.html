@@ -244,10 +244,10 @@
 
 <script type='text/javascript'>
 function reload_cv_dependend_selections() {
-  $.post("controller.pl", { 'action': 'Order/customer_vendor_changed',
-                            'cv_id':  function(){ return $('#order_[%- cv_id%]').val() },
-                            'type':   function(){ return $('#type').val() },
-                          }, kivi.eval_json_result);
+  var data = $('#order_form').serialize();
+  data += '&action=Order/customer_vendor_changed';
+
+  $.post("controller.pl", data, kivi.eval_json_result);
 }
 
 function add_item() {

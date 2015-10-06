@@ -1640,16 +1640,31 @@ sub form_header {
   CVar->render_inputs('variables' => $form->{CUSTOM_VARIABLES}, show_disabled_message => 1, partsgroup_id => $partsgroup_id)
     if (scalar @{ $form->{CUSTOM_VARIABLES} });
 
+  require SL::DB::Shop;
   my $active_shops = SL::DB::Manager::Shop->get_all(query => [ obsolete => 0 ], sort_by => 'sortkey');
-  $form->{SHOP_PARTS} = SL::DB::Manager::ShopPart->get_all( query => [ part_id => $part->id , 'shop.obsolete' => 0 ], with_objects => ['shop'] );
-
-  # $form->{ACTIVE_SHOPS} = $active_shops;
-  # foreach my $shop ( @$active_shops ) {
-  #   my ($shop_part) =  $part->find_shop_parts( { shop_id => $shop->id } );
-  #   push( @{ $form->{SHOP_PARTS} }, $shop_part );
-  # };
-  my @used_shop_ids = map { $_->shop->id } @{ $form->{SHOP_PARTS} };
-  $form->{SHOPS_NOT_ASSIGNED} = SL::DB::Manager::Shop->get_all( query => [ obsolete => 0, '!id' => \@used_shop_ids ], sort_by => 'sortkey' );
+  # check for part variants and shop_parts
+  if ( $form->{id} ) {
+    require SL::DB::Part;
+    my $part = SL::DB::Part->new( id => $form->{id} )->load;
+    if ( $form->{id} ) {
+      if ( $part->is_variant ) {
+        $form->{is_variant} = 1; # for checking in the template
+          @{ $form->{PART_VARIANTS} } = grep { $_->id != $part->id } @{$part->part_variants->[0]->parts};
+      };
+    };
+    $form->{SHOP_PARTS} = SL::DB::Manager::ShopPart->get_all( query => [ part_id => $part->id , 'shop.obsolete' => 0 ], with_objects => ['shop'] );
+    # $form->{ACTIVE_SHOPS} = $active_shops;
+    # foreach my $shop ( @$active_shops ) {
+    #   my ($shop_part) =  $part->find_shop_parts( { shop_id => $shop->id } );
+    #   push( @{ $form->{SHOP_PARTS} }, $shop_part );
+    # };
+    my @used_shop_ids = map { $_->shop->id } @{ $form->{SHOP_PARTS} };
+    if ( @used_shop_ids ) {
+      $form->{SHOPS_NOT_ASSIGNED} = SL::DB::Manager::Shop->get_all( query => [ obsolete => 0, '!id' => \@used_shop_ids ], sort_by => 'sortkey' );
+    } else {
+      $form->{SHOPS_NOT_ASSIGNED} = SL::DB::Manager::Shop->get_all( query => [ obsolete => 0 ], sort_by => 'sortkey' );
+    };
+  };
 
   $::request->layout->use_javascript("${_}.js") for qw(ckeditor/ckeditor ckeditor/adapters/jquery kivi.PriceRule kivi.shop_part);
   $::request->layout->add_javascripts_inline("\$(function(){kivi.PriceRule.load_price_rules_for_part(@{[ $::form->{id} * 1 ]})});") if $::form->{id};

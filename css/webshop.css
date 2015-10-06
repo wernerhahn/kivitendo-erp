@@ -1,0 +1,22 @@
+div.table {
+  display: table;
+  padding: 20px,20px,20px,20px;
+  margin: 15px,15px,15px,15px;
+}
+div.table-row {
+  display: table-row;
+}
+div.table-cell {
+  display: table-cell;
+  padding: 20px,20px,20px,20px;
+}
+div.main{
+  width: 100%;
+  padding: 15px,15px,15px,15px;
+  margin: 15px,15px,15px,15px;
+}
+.fleft {
+  width: 30%;
+  float: left;
+  border: thin solid red;
+}

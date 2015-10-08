@@ -1,4 +1,4 @@
-[%- USE HTML -%][%- USE LxERP -%][%- USE L -%][%- USE T8 -%]
+[%- USE HTML -%][%- USE LxERP -%][%- USE L -%][%- USE P -%][%- USE T8 -%]
 
 [% SET style="width: 400px" %]
 [% SET size=34 %]
@@ -60,6 +60,20 @@
  </p>
 
  <hr>
+ <table>
+  <tr>
+    <th align="right">[% 'Description' | $T8 %]</th>
+    <th>Last update</th>
+    <th>[% 'Available qty' | $T8 %]</th>
+  </tr>
+ [%- FOREACH shop_part = SELF.shop.updatable_parts %]
+  <tr>
+   <td>[% P.part(shop_part.part) %]</td>
+   <td>[% shop_part.last_update.to_kivitendo %]</td>
+   <td>[% shop_part.part.get_stock %]</td>
+  </tr>
+ [%- END %]
+ </table>
 
 <script type="text/javascript">
 <!--

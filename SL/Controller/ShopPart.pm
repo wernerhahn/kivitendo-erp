@@ -26,6 +26,33 @@ sub action_create_or_edit_popup {
   $self->render_shop_part_edit_dialog();
 };
 
+sub action_update_shop {
+  my ($self, %params) = @_;
+
+  my $shop_part = SL::DB::Manager::ShopPart->find_by(id => $::form->{shop_part_id});
+  die unless $shop_part;
+  require SL::Shop;
+  my $shop = SL::Shop->new( config => $shop_part->shop );
+
+  # TODO: generate data to upload to shop
+  my $part_hash = $shop_part->part->as_tree;
+  my $json      = SL::JSON::to_json($part_hash);
+  my $return    = $shop->connector->update_part($self->shop_part, $json);
+
+  # the connector deals with parsing/result verification, just needs to return success or failure
+  if ( $return == 1 ) {
+    # TODO: write update time to DB
+    my $now = DateTime->now;
+    $self->js->html('#shop_part_last_update_' . $shop_part->id, $now->to_kivitendo('precision' => 'minute'))
+           ->flash('info', t8("Updated part [#1] in shop [#2] at #3", $shop_part->part->displayable_name, $shop_part->shop->description, $now->to_kivitendo('precision' => 'minute') ) )
+           ->render;
+  } else {
+    $self->js->flash('error', t8('The shop part wasn\'t updated.'))->render;
+  };
+
+};
+
+
 
 # old:
 # sub action_edit {
@@ -79,7 +106,6 @@ sub render_shop_part_edit_dialog {
   $self->js->render;
 }
 
-
 #
 # internal stuff
 #
@@ -103,3 +129,31 @@ sub init_shop_part {
 
 1;
 
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+SL::Controller::ShopPart - Controller for managing ShopParts
+
+=head1 SYNOPSIS
+
+ShopParts are configured in a tab of the corresponding part.
+
+=head1 FUNCTIONS
+
+=over 4
+
+=item C<action_update_shop>
+
+To be called from the "Update" button, for manually syncing a part with its
+shop. Generates a  Calls some ClientJS functions to modifiy original page.
+
+=back
+
+=head1 AUTHORS
+
+G. Richardson E<lt>information@kivitendo-premium.deE<gt>
+
+=cut

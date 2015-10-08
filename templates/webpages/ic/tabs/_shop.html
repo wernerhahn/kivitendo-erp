@@ -10,6 +10,7 @@
    <th>[% LxERP.t8("Shop part") %]</th>
    <th>[% LxERP.t8("Last update") %]</th>
    <th>[% LxERP.t8("Action") %]</th>
+   <th>[% LxERP.t8("Action") %]</th>
   </tr>
   </thead>
   [%- FOREACH shop_part = SHOP_PARTS %]
@@ -17,8 +18,9 @@
    <td>[% HTML.escape( shop_part.shop.description ) %]</td>
    <td>[% L.html_tag('span', shop_part.active, id => 'shop_part_active_' _ shop_part.id ) %]</td>
    <td>[% L.html_tag('span', shop_part.shop_description, id => 'shop_part_description_' _ shop_part.id ) %]</td>
-   <td>[% HTML.escape( shop_part.last_update.to_kivitendo('precision' => 'minute') ) %]</td>
+   <td>[% L.html_tag('span', shop_part.last_update.to_kivitendo('precision' => 'minute'), id => 'shop_part_last_update_' _ shop_part.id ) %]</td>
    <td>[% L.button_tag("kivi.shop_part.edit_shop_part(" _ shop_part.id _ ")", LxERP.t8("Edit"))  %]</td>
+   <td>[% L.button_tag("kivi.shop_part.update_shop_part(" _ shop_part.id _ ")", LxERP.t8("Update"))  %]</td>
   </tr>
   [%- END %]
   [%- FOREACH shop = SHOPS_NOT_ASSIGNED %]
@@ -28,6 +30,7 @@
    <td></td>
    <td></td>
    <td>[% L.button_tag("kivi.shop_part.create_shop_part(" _ id _ ", " _ shop.id _ ")", LxERP.t8("Add"))  %]</td>
+   <td></td>
   </tr>
   [%- END %]
 </table>

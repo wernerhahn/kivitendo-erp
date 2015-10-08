@@ -90,6 +90,12 @@ namespace('kivi.shop_part', function(ns) {
     });
   }
 
+  ns.update_shop_part = function(shop_part_id) {
+    $.post('controller.pl', { action: 'ShopPart/update_shop', shop_part_id: shop_part_id }, function(data) {
+      kivi.eval_json_result(data);
+    });
+  }
+
   ns.update_discount_source = function(row, source, discount_str) {
     $('#active_discount_source_' + row).val(source);
     if (discount_str) $('#discount_' + row).val(discount_str);

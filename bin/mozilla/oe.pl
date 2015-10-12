@@ -866,7 +866,7 @@ sub orders {
   $form->{l_open}              = $form->{l_closed} = "Y" if ($form->{open}      && $form->{closed});
   $form->{l_delivered}         = "Y"                     if ($form->{delivered} && $form->{notdelivered});
   $form->{l_periodic_invoices} = "Y"                     if ($form->{periodic_invoices_active} && $form->{periodic_invoices_inactive});
-  $form->{l_edit_new}          = "Y"                     if ($form->{type} eq 'sales_order');
+  $form->{l_edit_new}          = "Y"                     if (any { $form->{type} eq $_ } qw(sales_order purchase_order));
   map { $form->{"l_${_}"} = 'Y' } qw(order_probability expected_billing_date expected_netamount) if $form->{l_order_probability_expected_billing_date};
 
   my $attachment_basename;
@@ -1090,7 +1090,7 @@ sub orders {
     $row->{$ordnumber}->{link} = $edit_url . "&id=" . E($oe->{id}) . "&callback=${callback}";
 
     $row->{edit_new}->{data}   = $oe->{ordnumber};
-    $row->{edit_new}->{link}   = build_std_url('script=controller.pl', 'action=Order/edit', 'type=sales_order', 'id=' . E($oe->{id}));
+    $row->{edit_new}->{link}   = build_std_url('script=controller.pl', 'action=Order/edit', "type=$form->{type}", 'id=' . E($oe->{id}));
 
     my $row_set = [ $row ];
 

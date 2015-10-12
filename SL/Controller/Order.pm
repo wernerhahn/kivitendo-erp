@@ -259,9 +259,11 @@ sub action_customer_vendor_changed {
 
   $self->order->taxzone_id($self->order->$cv_method->taxzone_id);
 
-  $self->order->taxincluded(defined($self->order->$cv_method->taxincluded_checked)
-                            ? $self->order->$cv_method->taxincluded_checked
-                            : $::myconfig{taxincluded_checked});
+  if ($self->order->is_sales) {
+    $self->order->taxincluded(defined($self->order->$cv_method->taxincluded_checked)
+                              ? $self->order->$cv_method->taxincluded_checked
+                              : $::myconfig{taxincluded_checked});
+  }
 
   $self->_recalc();
 

@@ -7,6 +7,7 @@
 
   <tr class="listrow0">
     <td style='display:none'>
+      [% L.hidden_tag("orderitem_ids[+]", ID) %]
       [% L.hidden_tag("order.orderitems[+].id", ITEM.id, id='item_' _ ID) %]
       [% L.hidden_tag("order.orderitems[].parts_id", ITEM.parts_id) %]
     </td>
@@ -47,13 +48,26 @@
                       class="recalc") %]
     </td>
     <td>
-      [%- L.input_tag("order.orderitems[].sellprice_as_number",
-                      ITEM.sellprice_as_number,
-                      size = 10,
-                      style='text-align:right',
-                      class="recalc") %]
+      [%- SET EDIT_PRICES = 1 %]
+      [%- IF EDIT_PRICES %]
+        [%- L.button_tag("price_chooser_item_row(this)", ITEM.active_price_source.source_description, name = "price_chooser_button") %]
+      [%- END %]
     </td>
     <td>
+      [%- L.hidden_tag("order.orderitems[].active_price_source", ITEM.active_price_source.source) %]
+      [%- IF EDIT_PRICES %]
+        [%- L.input_tag("order.orderitems[].sellprice_as_number",
+                        ITEM.sellprice_as_number,
+                        size = 10,
+                        style='text-align:right',
+                        class="recalc") %]
+      [%- ELSE %]
+        [%- ITEM.sellprice_as_number %]
+        [%- L.hidden_tag("order.orderitems[].sellprice_as_number", ITEM.sellprice_as_number) %]
+      [%- END %]
+    </td>
+    <td>
+      [%- L.hidden_tag("order.orderitems[].active_discount_source", ITEM.active_discount_source) %]
       [%- L.input_tag("order.orderitems[].discount_as_percent",
                       ITEM.discount_as_percent,
                       size = 5,

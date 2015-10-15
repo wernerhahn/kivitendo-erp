@@ -252,6 +252,7 @@ function reload_cv_dependend_selections() {
 
 function add_item() {
   if ($('#add_item_parts_id').val() == '') return;
+  if (!check_cv()) return;
 
   var data = $('#order_form').serialize();
   data += '&action=Order/add_item';

@@ -41,6 +41,7 @@
 <script type='text/javascript'>
 
 function save() {
+  if (!check_cv()) return;
   var data = $('#order_form').serialize();
   data += '&action=Order/save';
 
@@ -48,6 +49,7 @@ function save() {
 }
 
 function create_pdf() {
+  if (!check_cv()) return;
   var data = $('#order_form').serialize();
   data += '&action=Order/create_pdf';
 
@@ -63,6 +65,7 @@ function download_pdf(pdf_filename, key) {
 }
 
 function email() {
+  if (!check_cv()) return;
   var data = $('#order_form').serialize();
   data += '&action=Order/show_email_dialog';
 
@@ -70,10 +73,18 @@ function email() {
 }
 
 function save_and_delivery_order() {
+  if (!check_cv()) return;
   var data = $('#order_form').serialize();
   data += '&action=Order/save_and_delivery_order';
 
   $.post("controller.pl", data, kivi.eval_json_result);
 }
 
+function check_cv() {
+  if ($('#order_[%- cv_id %]').val() == '') {
+    alert(kivi.t8('Please select a [%- SELF.cv %].'));
+    return false;
+  }
+  return true;
+}
 </script>

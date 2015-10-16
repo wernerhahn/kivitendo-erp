@@ -7,3 +7,13 @@
   params:
     action: Order/add
     type: sales_order
+
+- parent: ap
+  id: ap_add_purchase_order_new
+  name: Add Purchase Order (new)
+  icon: purchase_order_add
+  order: 350
+  access: purchase_order_edit
+  params:
+    action: Order/add
+    type: purchase_order

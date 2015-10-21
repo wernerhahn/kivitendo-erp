@@ -121,7 +121,7 @@ EOL
   }
 }
 
-if (@missing_modules && $apt && !$check{s}) {
+if (@missing_modules && ($check{a} || $apt && !$check{s})) {
   print "\nHere are some sample installation lines, choose one appropriate for your system:\n\n";
   local $Text::Wrap::separator = " \\\n";
 
@@ -271,12 +271,12 @@ sub print_result {
 
 sub print_line {
   my ($text, $res, $color) = @_;
-  return if $check{s};
+  return if $check{s} && !$check{a};
   print $text, " ", ('.' x (78 - length($text) - length($res))), " ", mycolor($res, $color), $/;
 }
 
 sub print_header {
-  return if $check{s};
+  return if $check{s} && !$check{a};
   print $/;
   print "$_[0]:", $/;
 }

@@ -14,6 +14,7 @@ use SL::InstanceConfiguration;
 use SL::LXDebug;
 use SL::Layout::None;
 use SL::LxOfficeConf;
+use XML::LibXML;
 
 our ($db_cfg, $dbh);
 
@@ -117,12 +118,17 @@ sub create_initial_schema {
   $dbh           = SL::DBConnect->connect(@dbi_options) || BAIL_OUT("Database connection failed: " . $DBI::errstr);
   $::auth->{dbh} = $dbh;
   my $dbupdater  = SL::DBUpgrade2->new(form => $::form, return_on_error => 1, silent => 1);
-  my $coa        = 'Germany-DATEV-SKR03EU';
+  my $defaults   = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
+  my $coa        = $defaults->chart_of_accounts( 'Germany-DATEV-SKR03EU' );
+  my $am         = $defaults->accounting_method( 'cash' );
+  my $pd         = $defaults->profit_determination( 'balance' );
+  my $is         = $defaults->inventory_system( 'periodic' );
+  my $curr       = $defaults->currency( 'EUR' );
 
   apply_dbupgrade($dbupdater, "sql/lx-office.sql");
   apply_dbupgrade($dbupdater, "sql/${coa}-chart.sql");
 
-  dbh_do($dbh, qq|UPDATE defaults SET coa = '${coa}', accounting_method = 'cash', profit_determination = 'income', inventory_system = 'periodic', curr = 'EUR'|);
+  dbh_do($dbh, qq|UPDATE defaults SET coa = '${coa}', accounting_method = '${am}', profit_determination = '${pd}', inventory_system = '${is}', curr = '${curr}'|);
   dbh_do($dbh, qq|CREATE TABLE schema_info (tag TEXT, login TEXT, itime TIMESTAMP DEFAULT now(), PRIMARY KEY (tag))|);
 }
 

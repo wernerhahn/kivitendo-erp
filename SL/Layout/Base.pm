@@ -19,7 +19,6 @@ use Rose::Object::MakeMethods::Generic (
 
 use SL::Menu;
 use SL::Presenter;
-use SL::DBUtils;
 
 my %menu_cache;
 
@@ -30,16 +29,7 @@ sub new {
 }
 
 sub init_menu {
-  my @menu_files;
-  my $dbh = $::form->get_standard_dbh;
-  if(scalar(grep(/^Switzerland/, (selectrow_query($::form, $dbh, 'SELECT coa FROM defaults'))[0]))) {
-    @menu_files = qw(menus/erp_ch.ini);
-  } else {
-    @menu_files = qw(menus/erp.ini);
-  }
-  $dbh->commit;
-  unshift @menu_files, 'menus/crm.ini' if $::instance_conf->crm_installed;
-  Menu->new(@menu_files);
+  SL::Menu->new('user');
 }
 
 sub init_auto_reload_resources_param {

@@ -574,7 +574,6 @@
   id: general_ledger_datev_export_assistent
   name: DATEV - Export Assistent
   icon: datev
-  exclusion: country_mode=CH
   order: 400
   access: datev_export
   module: datev.pl
@@ -774,22 +773,10 @@
     action: report
     report: trial_balance
 - parent: reports
-  id: reports_erfolgsrechnung
-  name: Erfolgsrechnung
-  icon: income_statement
-  order: 300
-  inclusion: country_mode=CH
-  access: report
-  module: rp.pl
-  params:
-    action: report
-    report: erfolgsrechnung
-- parent: reports
   id: reports_income_statement
   name: Income Statement
   icon: income_statement
   order: 300
-  exclusion: country_mode=CH
   access: report
   module: rp.pl
   params:
@@ -799,7 +786,6 @@
   id: reports_bwa
   name: BWA
   order: 400
-  exclusion: country_mode=CH
   access: report
   module: rp.pl
   params:
@@ -810,7 +796,6 @@
   name: Balance Sheet
   icon: balance_sheet
   order: 500
-  exclusion: country_mode=CH
   access: report
   module: rp.pl
   params:
@@ -821,7 +806,6 @@
   name: UStVa
   icon: ustva
   order: 600
-  exclusion: country_mode=CH
   access: advance_turnover_tax_return
   module: ustva.pl
   params:
@@ -1001,7 +985,6 @@
   id: system_ustva_einstellungen
   name: UStVa Einstellungen
   order: 200
-  exclusion: country_mode=CH
   module: ustva.pl
   params:
     action: config_step1

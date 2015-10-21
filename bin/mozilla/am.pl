@@ -215,7 +215,7 @@ sub account_header {
 
   my $select_eur = q|<option value=""> |. $locale->text('None') .q|</option>\n|;
   my %eur;
-  if ($form->{use_case} = scalar(grep(/^Switzerland/, (selectrow_query($form, $form->get_standard_dbh, 'SELECT coa FROM defaults'))[0]))) {
+  if (($form->{country_mode} = SL::DB::Default->get->country_mode) eq 'CH') {
     %eur = (
          1  => "Ertrag",
          6  => "Aufwand",

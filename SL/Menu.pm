@@ -220,12 +220,6 @@ sub parse_instance_conf_string {
   return $::instance_conf->data->{$setting};
 }
 
-sub parse_compare_string {
-  my ($self, $switch) = @_;
-  my ($setting, $mode) = split m/=/, $switch, 2;
-  return $::instance_conf->data->{$setting} eq $mode;
-}
-
 sub clear_access {
   my ($self) = @_;
   for my $node ($self->tree_walk("all")) {
@@ -236,14 +230,11 @@ sub clear_access {
 
 sub set_access {
   my ($self) = @_;
-  # 1. evaluate appearence
-  # 2. evaluate access for all
-  # 3. if a menu has no visible children, its not visible either
+  # 1. evaluate access for all
+  # 2. if a menu has no visible children, its not visible either
 
   for my $node (reverse $self->tree_walk("all")) {
-    $node->{visible} = $node->{inclusion}        ? $self->parse_compare_string($node->{inclusion})  : 1
-                   && $node->{exclusion}        ? !$self->parse_compare_string($node->{exclusion}) : 1
-                   && $node->{access}           ? $self->parse_access_string($node)
+    $node->{visible} = $node->{access}           ? $self->parse_access_string($node)
                      : !$node->{children}        ? 1
                      : $node->{visible_children} ? 1
                      :                             0;

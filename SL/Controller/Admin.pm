@@ -11,7 +11,6 @@ use SL::Common ();
 use SL::DB::AuthUser;
 use SL::DB::AuthGroup;
 use SL::DB::Printer;
-use SL::DBUtils;
 use SL::Helper::Flash;
 use SL::Locale::String qw(t8);
 use SL::System::InstallationLock;
@@ -21,7 +20,7 @@ use SL::Layout::AdminLogin;
 use Rose::Object::MakeMethods::Generic
 (
   'scalar --get_set_init' => [ qw(client user group printer db_cfg is_locked
-                                  all_dateformats all_numberformats all_countrycodes all_stylesheets all_menustyles all_clients all_groups all_users all_rights all_printers
+                                  all_dateformats all_numberformats all_countrycodes all_countrymodes all_stylesheets all_menustyles all_clients all_groups all_users all_rights all_printers
                                   all_dbsources all_used_dbsources all_accounting_methods all_inventory_systems all_profit_determinations all_charts) ],
 );
 
@@ -40,7 +39,6 @@ sub keep_auth_vars {
 
 sub action_login {
   my ($self) = @_;
-
   return $self->login_form if !$::form->{do_login};
   return                   if !$self->authenticate_root;
   return                   if !$self->check_auth_db_and_tables;
@@ -111,12 +109,13 @@ sub action_show {
 
 sub action_new_user {
   my ($self) = @_;
+  my $defaults = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
   $self->user(SL::DB::AuthUser->new(
     config_values => {
       vclimit      => 200,
-      countrycode  => "de",
-      numberformat => scalar(grep(/^Switzerland/, get_default_coa($self))) ? "1'000.00" : "1.000,00",
-      dateformat   => "dd.mm.yy",
+      countrycode  => $defaults->language('de'),
+      numberformat => $defaults->numberformat('1.000,00'),
+      dateformat   => $defaults->dateformat('dd.mm.yy'),
       stylesheet   => "kivitendo.css",
       menustyle    => "neu",
     },
@@ -550,19 +549,25 @@ sub init_all_countrycodes {
   return [ map { id => $_, title => $cc{$_} }, sort { $cc{$a} cmp $cc{$b} } keys %cc ];
 }
 
+sub init_all_countrymodes {
+  my %cm = SL::DefaultManager->country_modes;
+  return [ map { id => $_, title => "$_ ($cm{$_})" }, sort keys %cm ];
+}
+
 #
 # filters
 #
 
 sub setup_layout {
   my ($self, $action) = @_;
+  my $defaults = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
 
   $::request->layout(SL::Layout::Dispatcher->new(style => 'admin'));
   $::form->{favicon} = "favicon.ico";
   %::myconfig        = (
-    countrycode      => 'de',
-    numberformat     => '1.000,00',
-    dateformat       => 'dd.mm.yy',
+    countrycode      => $defaults->language('de'),
+    numberformat     => $defaults->numberformat('1.000,00'),
+    dateformat       => $defaults->dateformat('dd.mm.yy'),
   ) if !%::myconfig;
 }
 
@@ -627,6 +632,17 @@ sub database_administration_login_form {
 
 sub create_dataset_form {
   my ($self, %params) = @_;
+  my $defaults = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
+
+  $::request->layout(SL::Layout::Dispatcher->new(style => 'admin'));
+  $::form->{favicon} = "favicon.ico";
+  $::form->{countrymode}          = $defaults->country( 'DE' );
+  $::form->{chart}                = $defaults->chart_of_accounts( 'Germany-DATEV-SKR03EU' );
+  $::form->{defaultcurrency}      = $defaults->currency( 'EUR' );
+  $::form->{precision}            = $defaults->precision( '0.01' );
+  $::form->{accounting_method}    = $defaults->accounting_method( 'cash' );
+  $::form->{inventory_system}     = $defaults->inventory_system( 'periodic' );
+  $::form->{profit_determination} = $defaults->profit_determination( 'balance' );
   $self->render('admin/create_dataset', title => (t8('Database Administration') . " / " . t8('Create Dataset')));
 }
 
@@ -670,20 +686,6 @@ sub authenticate_root {
   $self->login_form(error => t8('Incorrect password!'));
 
   return undef;
-}
-
-sub get_default_coa {
-  my ( $self ) = @_;
-  my $coa = undef;
-  eval {
-    my $client = first { $_->is_default } @{ $self->all_clients };
-    my $dbconnect = 'dbi:Pg:dbname=' . $client->dbname . ';host=' . $client->dbhost . ';port=' . $client->dbport;
-    my $dbh       = DBI->connect($dbconnect, $client->dbuser, $client->dbpasswd);
-    my $query = q{ SELECT coa FROM defaults };
-    ($coa) = selectrow_query($::form, $dbh, $query);
-    $dbh->disconnect;
-  };
-  return $coa;
 }
 
 1;

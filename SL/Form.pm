@@ -969,18 +969,18 @@ sub parse_amount {
 sub round_amount {
   my ($self, $amount, $places, $adjust) = @_;
 
+  return 0 if !defined $amount;
+
   if ($adjust) {
-    my $precision = 0.01;
+    my $precision = SL::DB::Default->get->precision || 0.01;
     # Round amounts to eight places before rounding to the requested
     # number of places. This gets rid of errors due to internal floating
     # point representation.
     $amount = int($amount * 10**8 + .5 * ($amount <=> 0)) / 10**8  if $places < 8;
-    $amount = int($amount / ($precision = _get_precision()) + ($amount <=> 0) * .5) * $precision;
+    $amount = int($amount / $precision + ($amount <=> 0) * .5) * $precision;
     $amount = int($amount * 10**$places + .5 * ($amount <=> 0)) / 10**$places;
     return $amount;
   }
-
-  return 0 if !defined $amount;
 
   # We use Perl's knowledge of string representation for
   # rounding. First, convert the floating point number to a string
@@ -3697,20 +3697,6 @@ sub calculate_tax {
 
   return ($amount,$tax);
 };
-
-sub _get_precision {
-  my ( $self ) = @_;
-  my $precision = 0.01;
-  eval {
-    my $client = $::auth->{client};
-    my $dbconnect = 'dbi:Pg:dbname=' . $client->{dbname} . ';host=' . $client->{dbhost} . ';port=' . $client->{dbport};
-    my $dbh       = DBI->connect($dbconnect, $client->{dbuser}, $client->{dbpasswd});
-    my $query = q{ SELECT precision FROM defaults };
-    ($precision) = selectrow_query($::form, $dbh, $query);
-    $dbh->disconnect;
-  };
-  return $precision;
-}
 
 1;
 

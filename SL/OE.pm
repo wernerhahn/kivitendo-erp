@@ -892,8 +892,8 @@ sub retrieve {
                      (SELECT c.accno FROM chart c WHERE d.expense_accno_id   = c.id) AS expense_accno,
                      (SELECT c.accno FROM chart c WHERE d.fxgain_accno_id    = c.id) AS fxgain_accno,
                      (SELECT c.accno FROM chart c WHERE d.fxloss_accno_id    = c.id) AS fxloss_accno,
-                     (SELECT c.accno FROM chart c WHERE d.rndgain_accno_id    = c.id) AS rndgain_accno,
-                     (SELECT c.accno FROM chart c WHERE d.rndloss_accno_id    = c.id) AS rndloss_accno
+                     (SELECT c.accno FROM chart c WHERE d.rndgain_accno_id   = c.id) AS rndgain_accno,
+                     (SELECT c.accno FROM chart c WHERE d.rndloss_accno_id   = c.id) AS rndloss_accno
               $query_add
               FROM defaults d|;
   my $ref = selectfirst_hashref_query($form, $dbh, $query);

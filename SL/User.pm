@@ -46,6 +46,7 @@ use SL::DBUtils;
 use SL::Iconv;
 use SL::Inifile;
 use SL::System::InstallationLock;
+use SL::DefaultManager;
 
 use strict;
 
@@ -284,15 +285,17 @@ sub dbcreate {
   $dbupdater->process_query($dbh, "sql/lx-office.sql");
 
   # process update-scripts needed before 1st user-login
-  $dbupdater->process_query($dbh, "sql/Pg-upgrade2/defaults_add_precision.sql");
   $self->create_schema_info_table($form, $dbh);
+  $dbupdater->process_query($dbh, "sql/Pg-upgrade2/defaults_add_precision.sql");
   $dbh->do("INSERT INTO schema_info (tag, login) VALUES ('defaults_add_precision', 'admin')");
+  $dbupdater->process_query($dbh, "sql/Pg-upgrade2/defaults_add_country_mode.sql");
+  $dbh->do("INSERT INTO schema_info (tag, login) VALUES ('defaults_add_country_mode', 'admin')");
 
   # load chart of accounts
   $dbupdater->process_query($dbh, "sql/$form->{chart}-chart.sql");
 
-  $query = qq|UPDATE defaults SET coa = ?, accounting_method = ?, profit_determination = ?, inventory_system = ?, curr = ?, precision = ?|;
-  do_query($form, $dbh, $query, map { $form->{$_} } qw(chart accounting_method profit_determination inventory_system defaultcurrency precision));
+  $query = qq|UPDATE defaults SET coa = ?, accounting_method = ?, profit_determination = ?, inventory_system = ?, curr = ?, precision = ?, country_mode = ?|;
+  do_query($form, $dbh, $query, map { $form->{$_} } qw(chart accounting_method profit_determination inventory_system defaultcurrency precision countrymode));
 
   $dbh->disconnect;
 
@@ -419,14 +422,15 @@ sub data {
 
 sub get_default_myconfig {
   my ($self_or_class, %user_config) = @_;
+  my $defaults = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
 
   return (
-    countrycode  => 'de',
+    countrycode  => $defaults->language('de'),
     css_path     => 'css',      # Needed for menunew, see SL::Layout::Base::get_stylesheet_for_user
-    dateformat   => 'dd.mm.yy',
-    numberformat => '1.000,00',
+    dateformat   => $defaults->dateformat('dd.mm.yy'),
+    numberformat => $defaults->numberformat('1.000,00'),
     stylesheet   => 'kivitendo.css',
-    timeformat   => 'hh:mm',
+    timeformat   => $defaults->timeformat('hh:mm'),
     %user_config,
   );
 }

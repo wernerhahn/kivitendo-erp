@@ -16,7 +16,6 @@ use SL::Helper::Flash;
 use SL::Locale::String qw(t8);
 use SL::PriceSource::ALL;
 use SL::Template;
-use SL::DBUtils;
 
 __PACKAGE__->run_before('check_auth');
 
@@ -29,7 +28,7 @@ sub action_edit {
   my ($self, %params) = @_;
 
   $::form->{use_templates} = $self->defaults->templates ? 'existing' : 'new';
-  $::form->{use_case} = scalar(grep(/^Switzerland/, (selectrow_query($::form, $::form->get_standard_dbh, 'SELECT coa FROM defaults'))[0]));
+  $::form->{country_mode} = $self->defaults->country_mode;
   $self->edit_form;
 }
 

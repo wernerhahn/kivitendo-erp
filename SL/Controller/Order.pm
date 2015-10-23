@@ -305,17 +305,15 @@ sub action_add_item {
     $price_src->price(0) if !$price_source->best_price;
   }
 
-  # bb: not sure but: maybe there should be a $price_source->discount_from_source
-  # which can also return an empty_discout if source is "".
-  my $discount;
   my $discount_src;
   if ($item->discount) {
-    $discount = $item->discount;
+    $discount_src = $price_source->discount_from_source("");
+    $discount_src->discount($item->discount);
   } else {
-    $discount = $price_source->best_discount
-              ? $price_source->best_discount->discount
-              : 0;
-    $discount_src = $price_source->best_discount->source if $price_source->best_discount;
+    $discount_src = $price_source->best_discount
+                  ? $price_source->best_discount
+                  : $price_source->discount_from_source("");
+    $discount_src->discount(0) if !$price_source->best_discount;
   }
 
   my %new_attr;
@@ -323,7 +321,7 @@ sub action_add_item {
   $new_attr{description}            = $part->description if ! $item->description;
   $new_attr{qty}                    = 1.0                if ! $item->qty;
   $new_attr{sellprice}              = $price_src->price;
-  $new_attr{discount}               = $discount;
+  $new_attr{discount}               = $discount_src->discount;
   $new_attr{active_price_source}    = $price_src;
   $new_attr{active_discount_source} = $discount_src;
 
@@ -604,13 +602,9 @@ sub _pre_render {
 
   foreach  my $item (@{$self->order->items}) {
     my $price_source = SL::PriceSource->new(record_item => $item, record => $self->order);
+    $item->active_price_source(   $price_source->price_from_source(   $item->active_price_source   ));
+    $item->active_discount_source($price_source->discount_from_source($item->active_discount_source));
 
-    my $price_src = $price_source->price_from_source($item->active_price_source);
-    $item->active_price_source($price_src);
-
-    my $discount_src;
-    $discount_src = $price_source->price_from_source($item->active_discount_source)->source if $item->active_discount_source;
-    $item->active_discount_source($discount_src);
   }
 
   $::request->{layout}->use_javascript("${_}.js")  for qw(ckeditor/ckeditor ckeditor/adapters/jquery);

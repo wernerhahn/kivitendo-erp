@@ -67,7 +67,7 @@
       [%- END %]
     </td>
     <td>
-      [%- L.hidden_tag("order.orderitems[].active_discount_source", ITEM.active_discount_source) %]
+      [%- L.hidden_tag("order.orderitems[].active_discount_source", ITEM.active_discount_source.source) %]
       [%- L.input_tag("order.orderitems[].discount_as_percent",
                       ITEM.discount_as_percent,
                       size = 5,

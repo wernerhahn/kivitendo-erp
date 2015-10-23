@@ -306,7 +306,7 @@ sub action_add_item {
   }
 
   # bb: not sure but: maybe there should be a $price_source->discount_from_source
-  # which can alse return an empty_discout if source is "".
+  # which can also return an empty_discout if source is "".
   my $discount;
   my $discount_src;
   if ($item->discount) {

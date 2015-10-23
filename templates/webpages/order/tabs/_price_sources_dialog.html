@@ -71,7 +71,7 @@
     <tr class='listrow'>
 [%- IF price_source.record_item.active_discount_source != price.source %]
      <td>[% L.button_tag('update_discount_source(\'' _ FORM.item_id _ '\', \'' _ price.source _ '\', \'' _ price.discount_as_percent _ '\')', LxERP.t8('Select')) %]</td>
-[%- ELSIF price_source.record_item.discount * 1 != price.discount * 100 %]
+[%- ELSIF price_source.record_item.discount * 1 != price.discount * 1 %]
      <td>[% L.button_tag('update_discount_source(\'' _ FORM.item_id _ '\', \'' _ price.source _ '\', \'' _ price.discount_as_percent  _ '\')', LxERP.t8('Update Discount')) %]</td>
 [%- ELSE %]
     <td><b>[% 'Selected' | $T8 %]</b></td>

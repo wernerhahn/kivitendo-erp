@@ -128,6 +128,7 @@
    </tr>
   </thead>
   [% FOREACH shop_order = SHOPORDERS %]
+    [% IF shop_order.kivi_cv_id %] [% SET transferable = 1 %] [% SET transferable_class = 'style="background-color:green;"' %] [% ELSE %] [% SET transferable = 0 %] [% SET transferable_class = '' %][% END %]
   <tr class="listrow">
     <td>[% HTML.escape(shop_order.host) %]</td>
     <td>[% shop_order.order_date.dmy('.') _ ' ' _ shop_order.order_date.hms(':') %]</td>
@@ -138,7 +139,7 @@
       <br>[% HTML.escape(shop_order.customer_street) %]
       <br>[% HTML.escape(shop_order.customer_zipcode) %]&nbsp;[% HTML.escape(shop_order.customer_city) %]
       <br>[% HTML.escape(shop_order.customer_country) %] </td>
-    <td>[% IF shop_order.customer_company %]<b>[% HTML.escape(shop_order.customer_company) %]</b><br>[% END %]
+    <td [% transferable_class %]>[% IF shop_order.customer_company %]<b>[% HTML.escape(shop_order.customer_company) %]</b><br>[% END %]
       <b>[% HTML.escape(shop_order.billing_lastname) %],&nbsp;[% HTML.escape(shop_order.billing_firstname) %]</b>
       <br>[% HTML.escape(shop_order.billing_street) %]
       <br>[% HTML.escape(shop_order.billing_zipcode) %]&nbsp;[% HTML.escape(shop_order.billing_city) %]

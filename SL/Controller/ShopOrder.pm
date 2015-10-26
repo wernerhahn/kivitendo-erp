@@ -40,7 +40,19 @@ sub action_list {
   my $shop_orders = SL::DB::Manager::ShopOrder->get_all( %filter, sort_by => $sort_by,
                                                       with_objects => ['shop_order_items'],
                                                     );
-  $::lxdebug->dump(0, "WH: IMPORTS ",  \$shop_orders);
+  $::lxdebug->dump(0, "WH: IMPORTS I ",  \$shop_orders);
+  foreach my $shop_order ( @$shop_orders ) {
+  $::lxdebug->dump(0, "WH: IMPORTS II ",  $shop_order);
+    my %billing_address = ( 'name'     => $shop_order->billing_lastname,
+                            'company'  => $shop_order->billing_company,
+                            'street'   => $shop_order->billing_street,
+                            'zipcode'  => $shop_order->billing_zipcode,
+                            'city'     => $shop_order->billing_city,
+                          );
+    my $b_address = $self->check_address(%billing_address);
+    $shop_order->{kivi_cv_id} = $b_address;
+  }
+  $::lxdebug->dump(0, "WH: IMPORTS III ",  \$shop_orders);
   $self->render('shop_order/list',
                 title       => t8('ShopOrders'),
                 SHOPORDERS  => $shop_orders,

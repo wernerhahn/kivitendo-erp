@@ -285,7 +285,7 @@ function update_price_source(item_id, source, descr, price_str) {
   var source_elt = $(row).find('[name="order.orderitems[].active_price_source"]');
   var button_elt = $(row).find('[name="price_chooser_button"]');
 
-  button_elt.val(descr);
+  button_elt.val(button_elt.val().replace(/.*\|/, descr + " |"));
   source_elt.val(source);
 
   var editable_div_elt = $(row).find('[name="editable_price"]');
@@ -315,10 +315,12 @@ function update_price_source(item_id, source, descr, price_str) {
   kivi.io.close_dialog();
 }
 
-function update_discount_source(item_id, source, discount_str) {
+function update_discount_source(item_id, source, descr, discount_str) {
   var row = $('#item_' + item_id).parents("tbody").first();
   var source_elt = $(row).find('[name="order.orderitems[].active_discount_source"]');
+  var button_elt = $(row).find('[name="price_chooser_button"]');
 
+  button_elt.val(button_elt.val().replace(/\|.*/, "| " + descr));
   source_elt.val(source);
 
   var editable_div_elt = $(row).find('[name="editable_discount"]');

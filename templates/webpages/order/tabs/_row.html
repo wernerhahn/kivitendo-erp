@@ -48,7 +48,9 @@
                       class="recalc") %]
     </td>
     <td>
-      [%- L.button_tag("price_chooser_item_row(this)", ITEM.active_price_source.source_description, name = "price_chooser_button") %]
+      [%- L.button_tag("price_chooser_item_row(this)",
+                       ITEM.active_price_source.source_description _ ' | ' _ ITEM.active_discount_source.source_description,
+                       name = "price_chooser_button") %]
     </td>
     <td>
       [%- L.hidden_tag("order.orderitems[].active_price_source", ITEM.active_price_source.source) %]

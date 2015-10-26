@@ -59,7 +59,7 @@
                         size = 10,
                         style='text-align:right',
                         disabled=(EDIT_PRICE? '' : 1),
-                        class="recalc") %]
+                        class="recalc reformat_number") %]
       </div>
       <div name="not_editable_price" [%- IF EDIT_PRICE %]style="display:none"[%- END %]>
         [%- L.div_tag(ITEM.sellprice_as_number, name="sellprice_text", style='text-align:right') %]
@@ -77,7 +77,7 @@
                         size = 5,
                         style='text-align:right',
                         disabled=(EDIT_DISCOUNT? '' : 1),
-                        class="recalc") %]
+                        class="recalc reformat_number") %]
       </div>
       <div name="not_editable_discount" [%- IF EDIT_DISCOUNT %]style="display:none"[%- END %]>
         [%- L.div_tag(ITEM.discount_as_percent, name="discount_text", style='text-align:right') %]

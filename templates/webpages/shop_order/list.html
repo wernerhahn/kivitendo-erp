@@ -4,6 +4,7 @@
 <h1>[% title %]</h1>
 [%- PROCESS 'shop_order/_filter.html' filter=SELF.models.filtered.laundered %]
 <hr>
+ <form method="post" action="controller.pl">
  <table id="shoplist">
   <thead>
    <tr class="listheading">
@@ -143,7 +144,8 @@
       <b>[% HTML.escape(shop_order.billing_lastname) %],&nbsp;[% HTML.escape(shop_order.billing_firstname) %]</b>
       <br>[% HTML.escape(shop_order.billing_street) %]
       <br>[% HTML.escape(shop_order.billing_zipcode) %]&nbsp;[% HTML.escape(shop_order.billing_city) %]
-      <br>[% HTML.escape(shop_order.billing_country) %] </td>
+      <br>[% HTML.escape(shop_order.billing_country) %]
+      <br>[% HTML.escape(shop_order.kivi_cv_id.customernumber) %]</td>
     [% IF (shop_order.delivery_lastname != shop_order.billing_lastname || shop_order.delivery_firstname != shop_order.billing_firstname || shop_order.delivery_street != shop_order.billing_street || shop_order.delivery_city != shop_order.billing_city) %] [% SET deliveryclass = 'style="background-color:red;"' %] [% ELSE %] [% SET deliveryclass = '' %] [% END %]
     <td [% deliveryclass %]>[% IF shop_order.customer_company %]<b>[% HTML.escape(shop_order.customer_company) %]</b><br>[% END %]
       <b>[% HTML.escape(shop_order.delivery_lastname) %],&nbsp;[% HTML.escape(shop_order.delivery_firstname) %]</b>
@@ -153,7 +155,15 @@
     <td>[% HTML.escape(shop_order.shop_customer_comment) %]</td>
     <td>[% shop_order.shop_order_items.size %]<br>[% shop_order.amount_as_number %]<br>[% shop_order.shipping_costs_as_number %]</td>
     <td>[% IF shop_order.transferred == 1 %]<a href="controller.pl?id=[% shop_order.id %]&action=ShopOrder/show">[% 'Show order' | $T8 %]<br>[% shop_order.transferred_date_as_date %]</a>
-        [% ELSE %]<a href="controller.pl?id=[% shop_order.id %]&action=ShopOrder/show">[% 'Create order' | $T8 %][% END %]</a></td>
+        [% ELSE %]
+        [% L.checkbox_tag('id[]', checked = transferable,  value=shop_order.id) %]<br>
+        <a href="controller.pl?id=[% shop_order.id %]&action=ShopOrder/show">[% 'Create order' | $T8 %][% END %]</a></td>
   </tr>
   [% END %]
  </table>
+ <hr>
+  <p>
+   [% L.hidden_tag("action", "ShopOrder/mass_transfer") %]
+   [% L.submit_tag("", LxERP.t8("Transfer all marked")) %]
+  </p>
+ </form>

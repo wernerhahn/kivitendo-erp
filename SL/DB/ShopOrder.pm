@@ -49,7 +49,7 @@ sub convert_to_sales_order {
 
   my $shipto_id;
   if ($self->{billing_firstname} ne $self->{delivery_firstname} || $self->{billing_lastname} ne $self->{delivery_lastname} || $self->{billing_city} ne $self->{delivery_city} || $self->{billing_street} ne $self->{delivery_street}) {
-    if(my $address = SL::DB::Manager::Shipto->find_by( shiptoname          => $self->{delivery_firstname} . " " . $self->{delivery_lastname}, 
+    if(my $address = SL::DB::Manager::Shipto->find_by( shiptoname          => $self->{delivery_firstname} . " " . $self->{delivery_lastname},
                                                         shiptostreet        => $self->{delivery_street},
                                                         shiptocity          => $self->{delivery_city},
                                                       )) {

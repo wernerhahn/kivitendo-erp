@@ -217,6 +217,8 @@ sub _init_sales_delivery_order_models {
    query        => [
       '!customer_id' => undef,
       or             => [ closed    => undef, closed    => 0 ],
+    #or             => [ delivered => undef, delivered => 0 ],
+      '!transaction_description' => { 'ilike' => '%herbst%'},
     ],
   );
 }

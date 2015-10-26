@@ -4,6 +4,8 @@ use strict;
 
 use parent qw(SL::Controller::Base);
 
+use SL::BackgroundJob::ShopOrder;
+use SL::System::TaskServer;
 use SL::DB::ShopOrder;
 use SL::DB::ShopOrderItem;
 use SL::DB::Shop;
@@ -133,6 +135,28 @@ sub action_transfer {
   $self->shop_order->save;
   $self->shop_order->link_to_record($order);
   $self->redirect_to(controller => "oe.pl", action => 'edit', type => 'sales_order', vc => 'customer', id => $order->id);
+}
+
+sub action_mass_transfer {
+  my ($self) = @_;
+  my $today = DateTime->today_local;
+  my @shop_orders =  @{ $::form->{id} || [] };
+  $::lxdebug->dump(0, 'WH: MT II', \@shop_orders);
+
+  my $job                   = SL::DB::BackgroundJob->new(
+    type                    => 'once',
+    active                  => 1,
+    package_name            => 'ShopOrder',
+  )->set_data(
+     shop_order_record_ids       => [ 603, 604, 605],
+     transdate                   => $today,
+     num_order_created           => 0,
+     num_delivery_order_created  => 0,
+     conversation_errors         => [ ],
+   )->update_next_run_at;
+
+   SL::System::TaskServer->new->wake_up;
+
 }
 
 sub action_apply_customer {

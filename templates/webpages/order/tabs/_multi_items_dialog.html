@@ -1,0 +1,35 @@
+[%- USE T8 %][%- USE HTML %][%- USE L %][%- USE LxERP %]
+
+<form method="post" id="multi_items_form" method="POST">
+<h2>[%- 'Add multiple parts' | $T8 %]&nbsp;[%- SELF.type | $T8 %]</h2>
+
+<table width="100%">
+  [%- FOREACH part = SELF.multi_items.parts %]
+    <tr>
+      <td>
+        [% L.hidden_tag("add_multi_items[+].parts_id", part.id) %]
+        [% L.input_tag("add_multi_items[].qty", '', size => 5) %]
+      </td>
+      <td>[% HTML.escape(part.unit) %]</td>
+      <td>[% HTML.escape(part.partnumber) %]</td>
+      <td>[% HTML.escape(part.description) %]</td>
+    </tr>
+  [%- END %]
+</table>
+
+<br>
+[% L.hidden_tag('action', 'Order/dispatch') %]
+[% L.button_tag('add_multi_items()', LxERP.t8('Continue')) %]
+<a href="#" onclick="close_multi_items_dialog();">[%- LxERP.t8("Cancel") %]</a>
+
+<script type='text/javascript'>
+function add_multi_items() {
+  var data = $('#order_form').serialize();
+  data += '&';
+  data += $('#multi_items_form').serialize();
+  data += '&action=Order/add_multi_items';
+  $.post("controller.pl", data, kivi.eval_json_result);
+}
+</script>
+
+</form>

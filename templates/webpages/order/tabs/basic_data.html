@@ -124,6 +124,8 @@
 
   [%- PROCESS order/tabs/_item_input.html %]
 
+  [% L.button_tag('setup_multi_items_dialog()', LxERP.t8('Add multiple parts')) %]</td>
+
   <table width="100%">
     <tr>
       <td>
@@ -260,6 +262,44 @@ function add_item() {
   data += '&type=' + $('#type').val();
 
   $.post("controller.pl", data, kivi.eval_json_result);
+}
+
+function setup_multi_items_dialog() {
+  if (!check_cv()) return;
+  var data = $('#order_form').serialize();
+  data += '&action=Order/show_multi_items_dialog';
+
+  $.post("controller.pl", data, kivi.eval_json_result);
+}
+
+var multi_items_dialog;
+
+function show_multi_items_dialog(html, title) {
+  var id            = 'jq_multi_items_dialog';
+  var dialog_params = {
+    id:     id,
+    width:  800,
+    height: 500,
+    modal:  true,
+    close:  function(event, ui) {
+      multi_items_dialog.remove();
+    },
+  };
+
+  $('#' + id).remove();
+
+  multi_items_dialog = $('<div style="display:none" id="' + id + '"></div>').appendTo('body');
+  multi_items_dialog.attr('title', title);
+  multi_items_dialog.html(html);
+  multi_items_dialog.dialog(dialog_params);
+
+  $('.cancel').click(close_multi_items_dialog);
+
+  return true;
+}
+
+var close_multi_items_dialog = function() {
+  multi_items_dialog.dialog('close');
 }
 
 function delete_order_item_row(clicked) {

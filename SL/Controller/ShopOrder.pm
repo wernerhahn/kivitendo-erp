@@ -67,7 +67,7 @@ sub action_show {
   my $id = $::form->{id} || {};
   my $shop_order = SL::DB::Manager::ShopOrder->find_by( id => $id );
   die "can't find shoporder with id $id" unless $shop_order;
-
+$main::lxdebug->dump(0, 'WH:ORDER: ', \$shop_order);
   # the different importaddresscheck if there complete in the customer table to prevent duplicats inserts
   my %customer_address = ( 'name'    => $shop_order->customer_lastname,
                            'company' => $shop_order->customer_company,
@@ -139,7 +139,6 @@ sub action_transfer {
 
 sub action_mass_transfer {
   my ($self) = @_;
-  my $today = DateTime->today_local;
   my @shop_orders =  @{ $::form->{id} || [] };
   $::lxdebug->dump(0, 'WH: MT II', \@shop_orders);
 
@@ -148,8 +147,7 @@ sub action_mass_transfer {
     active                  => 1,
     package_name            => 'ShopOrder',
   )->set_data(
-     shop_order_record_ids       => [ 603, 604, 605],
-     transdate                   => $today,
+     shop_order_record_ids       => [ 606, 604, 605],
      num_order_created           => 0,
      num_delivery_order_created  => 0,
      conversation_errors         => [ ],

@@ -125,9 +125,14 @@ sub action_create_pdf {
   my $key = join('_', Time::HiRes::gettimeofday(), int rand 1000000000000);
   $::auth->set_session_value("Order::create_pdf-${key}" => $sfile->file_name);
 
-  $::form->{formname}  = $self->type;
-  $::form->{language} = 'de';
-  my $pdf_filename =  $::form->get_formname_translation . '_' . $self->order->ordnumber . '.pdf';
+  my $form = Form->new;
+  $form->{ordnumber} = $self->order->ordnumber;
+  $form->{formname}  = $self->type;
+  $form->{type}      = $self->type;
+  $form->{language}  = 'de';
+  $form->{format}    = 'pdf';
+
+  my $pdf_filename = $form->generate_attachment_filename();
 
   $self->js
     ->run('download_pdf', $pdf_filename, $key)

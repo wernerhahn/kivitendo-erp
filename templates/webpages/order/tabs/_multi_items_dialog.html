@@ -1,33 +1,42 @@
 [%- USE T8 %][%- USE HTML %][%- USE L %][%- USE LxERP %]
 
 <form method="post" id="multi_items_form" method="POST">
-<h2>[%- 'Add multiple parts' | $T8 %]&nbsp;[%- SELF.type | $T8 %]</h2>
 
-<table width="100%">
-  [%- FOREACH part = SELF.multi_items.parts %]
-    <tr>
-      <td>
-        [% L.hidden_tag("add_multi_items[+].parts_id", part.id) %]
-        [% L.input_tag("add_multi_items[].qty", '', size => 5) %]
-      </td>
-      <td>[% HTML.escape(part.unit) %]</td>
-      <td>[% HTML.escape(part.partnumber) %]</td>
-      <td>[% HTML.escape(part.description) %]</td>
-    </tr>
-  [%- END %]
+<table id='multi_items_filter_table'>
+  <tr>
+    <th>[%- LxERP.t8("Description") %]/[%- LxERP.t8("Partnumber") %]:</th>
+    <td>[%- L.input_tag('multi_items.filter.all:substr::ilike', '') %]</td>
+    <th>[%- LxERP.t8("Group") %]</th>
+    <td>[%- L.select_tag('multi_items.filter.partsgroup_id', all_partsgroups, title_key='displayable_name', value_key='id', with_empty=1) %]</td>
+  <tr>
 </table>
 
-<br>
-[% L.hidden_tag('action', 'Order/dispatch') %]
+[% L.button_tag('update_result()', LxERP.t8('Filter')) %]
+<a href='#' onClick='javascript:$("#multi_items_filter_table input").val("");$("#multi_items_filter_table input[type=checkbox]").prop("checked", 0);$("#multi_items_filter_table select").prop("selectedIndex", 0);'>[% 'Reset' | $T8 %]</a>
+
+<hr>
+<div id='multi_items_result'></div>
+<hr>
+
 [% L.button_tag('add_multi_items()', LxERP.t8('Continue')) %]
 <a href="#" onclick="close_multi_items_dialog();">[%- LxERP.t8("Cancel") %]</a>
 
 <script type='text/javascript'>
+function update_result() {
+  var data = $('#multi_items_form').serialize();
+  data += '&type=[%- FORM.type %]';
+  $.ajax({
+    url: 'controller.pl?action=Order/multi_items_update_result',
+    data: data,
+    success: function(data){ $('#multi_items_result').html(data) }
+  });
+}
+
 function add_multi_items() {
-  var data = $('#order_form').serialize();
+  var data = $('#[%- FORM.callback_data_id %]').serialize();
   data += '&';
   data += $('#multi_items_form').serialize();
-  data += '&action=Order/add_multi_items';
+  data += '&action=[%- FORM.callback %]';
   $.post("controller.pl", data, kivi.eval_json_result);
 }
 </script>

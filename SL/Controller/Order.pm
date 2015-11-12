@@ -20,9 +20,12 @@ use SL::DB::Project;
 use SL::DB::Default;
 use SL::DB::Unit;
 use SL::DB::Price;
+use SL::DB::Part;
 
 use SL::Helper::DateTime;
 use SL::Helper::CreatePDF qw(:all);
+
+use SL::Controller::Helper::GetModels;
 
 use List::Util qw(max first);
 use List::MoreUtils qw(none pairwise first_index);
@@ -31,7 +34,7 @@ use File::Spec;
 
 use Rose::Object::MakeMethods::Generic
 (
- 'scalar --get_set_init' => [ qw(order valid_types type cv p) ],
+ 'scalar --get_set_init' => [ qw(order valid_types type cv p multi_items_models) ],
 );
 
 
@@ -339,15 +342,14 @@ sub action_add_item {
 }
 
 sub action_show_multi_items_dialog {
-  my ($self) = @_;
+  require SL::DB::PartsGroup;
+  $_[0]->render('order/tabs/_multi_items_dialog', { layout => 0 },
+                all_partsgroups => SL::DB::Manager::PartsGroup->get_all);
+}
 
-  $self->{multi_items}->{parts} = SL::DB::Manager::Part->get_all_sorted(where => [ obsolete => 0 ]);
-  my $dialog_html = $self->render('order/tabs/_multi_items_dialog', { output => 0 });
-
-  $self->js
-    ->run('show_multi_items_dialog', $dialog_html, t8('Add multiple parts'))
-    ->reinit_widgets
-    ->render();
+sub action_multi_items_update_result {
+  $_[0]->render('order/tabs/_multi_items_result', { layout => 0 },
+                multi_items => $_[0]->multi_items_models->get);
 }
 
 sub action_add_multi_items {
@@ -467,6 +469,23 @@ sub init_p {
 
 sub init_order {
   _make_order();
+}
+
+sub init_multi_items_models {
+  SL::Controller::Helper::GetModels->new(
+    controller     => $_[0],
+    model          => 'Part',
+    with_objects   => [ qw(unit_obj) ],
+    disable_plugin => 'paginated',
+    source         => $::form->{multi_items},
+    sorted         => {
+      _default    => {
+        by  => 'partnumber',
+        dir => 1,
+      },
+      partnumber  => t8('Partnumber'),
+      description => t8('Description')}
+  );
 }
 
 sub _check_auth {

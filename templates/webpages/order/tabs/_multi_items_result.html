@@ -1,0 +1,15 @@
+[%- USE T8 %][%- USE HTML %][%- USE L %][%- USE LxERP %]
+
+<table width="100%">
+  [%- FOREACH item = multi_items %]
+    <tr>
+      <td>
+        [% L.hidden_tag("add_multi_items[+].parts_id", item.id) %]
+        [% L.input_tag("add_multi_items[].qty", '', size => 5) %]
+      </td>
+      <td>[% HTML.escape(item.unit) %]</td>
+      <td>[% HTML.escape(item.partnumber) %]</td>
+      <td>[% HTML.escape(item.description) %]</td>
+    </tr>
+  [%- END %]
+</table>

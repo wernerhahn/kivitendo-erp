@@ -28,7 +28,9 @@ function update_result() {
   $.ajax({
     url: 'controller.pl?action=Order/multi_items_update_result',
     data: data,
-    success: function(data){ $('#multi_items_result').html(data) }
+    success: function(data){
+      $('#multi_items_result').html(data);
+    }
   });
 }
 

@@ -28,6 +28,7 @@ function update_result() {
   $.ajax({
     url: 'controller.pl?action=Order/multi_items_update_result',
     data: data,
+    method: 'post',
     success: function(data){
       $('#multi_items_result').html(data);
     }

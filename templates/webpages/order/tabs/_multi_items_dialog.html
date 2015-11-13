@@ -31,6 +31,13 @@ function update_result() {
     method: 'post',
     success: function(data){
       $('#multi_items_result').html(data);
+      $('#multi_items_result input').keydown(function(event) {
+        if(event.keyCode == 13) {
+          event.preventDefault();
+          add_multi_items();
+          return false;
+        }
+      });
     }
   });
 }
@@ -42,6 +49,16 @@ function add_multi_items() {
   data += '&action=[%- FORM.callback %]';
   $.post("controller.pl", data, kivi.eval_json_result);
 }
+
+$('#multi_items_filter_table input, #multi_items_filter_table select').keydown(function(event) {
+  if(event.keyCode == 13) {
+    event.preventDefault();
+    update_result();
+    return false;
+  }
+});
+
+$('#multi_items_filter_all_substr_multi_ilike').focus();
 </script>
 
 </form>

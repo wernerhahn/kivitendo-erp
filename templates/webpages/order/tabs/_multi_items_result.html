@@ -13,7 +13,7 @@
       <td></td>
       <td>
         [% L.hidden_tag("add_multi_items[+].parts_id", item.id) %]
-        [% L.input_tag("add_multi_items[].qty", '', size = 5, style='text-align:right',
+        [% L.input_tag("add_multi_items[].qty_as_number", '', size = 5, style='text-align:right',
                        class = 'multi_items_qty', onclick = 'set_qty_to_one(this)') %]
       </td>
       <td>[% HTML.escape(item.unit) %]</td>
@@ -26,7 +26,7 @@
 <script type='text/javascript'>
   function set_qty_to_one(clicked) {
     if ($(clicked).val() == '') {
-      $(clicked).val('1,00');
+      $(clicked).val('[%- LxERP.format_amount(1.00, -2) %]');
       $(clicked).select();
     }
   }

@@ -360,8 +360,8 @@ sub action_multi_items_update_result {
 sub action_add_multi_items {
   my ($self) = @_;
 
-  my @form_attr = grep { $_->{qty} } @{ $::form->{add_multi_items} };
-  return unless scalar @form_attr;
+  my @form_attr = grep { $_->{qty_as_number} } @{ $::form->{add_multi_items} };
+  return $self->js->render() unless scalar @form_attr;
 
   my @items;
   foreach my $attr (@form_attr) {

@@ -295,13 +295,18 @@ sub action_customer_vendor_changed {
                               : $::myconfig{taxincluded_checked});
   }
 
+  $self->order->payment_id($self->order->$cv_method->payment_id);
+  $self->order->delivery_term_id($self->order->$cv_method->delivery_term_id);
+
   $self->_recalc();
 
   $self->js
-    ->replaceWith('#order_cp_id',       $self->build_contact_select)
-    ->replaceWith('#order_shipto_id',   $self->build_shipto_select)
-    ->val(        '#order_taxzone_id',  $self->order->taxzone_id)
-    ->val(        '#order_taxincluded', $self->order->taxincluded)
+    ->replaceWith('#order_cp_id',            $self->build_contact_select)
+    ->replaceWith('#order_shipto_id',        $self->build_shipto_select)
+    ->val(        '#order_taxzone_id',       $self->order->taxzone_id)
+    ->val(        '#order_taxincluded',      $self->order->taxincluded)
+    ->val(        '#order_payment_id',       $self->order->payment_id)
+    ->val(        '#order_delivery_term_id', $self->order->delivery_term_id)
     ->focus(      '#order_' . $self->cv . '_id');
 
   $self->_js_redisplay_amounts_and_taxes;

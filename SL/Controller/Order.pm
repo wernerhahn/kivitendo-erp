@@ -353,12 +353,19 @@ sub action_show_multi_items_dialog {
 }
 
 sub action_multi_items_update_result {
-  my $multi_items = $_[0]->multi_items_models->get;
-  if (scalar @{$multi_items}) {
+  my $max_count = 100;
+  my $count = $_[0]->multi_items_models->count;
+
+  if ($count == 0) {
+    my $text = SL::Presenter::EscapedText->new(text => $::locale->text('No results.'));
+    $_[0]->render($text, { layout => 0 });
+  } elsif ($count > $max_count) {
+    my $text = SL::Presenter::EscapedText->new(text => $::locale->text('Too much results (#1 from #2).', $count, $max_count));
+    $_[0]->render($text, { layout => 0 });
+  } else {
+    my $multi_items = $_[0]->multi_items_models->get;
     $_[0]->render('order/tabs/_multi_items_result', { layout => 0 },
                   multi_items => $multi_items);
-  } else {
-    $_[0]->render(\'', { layout => 0 }); # ') make emacs happy
   }
 }
 

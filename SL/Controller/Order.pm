@@ -353,8 +353,13 @@ sub action_show_multi_items_dialog {
 }
 
 sub action_multi_items_update_result {
-  $_[0]->render('order/tabs/_multi_items_result', { layout => 0 },
-                multi_items => $_[0]->multi_items_models->get);
+  my $multi_items = $_[0]->multi_items_models->get;
+  if (scalar @{$multi_items}) {
+    $_[0]->render('order/tabs/_multi_items_result', { layout => 0 },
+                  multi_items => $multi_items);
+  } else {
+    $_[0]->render(\'', { layout => 0 }); # ') make emacs happy
+  }
 }
 
 sub action_add_multi_items {

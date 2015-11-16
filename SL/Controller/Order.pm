@@ -360,7 +360,7 @@ sub action_multi_items_update_result {
     my $text = SL::Presenter::EscapedText->new(text => $::locale->text('No results.'));
     $_[0]->render($text, { layout => 0 });
   } elsif ($count > $max_count) {
-    my $text = SL::Presenter::EscapedText->new(text => $::locale->text('Too much results (#1 from #2).', $count, $max_count));
+    my $text = SL::Presenter::EscapedText->new(text => $::locale->text('Too many results (#1 from #2).', $count, $max_count));
     $_[0]->render($text, { layout => 0 });
   } else {
     my $multi_items = $_[0]->multi_items_models->get;

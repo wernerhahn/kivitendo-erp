@@ -41,13 +41,23 @@ sub reset_state {
 
   clear_up();
 
-  $buchungsgruppe   = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 19%', %{ $params{buchungsgruppe} }) || croak "No accounting group 19\%";
-  $buchungsgruppe7  = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 7%', %{ $params{buchungsgruppe} })  || croak "No accounting group 7\%";
-  $taxzone          = SL::DB::Manager::TaxZone->find_by( description => 'Inland')                                           || croak "No taxzone";
-  $tax              = SL::DB::Manager::Tax->find_by(taxkey => 3, rate => 0.19, %{ $params{tax} })                           || croak "No tax for 19\%";
-  $tax7             = SL::DB::Manager::Tax->find_by(taxkey => 2, rate => 0.07)                                              || croak "No tax for 7\%";
-  $unit             = SL::DB::Manager::Unit->find_by(name => 'kg', %{ $params{unit} })                                      || croak "No unit";
-  $currency_id     = $::instance_conf->get_currency_id;
+  if ($::lx_office_conf{system}->{default_manager} eq "swiss") {
+    $buchungsgruppe  = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 8%', %{ $params{buchungsgruppe} })  || croak "No accounting group 8\%";
+    $buchungsgruppe7 = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 2.5%', %{ $params{buchungsgruppe} })|| croak "No accounting group 2.5\%";
+    $taxzone         = SL::DB::Manager::TaxZone->find_by( description => 'Schweiz')                                          || croak "No taxzone";
+    $tax             = SL::DB::Manager::Tax->find_by(taxkey => 2, rate => 0.08, %{ $params{tax} })                           || croak "No tax for 8\%";
+    $tax7            = SL::DB::Manager::Tax->find_by(taxkey => 3, rate => 0.025)                                             || croak "No tax for 2.5\%";
+    $unit            = SL::DB::Manager::Unit->find_by(name => 'kg', %{ $params{unit} })                                      || croak "No unit";
+    $currency_id     = $::instance_conf->get_currency_id;
+  } else {
+    $buchungsgruppe  = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 19%', %{ $params{buchungsgruppe} }) || croak "No accounting group 19\%";
+    $buchungsgruppe7 = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 7%', %{ $params{buchungsgruppe} })  || croak "No accounting group 7\%";
+    $taxzone         = SL::DB::Manager::TaxZone->find_by( description => 'Inland')                                           || croak "No taxzone";
+    $tax             = SL::DB::Manager::Tax->find_by(taxkey => 3, rate => 0.19, %{ $params{tax} })                           || croak "No tax for 19\%";
+    $tax7            = SL::DB::Manager::Tax->find_by(taxkey => 2, rate => 0.07)                                              || croak "No tax for 7\%";
+    $unit            = SL::DB::Manager::Unit->find_by(name => 'kg', %{ $params{unit} })                                      || croak "No unit";
+    $currency_id     = $::instance_conf->get_currency_id;
+  }
 
   $customer     = SL::DB::Customer->new(
     name        => '520484567dfaedc9e60fc',
@@ -275,7 +285,11 @@ $invoice->load;
 ok($invoice->currency_id eq '1', 'currency_id');
 ok($invoice->cusordnumber eq 'b84da', 'cusordnumber check');
 ok(SL::DB::Department->new(id => $invoice->{department_id})->load->description eq "Maisenhaus-Versand", 'department description');
-is($invoice->amount, '1354.17000', 'amount check');
+if ($::lx_office_conf{system}->{default_manager} eq "swiss") {
+  is($invoice->amount, '1229.00000', 'amount check');
+} else {
+  is($invoice->amount, '1354.17000', 'amount check');
+}
 is($invoice->marge_percent, '50.88580', 'marge percent check');
 is($invoice->marge_total, '579.06000', 'marge total check');
 is($invoice->netamount, '1137.96000', 'netamount check');

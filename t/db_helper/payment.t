@@ -22,7 +22,10 @@ use SL::DB::TaxZone;
 use SL::DB::BankAccount;
 use SL::DB::PaymentTerm;
 
-my ($customer, $vendor, $currency_id, @parts, $buchungsgruppe, $buchungsgruppe7, $unit, $employee, $tax, $tax7, $taxzone, $payment_terms, $bank_account);
+my $default_manager;
+my ($customer, $vendor, $currency_id, @parts, $buchungsgruppe, $buchungsgruppe7, $unit, $employee, $tax, $tax7, $taxzone,
+    $bank_chart, $expense_chart, $tax_chart, $expense_chart7, $tax_chart7, $arap_chart,
+    $payment_terms, $bank_account);
 
 my $ALWAYS_RESET = 1;
 
@@ -50,14 +53,36 @@ sub reset_state {
 
   clear_up();
 
-
-  $buchungsgruppe  = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 19%', %{ $params{buchungsgruppe} }) || croak "No accounting group";
-  $buchungsgruppe7 = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 7%')                                || croak "No accounting group for 7\%";
-  $unit            = SL::DB::Manager::Unit->find_by(name => 'kg', %{ $params{unit} })                                      || croak "No unit";
-  $employee        = SL::DB::Manager::Employee->current                                                                    || croak "No employee";
-  $tax             = SL::DB::Manager::Tax->find_by(taxkey => 3, rate => 0.19, %{ $params{tax} })                           || croak "No tax";
-  $tax7            = SL::DB::Manager::Tax->find_by(taxkey => 2, rate => 0.07)                                              || croak "No tax for 7\%";
-  $taxzone         = SL::DB::Manager::TaxZone->find_by( description => 'Inland')                                           || croak "No taxzone";
+  $default_manager = $::lx_office_conf{system}->{default_manager};
+  if ($default_manager eq "swiss") {
+    $buchungsgruppe  = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 8%', %{ $params{buchungsgruppe} })  || croak "No accounting group for 8\%";
+    $buchungsgruppe7 = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 2.5%')                              || croak "No accounting group for 2.5\%";
+    $unit            = SL::DB::Manager::Unit->find_by(name => 'kg', %{ $params{unit} })                                      || croak "No unit";
+    $employee        = SL::DB::Manager::Employee->current                                                                    || croak "No employee";
+    $tax             = SL::DB::Manager::Tax->find_by(taxkey => 2, rate => 0.08, %{ $params{tax} })                           || croak "No tax for 8\%";
+    $tax7            = SL::DB::Manager::Tax->find_by(taxkey => 3, rate => 0.025)                                             || croak "No tax for 2.5\%";
+    $taxzone         = SL::DB::Manager::TaxZone->find_by( description => 'Schweiz')                                          || croak "No taxzone";
+    $bank_chart      = SL::DB::Manager::Chart->find_by( description => 'Kasse' )                                             || croak "No bank-account";
+    $expense_chart   = SL::DB::Manager::Chart->find_by(accno => '4200')                                                      || croak "No expense-account for 8\%";
+    $tax_chart       = SL::DB::Manager::Chart->find_by(accno => '1170')                                                      || croak "No tax-account for 8\%";
+    $expense_chart7  = SL::DB::Manager::Chart->find_by(accno => '4201')                                                      || croak "No expense-account for 2.5\%";
+    $tax_chart7      = SL::DB::Manager::Chart->find_by(accno => '1170')                                                      || croak "No tax-account for 2.5\%";
+    $arap_chart      = SL::DB::Manager::Chart->find_by(accno => '2000')                                                      || croak "No arap-account";
+  } else {
+    $buchungsgruppe  = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 19%', %{ $params{buchungsgruppe} }) || croak "No accounting group";
+    $buchungsgruppe7 = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 7%')                                || croak "No accounting group for 7\%";
+    $unit            = SL::DB::Manager::Unit->find_by(name => 'kg', %{ $params{unit} })                                      || croak "No unit";
+    $employee        = SL::DB::Manager::Employee->current                                                                    || croak "No employee";
+    $tax             = SL::DB::Manager::Tax->find_by(taxkey => 3, rate => 0.19, %{ $params{tax} })                           || croak "No tax";
+    $tax7            = SL::DB::Manager::Tax->find_by(taxkey => 2, rate => 0.07)                                              || croak "No tax for 7\%";
+    $taxzone         = SL::DB::Manager::TaxZone->find_by( description => 'Inland')                                           || croak "No taxzone";
+    $bank_chart      = SL::DB::Manager::Chart->find_by( description => 'Bank' )                                              || croak "No bankaccount";
+    $expense_chart   = SL::DB::Manager::Chart->find_by(accno => '3400')                                                      || croak "No expense-account for 16\%";
+    $tax_chart       = SL::DB::Manager::Chart->find_by(accno => '1576')                                                      || croak "No tax-account for 19\%";
+    $expense_chart7  = SL::DB::Manager::Chart->find_by(accno => '3300')                                                      || croak "No expense-account for 7\%";
+    $tax_chart7      = SL::DB::Manager::Chart->find_by(accno => '1571')                                                      || croak "No tax-account for 7\%";
+    $arap_chart      = SL::DB::Manager::Chart->find_by(accno => '1600')                                                      || croak "No arap-account";
+  }
 
   $currency_id     = $::instance_conf->get_currency_id;
 
@@ -74,8 +99,8 @@ sub reset_state {
     iban            => '123',
     bic             => '123',
     bank            => '123',
-    chart_id        => SL::DB::Manager::Chart->find_by( description => 'Bank' )->id,
-    name            => SL::DB::Manager::Chart->find_by( description => 'Bank' )->description,
+    chart_id        => $bank_chart->id,
+    name            => $bank_chart->description,
   )->save;
 
   $payment_terms     =  SL::DB::PaymentTerm->new(
@@ -173,14 +198,13 @@ sub new_purchase_invoice {
     invoice     => 0,
     type        => 'invoice',
     taxincluded => 0,
-    amount      => '226',
+    amount      => $default_manager eq "swiss" ? '210.5' : '226',
     netamount   => '200',
     paid        => '0',
     # %params,
   )->save;
 
   my $today = DateTime->today_local->to_kivitendo;
-  my $expense_chart  = SL::DB::Manager::Chart->find_by(accno => '3400');
   my $expense_chart_booking= SL::DB::AccTransaction->new(
                                         trans_id   => $purchase_invoice->id,
                                         chart_id   => $expense_chart->id,
@@ -188,50 +212,46 @@ sub new_purchase_invoice {
                                         amount     => '-100',
                                         transdate  => $today,
                                         source     => '',
-                                        taxkey     => 9,
-                                        tax_id     => SL::DB::Manager::Tax->find_by(taxkey => 9)->id);
+                                        taxkey     => $default_manager eq "swiss" ? 4 : 9,
+                                        tax_id     => SL::DB::Manager::Tax->find_by(taxkey => $default_manager eq "swiss" ? 4 : 9)->id);
   $expense_chart_booking->save;
 
-  my $tax_chart  = SL::DB::Manager::Chart->find_by(accno => '1576');
   my $tax_chart_booking= SL::DB::AccTransaction->new(
                                         trans_id   => $purchase_invoice->id,
                                         chart_id   => $tax_chart->id,
                                         chart_link => $tax_chart->link,
-                                        amount     => '-19',
+                                        amount     => $default_manager eq "swiss" ? '-8' : '-19',
                                         transdate  => $today,
                                         source     => '',
                                         taxkey     => 0,
-                                        tax_id     => SL::DB::Manager::Tax->find_by(taxkey => 9)->id);
+                                        tax_id     => SL::DB::Manager::Tax->find_by(taxkey => $default_manager eq "swiss" ? 4 : 9)->id);
   $tax_chart_booking->save;
-  $expense_chart  = SL::DB::Manager::Chart->find_by(accno => '3300');
   $expense_chart_booking= SL::DB::AccTransaction->new(
                                         trans_id   => $purchase_invoice->id,
-                                        chart_id   => $expense_chart->id,
-                                        chart_link => $expense_chart->link,
+                                        chart_id   => $expense_chart7->id,
+                                        chart_link => $expense_chart7->link,
                                         amount     => '-100',
                                         transdate  => $today,
                                         source     => '',
-                                        taxkey     => 8,
-                                        tax_id     => SL::DB::Manager::Tax->find_by(taxkey => 8)->id);
+                                        taxkey     => $default_manager eq "swiss" ? 5 : 8,
+                                        tax_id     => SL::DB::Manager::Tax->find_by(taxkey => $default_manager eq "swiss" ? 5 : 8)->id);
   $expense_chart_booking->save;
 
 
-  $tax_chart  = SL::DB::Manager::Chart->find_by(accno => '1571');
   $tax_chart_booking= SL::DB::AccTransaction->new(
                                          trans_id   => $purchase_invoice->id,
-                                         chart_id   => $tax_chart->id,
-                                         chart_link => $tax_chart->link,
-                                         amount     => '-7',
+                                         chart_id   => $tax_chart7->id,
+                                         chart_link => $tax_chart7->link,
+                                         amount     => $default_manager eq "swiss" ? '-2.5' : '-7',
                                          transdate  => $today,
                                          source     => '',
                                          taxkey     => 0,
-                                         tax_id     => SL::DB::Manager::Tax->find_by(taxkey => 8)->id);
+                                         tax_id     => SL::DB::Manager::Tax->find_by(taxkey => $default_manager eq "swiss" ? 5 : 8)->id);
   $tax_chart_booking->save;
-  my $arap_chart  = SL::DB::Manager::Chart->find_by(accno => '1600');
   my $arap_booking= SL::DB::AccTransaction->new(trans_id   => $purchase_invoice->id,
                                                 chart_id   => $arap_chart->id,
                                                 chart_link => $arap_chart->link,
-                                                amount     => '226',
+                                                amount     => $default_manager eq "swiss" ? '210.5' : '226',
                                                 transdate  => $today,
                                                 source     => '',
                                                 taxkey     => 0,
@@ -300,7 +320,7 @@ sub test_default_invoice_one_item_19_without_skonto() {
                  transdate => DateTime->today_local->to_kivitendo
                );
 
-  $params{amount} = '6.96';
+  $params{amount} = $default_manager eq "swiss" ? '6.32' : '6.96';
   $params{payment_type} = 'without_skonto';
 
   $invoice->pay_invoice( %params );
@@ -308,14 +328,20 @@ sub test_default_invoice_one_item_19_without_skonto() {
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, one item, 19% tax, without_skonto';
+  my $title = $default_manager eq "swiss" ? 'default invoice, one item, 8% tax, without_skonto' : 'default invoice, one item, 19% tax, without_skonto';
 
-  is($invoice->netamount,   5.85,      "${title}: netamount");
-  is($invoice->amount,      6.96,      "${title}: amount");
-  is($paid_amount,         -6.96,      "${title}: paid amount");
-  is($number_of_payments,      1,      "${title}: 1 AR_paid booking");
-  is($invoice->paid,        6.96,      "${title}: paid");
-  is($total,                   0,      "${title}: even balance");
+  is($invoice->netamount,     5.85,      "${title}: netamount");
+  if ($default_manager eq "swiss") {
+    is($invoice->amount,      6.32,      "${title}: amount");
+    is($paid_amount,         -6.32,      "${title}: paid amount");
+    is($invoice->paid,        6.32,      "${title}: paid");
+  } else {
+    is($invoice->amount,      6.96,      "${title}: amount");
+    is($paid_amount,         -6.96,      "${title}: paid amount");
+    is($invoice->paid,        6.96,      "${title}: paid");
+  }
+  is($number_of_payments,        1,      "${title}: 1 AR_paid booking");
+  is($total,                     0,      "${title}: even balance");
 
 }
 
@@ -338,7 +364,7 @@ sub test_default_invoice_one_item_19_without_skonto_overpaid() {
                  transdate => DateTime->today_local->to_kivitendo
                );
 
-  $params{amount} = '16.96';
+  $params{amount} = $default_manager eq "swiss" ? '16.32' : '16.96';
   $params{payment_type} = 'without_skonto';
   $invoice->pay_invoice( %params );
 
@@ -348,14 +374,20 @@ sub test_default_invoice_one_item_19_without_skonto_overpaid() {
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, one item, 19% tax, without_skonto';
+  my $title = $default_manager eq "swiss" ? 'default invoice, one item, 8% tax, without_skonto_overpaid' : 'default invoice, one item, 19% tax, without_skonto_overpaid';
 
-  is($invoice->netamount,   5.85,      "${title}: netamount");
-  is($invoice->amount,      6.96,      "${title}: amount");
-  is($paid_amount,         -6.96,      "${title}: paid amount");
-  is($number_of_payments,      2,      "${title}: 1 AR_paid booking");
-  is($invoice->paid,        6.96,      "${title}: paid");
-  is($total,                   0,      "${title}: even balance");
+  is($invoice->netamount,     5.85,      "${title}: netamount");
+  if ($default_manager eq "swiss") {
+    is($invoice->amount,      6.32,      "${title}: amount");
+    is($paid_amount,         -6.32,      "${title}: paid amount");
+    is($invoice->paid,        6.32,      "${title}: paid");
+  } else {
+    is($invoice->amount,      6.96,      "${title}: amount");
+    is($paid_amount,         -6.96,      "${title}: paid amount");
+    is($invoice->paid,        6.96,      "${title}: paid");
+  }
+  is($number_of_payments,        2,      "${title}: 1 AR_paid booking");
+  is($total,                     0,      "${title}: even balance");
 
 }
 
@@ -386,14 +418,20 @@ sub test_default_invoice_two_items_19_7_tax_with_skonto() {
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, two items, 19/7% tax with_skonto_pt';
+  my $title = $default_manager eq "swiss" ? 'default invoice, two items, 8/2.5% tax with_skonto_pt' : 'default invoice, two items, 19/7% tax with_skonto_pt';
 
-  is($invoice->netamount,  5.85 + 11.66,   "${title}: netamount");
-  is($invoice->amount,     6.96 + 12.48,   "${title}: amount");
-  is($paid_amount,               -19.44,   "${title}: paid amount");
-  is($invoice->paid,              19.44,   "${title}: paid");
-  is($number_of_payments,             3,   "${title}: 3 AR_paid bookings");
-  is($total,                          0,   "${title}: even balance");
+  is($invoice->netamount,    5.85 + 11.66,   "${title}: netamount");
+  if ($default_manager eq "swiss") {
+    is($invoice->amount,     6.32 + 11.95,   "${title}: amount");
+    is($paid_amount,               -18.27,   "${title}: paid amount");
+    is($invoice->paid,              18.27,   "${title}: paid");
+  } else {
+    is($invoice->amount,     6.96 + 12.48,   "${title}: amount");
+    is($paid_amount,               -19.44,   "${title}: paid amount");
+    is($invoice->paid,              19.44,   "${title}: paid");
+  }
+  is($number_of_payments,               3,   "${title}: 3 AR_paid bookings");
+  is($total,                            0,   "${title}: even balance");
 }
 
 sub test_default_invoice_two_items_19_7_tax_with_skonto_tax_included() {
@@ -421,15 +459,19 @@ sub test_default_invoice_two_items_19_7_tax_with_skonto_tax_included() {
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, two items, 19/7% tax with_skonto_pt';
+  my $title = $default_manager eq "swiss" ? 'default invoice, two items, 8/2.5% tax with_skonto_pt' : 'default invoice, two items, 19/7% tax with_skonto_pt';
 
-  is($invoice->netamount,         15.82,   "${title}: netamount");
+  if ($default_manager eq "swiss") {
+    is($invoice->netamount,       16.80,   "${title}: netamount");
+  } else {
+    is($invoice->netamount,       15.82,   "${title}: netamount");
+  }
   is($invoice->amount,            17.51,   "${title}: amount");
   is($paid_amount,               -17.51,   "${title}: paid amount");
   is($invoice->paid,              17.51,   "${title}: paid");
   is($number_of_payments,             3,   "${title}: 3 AR_paid bookings");
   { local $TODO = "currently this test fails because the code writing the invoice is buggy, the calculation of skonto is correct";
-  is($total,                          0,   "${title}: even balance");
+    is($total,                        0,   "${title}: even balance");
   }
 }
 
@@ -451,7 +493,7 @@ sub test_default_invoice_two_items_19_7_without_skonto() {
                  transdate => DateTime->today_local->to_kivitendo
                );
 
-  $params{amount} = '19.44'; # pass full amount
+  $params{amount} = $default_manager eq "swiss" ? '18.27' : '19.44'; # pass full amount
   $params{payment_type} = 'without_skonto';
 
   $invoice->pay_invoice( %params );
@@ -459,14 +501,20 @@ sub test_default_invoice_two_items_19_7_without_skonto() {
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, two items, 19/7% tax without skonto';
+  my $title = $default_manager eq "swiss" ? 'default invoice, two items, 8/2.5% tax without skonto' : 'default invoice, two items, 19/7% tax without skonto';
 
-  is($invoice->netamount,     5.85 + 11.66,     "${title}: netamount");
-  is($invoice->amount,        6.96 + 12.48,     "${title}: amount");
-  is($paid_amount,                  -19.44,     "${title}: paid amount");
-  is($invoice->paid,                 19.44,     "${title}: paid");
-  is($number_of_payments,                1,     "${title}: 1 AR_paid bookings");
-  is($total,                             0,     "${title}: even balance");
+  is($invoice->netamount,       5.85 + 11.66,     "${title}: netamount");
+  if ($default_manager eq "swiss") {
+    is($invoice->amount,        6.32 + 11.95,     "${title}: amount");
+    is($paid_amount,                  -18.27,     "${title}: paid amount");
+    is($invoice->paid,                 18.27,     "${title}: paid");
+  } else {
+    is($invoice->amount,        6.96 + 12.48,     "${title}: amount");
+    is($paid_amount,                  -19.44,     "${title}: paid amount");
+    is($invoice->paid,                 19.44,     "${title}: paid");
+  }
+  is($number_of_payments,                  1,     "${title}: 1 AR_paid bookings");
+  is($total,                               0,     "${title}: even balance");
 }
 
 # test 4
@@ -482,7 +530,7 @@ sub test_default_invoice_two_items_19_7_without_skonto_incomplete_payment() {
   );
   $invoice->post;
 
-  $invoice->pay_invoice( amount       => '9.44',
+  $invoice->pay_invoice( amount       => $default_manager eq "swiss" ? '8.27' : '9.44',
                          payment_type => 'without_skonto',
                          chart_id     => $bank_account->chart_id,
                          transdate    => DateTime->today_local->to_kivitendo,
@@ -491,14 +539,20 @@ sub test_default_invoice_two_items_19_7_without_skonto_incomplete_payment() {
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, two items, 19/7% tax without skonto incomplete payment';
+  my $title = $default_manager eq "swiss" ? 'default invoice, two items, 8/2.5% tax without skonto incomplete payment' : 'default invoice, two items, 19/7% tax without skonto incomplete payment';
 
-  is($invoice->netamount,        5.85 + 11.66,     "${title}: netamount");
-  is($invoice->amount,           6.96 + 12.48,     "${title}: amount");
-  is($paid_amount,              -9.44,             "${title}: paid amount");
-  is($invoice->paid,             9.44,            "${title}: paid");
-  is($number_of_payments,   1,                "${title}: 1 AR_paid bookings");
-  is($total,                    0,                "${title}: even balance");
+  is($invoice->netamount,          5.85 + 11.66,     "${title}: netamount");
+  if ($default_manager eq "swiss") {
+    is($invoice->amount,           6.32 + 11.95,     "${title}: amount");
+    is($paid_amount,              -8.27,             "${title}: paid amount");
+    is($invoice->paid,             8.27,             "${title}: paid");
+  } else {
+    is($invoice->amount,           6.96 + 12.48,     "${title}: amount");
+    is($paid_amount,              -9.44,             "${title}: paid amount");
+    is($invoice->paid,             9.44,             "${title}: paid");
+  }
+  is($number_of_payments,        1,                "${title}: 1 AR_paid bookings");
+  is($total,                     0,                "${title}: even balance");
 }
 
 # test 5
@@ -514,7 +568,7 @@ sub test_default_invoice_two_items_19_7_tax_without_skonto_multiple_payments() {
   );
   $invoice->post;
 
-  $invoice->pay_invoice( amount       => '9.44',
+  $invoice->pay_invoice( amount       => $default_manager eq "swiss" ? '8.27' : '9.44',
                          payment_type => 'without_skonto',
                          chart_id     => $bank_account->chart_id,
                          transdate    => DateTime->today_local->to_kivitendo
@@ -527,14 +581,19 @@ sub test_default_invoice_two_items_19_7_tax_without_skonto_multiple_payments() {
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, two items, 19/7% tax not included';
-
-  is($invoice->netamount,        5.85 + 11.66,     "${title}: netamount");
-  is($invoice->amount,           6.96 + 12.48,     "${title}: amount");
-  is($paid_amount,                     -19.44,     "${title}: paid amount");
-  is($invoice->paid,                    19.44,     "${title}: paid");
-  is($number_of_payments,                   2,     "${title}: 2 AR_paid bookings");
-  is($total,                                0,     "${title}: even balance");
+  my $title = $default_manager eq "swiss" ? 'default invoice, two items, 8/2.5% tax not included' : 'default invoice, two items, 19/7% tax not included';
+  is($invoice->netamount,          5.85 + 11.66,     "${title}: netamount");
+  if ($default_manager eq "swiss") {
+    is($invoice->amount,           6.32 + 11.95,     "${title}: amount");
+    is($paid_amount,                     -18.27,     "${title}: paid amount");
+    is($invoice->paid,                    18.27,     "${title}: paid");
+  } else {
+    is($invoice->amount,           6.96 + 12.48,     "${title}: amount");
+    is($paid_amount,                     -19.44,     "${title}: paid amount");
+    is($invoice->paid,                    19.44,     "${title}: paid");
+  }
+  is($number_of_payments,                     2,     "${title}: 2 AR_paid bookings");
+  is($total,                                  0,     "${title}: even balance");
 
 }
 
@@ -551,12 +610,12 @@ sub test_default_invoice_two_items_19_7_tax_without_skonto_multiple_payments_fin
   );
   $invoice->post;
 
-  $invoice->pay_invoice( amount       => '9.44',
+  $invoice->pay_invoice( amount       => $default_manager eq "swiss" ? '8.27' : '9.44',
                          payment_type => 'without_skonto',
                          chart_id     => $bank_account->chart_id,
                          transdate    => DateTime->today_local->to_kivitendo
                        );
-  $invoice->pay_invoice( amount       => '8.73',
+  $invoice->pay_invoice( amount       => $default_manager eq "swiss" ? '7.56' : '8.73',
                          payment_type => 'without_skonto',
                          chart_id     => $bank_account->chart_id,
                          transdate    => DateTime->today_local->to_kivitendo
@@ -570,14 +629,20 @@ sub test_default_invoice_two_items_19_7_tax_without_skonto_multiple_payments_fin
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, two items, 19/7% tax not included';
+  my $title = $default_manager eq "swiss" ? 'default invoice, two items, 8/2.5% tax not included' : 'default invoice, two items, 19/7% tax not included';
 
-  is($invoice->netamount,        5.85 + 11.66,     "${title}: netamount");
-  is($invoice->amount,           6.96 + 12.48,     "${title}: amount");
-  is($paid_amount,                     -19.44,     "${title}: paid amount");
-  is($invoice->paid,                    19.44,     "${title}: paid");
-  is($number_of_payments,                   4,     "${title}: 4 AR_paid bookings");
-  is($total,                                0,     "${title}: even balance");
+  is($invoice->netamount,          5.85 + 11.66,     "${title}: netamount");
+  if ($default_manager eq "swiss") {
+    is($invoice->amount,           6.32 + 11.95,     "${title}: amount");
+    is($paid_amount,                     -18.27,     "${title}: paid amount");
+    is($invoice->paid,                    18.27,     "${title}: paid");
+  } else {
+    is($invoice->amount,           6.96 + 12.48,     "${title}: amount");
+    is($paid_amount,                     -19.44,     "${title}: paid amount");
+    is($invoice->paid,                    19.44,     "${title}: paid");
+  }
+  is($number_of_payments,                     4,     "${title}: 4 AR_paid bookings");
+  is($total,                                  0,     "${title}: even balance");
 
 }
 
@@ -598,7 +663,7 @@ sub  test_default_invoice_two_items_19_7_tax_without_skonto_multiple_payments_fi
   );
   $invoice->post;
 
-  $invoice->pay_invoice( amount       => '19.42',
+  $invoice->pay_invoice( amount       => $default_manager eq "swiss" ? '18.25' : '19.42',
                          payment_type => 'without_skonto',
                          chart_id     => $bank_account->chart_id,
                          transdate    => DateTime->today_local->to_kivitendo
@@ -612,14 +677,20 @@ sub  test_default_invoice_two_items_19_7_tax_without_skonto_multiple_payments_fi
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, two items, 19/7% tax not included';
+  my $title = $default_manager eq "swiss" ? 'default invoice, two items, 8/2.5% tax not included' : 'default invoice, two items, 19/7% tax not included';
 
-  is($invoice->netamount,        5.85 + 11.66,     "${title}: netamount");
-  is($invoice->amount,           6.96 + 12.48,     "${title}: amount");
-  is($paid_amount,                     -19.44,     "${title}: paid amount");
-  is($invoice->paid,                    19.44,     "${title}: paid");
-  is($number_of_payments,                   3,     "${title}: 2 AR_paid bookings");
-  is($total,                                0,     "${title}: even balance");
+  is($invoice->netamount,          5.85 + 11.66,     "${title}: netamount");
+  if ($default_manager eq "swiss") {
+    is($invoice->amount,           6.32 + 11.95,     "${title}: amount");
+    is($paid_amount,                     -18.27,     "${title}: paid amount");
+    is($invoice->paid,                    18.27,     "${title}: paid");
+  } else {
+    is($invoice->amount,           6.96 + 12.48,     "${title}: amount");
+    is($paid_amount,                     -19.44,     "${title}: paid amount");
+    is($invoice->paid,                    19.44,     "${title}: paid");
+  }
+    is($number_of_payments,                   3,     "${title}: 2 AR_paid bookings");
+    is($total,                                0,     "${title}: even balance");
 
 }
 
@@ -636,7 +707,7 @@ sub  test_default_invoice_two_items_19_7_tax_without_skonto_multiple_payments_fi
   );
   $invoice->post;
 
-  $invoice->pay_invoice( amount       => '19.42',
+  $invoice->pay_invoice( amount       => $default_manager eq "swiss" ? '18.25' : '19.42',
                          payment_type => 'without_skonto',
                          chart_id     => $bank_account->chart_id,
                          transdate    => DateTime->today_local->to_kivitendo
@@ -650,14 +721,20 @@ sub  test_default_invoice_two_items_19_7_tax_without_skonto_multiple_payments_fi
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, two items, 19/7% tax not included';
+  my $title = $default_manager eq "swiss" ? 'default invoice, two items, 8/2.5% tax not included' : 'default invoice, two items, 19/7% tax not included';
 
-  is($invoice->netamount,        5.85 + 11.66,     "${title}: netamount");
-  is($invoice->amount,           6.96 + 12.48,     "${title}: amount");
-  is($paid_amount,                     -19.44,     "${title}: paid amount");
-  is($invoice->paid,                    19.44,     "${title}: paid");
-  is($number_of_payments,                   3,     "${title}: 3 AR_paid bookings");
-  is($total,                                0,     "${title}: even balance");
+  is($invoice->netamount,          5.85 + 11.66,     "${title}: netamount");
+  if ($default_manager eq "swiss") {
+    is($invoice->amount,           6.32 + 11.95,     "${title}: amount");
+    is($paid_amount,                     -18.27,     "${title}: paid amount");
+    is($invoice->paid,                    18.27,     "${title}: paid");
+  } else {
+    is($invoice->amount,           6.96 + 12.48,     "${title}: amount");
+    is($paid_amount,                     -19.44,     "${title}: paid amount");
+    is($invoice->paid,                    19.44,     "${title}: paid");
+  }
+  is($number_of_payments,                     3,     "${title}: 3 AR_paid bookings");
+  is($total,                                  0,     "${title}: even balance");
 
 }
 
@@ -692,13 +769,19 @@ sub test_default_invoice_one_item_19_multiple_payment_final_difference_as_skonto
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, one item, 19% tax, without_skonto';
+  my $title = $default_manager eq "swiss" ? 'default invoice, one item, 8% tax, without_skonto' : 'default invoice, one item, 19% tax, without_skonto';
 
-  is($invoice->netamount,       5.85,     "${title}: netamount");
-  is($invoice->amount,          6.96,     "${title}: amount");
-  is($paid_amount,             -6.96,     "${title}: paid amount");
+  is($invoice->netamount,         5.85,     "${title}: netamount");
+  if ($default_manager eq "swiss") {
+    is($invoice->amount,          6.32,     "${title}: amount");
+    is($paid_amount,             -6.32,     "${title}: paid amount");
+    is($invoice->paid,            6.32,     "${title}: paid");
+  } else {
+    is($invoice->amount,          6.96,     "${title}: amount");
+    is($paid_amount,             -6.96,     "${title}: paid amount");
+    is($invoice->paid,            6.96,     "${title}: paid");
+  }
   is($number_of_payments,          3,     "${title}: 3 AR_paid booking");
-  is($invoice->paid,            6.96,     "${title}: paid");
   is($total,                       0,     "${title}: even balance");
 
 }
@@ -719,7 +802,7 @@ sub test_default_invoice_one_item_19_multiple_payment_final_difference_as_skonto
                  transdate => DateTime->today_local->to_kivitendo
                );
 
-  $params{amount}       = '6.95';
+  $params{amount}       = $default_manager eq "swiss" ? '6.31' : '6.95';
   $params{payment_type} = 'without_skonto';
   $invoice->pay_invoice( %params );
 
@@ -730,13 +813,19 @@ sub test_default_invoice_one_item_19_multiple_payment_final_difference_as_skonto
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, one item, 19% tax, without_skonto';
+  my $title = $default_manager eq "swiss" ? 'default invoice, one item, 8% tax, without_skonto' : 'default invoice, one item, 19% tax, without_skonto';
 
   is($invoice->netamount,       5.85,     "${title}: netamount");
-  is($invoice->amount,          6.96,     "${title}: amount");
-  is($paid_amount,             -6.96,     "${title}: paid amount");
+  if ($default_manager eq "swiss") {
+    is($invoice->amount,        6.32,     "${title}: amount");
+    is($paid_amount,           -6.32,     "${title}: paid amount");
+    is($invoice->paid,          6.32,     "${title}: paid");
+  } else {
+    is($invoice->amount,        6.96,     "${title}: amount");
+    is($paid_amount,           -6.96,     "${title}: paid amount");
+    is($invoice->paid,          6.96,     "${title}: paid");
+  }
   is($number_of_payments,          2,     "${title}: 3 AR_paid booking");
-  is($invoice->paid,            6.96,     "${title}: paid");
   is($total,                       0,     "${title}: even balance");
 
 }
@@ -751,7 +840,7 @@ sub test_default_purchase_invoice_two_charts_19_7_without_skonto() {
                  transdate => DateTime->today_local->to_kivitendo
                );
 
-  $params{amount} = '226'; # pass full amount
+  $params{amount} = $default_manager eq "swiss" ? '210.5' : '226'; # pass full amount
   $params{payment_type} = 'without_skonto';
 
   $purchase_invoice->pay_invoice( %params );
@@ -759,9 +848,13 @@ sub test_default_purchase_invoice_two_charts_19_7_without_skonto() {
   my ($number_of_payments, $paid_amount) = number_of_payments($purchase_invoice->transactions);
   my $total = total_amount($purchase_invoice->transactions);
 
-  my $title = 'default invoice, two items, 19/7% tax without skonto';
+  my $title = $default_manager eq "swiss" ? 'default invoice, two items, 8/2.5% tax without skonto' : 'default invoice, two items, 19/7% tax without skonto';
 
-  is($paid_amount,         226,     "${title}: paid amount");
+  if ($default_manager eq "swiss") {
+    is($paid_amount,         210.5, "${title}: paid amount");
+  } else {
+    is($paid_amount,         226,   "${title}: paid amount");
+  }
   is($number_of_payments,    1,     "${title}: 1 AP_paid bookings");
   is($total,                 0,     "${title}: even balance");
 
@@ -776,7 +869,7 @@ sub test_default_purchase_invoice_two_charts_19_7_with_skonto() {
                  transdate => DateTime->today_local->to_kivitendo
                );
 
-  # $params{amount} = '226'; # pass full amount
+  $params{amount} = $purchase_invoice->amount_less_skonto;
   $params{payment_type} = 'with_skonto_pt';
 
   $purchase_invoice->pay_invoice( %params );
@@ -784,9 +877,13 @@ sub test_default_purchase_invoice_two_charts_19_7_with_skonto() {
   my ($number_of_payments, $paid_amount) = number_of_payments($purchase_invoice->transactions);
   my $total = total_amount($purchase_invoice->transactions);
 
-  my $title = 'default invoice, two items, 19/7% tax without skonto';
+  my $title = $default_manager eq "swiss" ? 'default invoice, two items, 8/2.5% tax with skonto' : 'default invoice, two items, 19/7% tax with skonto';
 
-  is($paid_amount,         226,     "${title}: paid amount");
+  if ($default_manager eq "swiss") {
+    is($paid_amount,         210.5, "${title}: paid amount");
+  } else {
+    is($paid_amount,         226,   "${title}: paid amount");
+  }
   is($number_of_payments,    3,     "${title}: 1 AP_paid bookings");
   is($total,                 0,     "${title}: even balance");
 
@@ -805,13 +902,16 @@ sub test_default_purchase_invoice_two_charts_19_7_tax_partial_unrounded_payment_
   my ($number_of_payments, $paid_amount) = number_of_payments($purchase_invoice->transactions);
   my $total = total_amount($purchase_invoice->transactions);
 
-  my $title = 'default purchase_invoice, two charts, 19/7% tax multiple payments with final difference as skonto';
+  my $title = $default_manager eq "swiss" ? 'default purchase_invoice, two charts, 8/2.5% tax multiple payments with final difference as skonto' : 'default purchase_invoice, two charts, 19/7% tax multiple payments with final difference as skonto';
 
-  is($paid_amount,         150.67,   "${title}: paid amount");
+  if ($default_manager eq "swiss") {
+    is($paid_amount,         140.33, "${title}: paid amount");
+  } else {
+    is($paid_amount,         150.67, "${title}: paid amount");
+  }
   is($number_of_payments,       1,   "${title}: 1 AP_paid bookings");
   is($total,                    0,   "${title}: even balance");
-};
-
+}
 
 sub test_default_purchase_invoice_two_charts_19_7_tax_without_skonto_multiple_payments_final_difference_as_skonto() {
   reset_state() if $ALWAYS_RESET;
@@ -840,9 +940,13 @@ sub test_default_purchase_invoice_two_charts_19_7_tax_without_skonto_multiple_pa
   my ($number_of_payments, $paid_amount) = number_of_payments($purchase_invoice->transactions);
   my $total = total_amount($purchase_invoice->transactions);
 
-  my $title = 'default purchase_invoice, two charts, 19/7% tax multiple payments with final difference as skonto';
+  my $title = $default_manager eq "swiss" ? 'default purchase_invoice, two charts, 8/2.5% tax multiple payments with final difference as skonto' : 'default purchase_invoice, two charts, 19/7% tax multiple payments with final difference as skonto';
 
-  is($paid_amount,         226, "${title}: paid amount");
+  if ($default_manager eq "swiss") {
+    is($paid_amount,         210.5, "${title}: paid amount");
+  } else {
+    is($paid_amount,         226,   "${title}: paid amount");
+  }
   is($number_of_payments,    4, "${title}: 1 AP_paid bookings");
   is($total,                 0, "${title}: even balance");
 
@@ -862,7 +966,7 @@ sub test_default_invoice_two_items_19_7_tax_with_skonto_50_50() {
   $invoice->post;
 
   # default values
-  my %params = ( chart_id => $bank_account->chart_id,
+  my %params = ( chart_id  => $bank_account->chart_id,
                  transdate => DateTime->today_local->to_kivitendo
                );
 
@@ -874,12 +978,18 @@ sub test_default_invoice_two_items_19_7_tax_with_skonto_50_50() {
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, two items, 19/7% tax with_skonto_pt 50/50';
+  my $title = $default_manager eq "swiss" ? 'default invoice, two items, 8/2.5% tax with_skonto_pt 50/50' : 'default invoice, two items, 19/7% tax with_skonto_pt 50/50';
 
   is($invoice->netamount,        100,     "${title}: netamount");
-  is($invoice->amount,           113,     "${title}: amount");
-  is($paid_amount,              -113,     "${title}: paid amount");
-  is($invoice->paid,             113,     "${title}: paid");
+  if ($default_manager eq "swiss") {
+    is($invoice->amount,         105.25,  "${title}: amount");
+    is($paid_amount,            -105.25,  "${title}: paid amount");
+    is($invoice->paid,           105.25,  "${title}: paid");
+  } else {
+    is($invoice->amount,         113,     "${title}: amount");
+    is($paid_amount,            -113,     "${title}: paid amount");
+    is($invoice->paid,           113,     "${title}: paid");
+  }
   is($number_of_payments,          3,     "${title}: 3 AR_paid bookings");
   is($total,                       0,     "${title}: even balance");
 }
@@ -900,7 +1010,7 @@ sub test_default_invoice_four_items_19_7_tax_with_skonto_4x_25() {
   $invoice->post;
 
   # default values
-  my %params = ( chart_id => $bank_account->chart_id,
+  my %params = ( chart_id  => $bank_account->chart_id,
                  transdate => DateTime->today_local->to_kivitendo
                );
 
@@ -912,14 +1022,20 @@ sub test_default_invoice_four_items_19_7_tax_with_skonto_4x_25() {
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, four items, 19/7% tax with_skonto_pt 4x25';
+  my $title = $default_manager eq "swiss" ? 'default invoice, four items, 8/2.5% tax with_skonto_pt 4x25' : 'default invoice, four items, 19/7% tax with_skonto_pt 4x25';
 
-  is($invoice->netamount , 100  , "${title}: netamount");
-  is($invoice->amount    , 113  , "${title}: amount");
-  is($paid_amount        , -113 , "${title}: paid amount");
-  is($invoice->paid      , 113  , "${title}: paid");
-  is($number_of_payments , 3    , "${title}: 3 AR_paid bookings");
-  is($total              , 0    , "${title}: even balance");
+  is($invoice->netamount,        100  ,   "${title}: netamount");
+  if ($default_manager eq "swiss") {
+    is($invoice->amount,         105.25,  "${title}: amount");
+    is($paid_amount,            -105.25,  "${title}: paid amount");
+    is($invoice->paid,           105.25,  "${title}: paid");
+  } else {
+    is($invoice->amount,         113,     "${title}: amount");
+    is($paid_amount,            -113,     "${title}: paid amount");
+    is($invoice->paid,           113,     "${title}: paid");
+  }
+  is($number_of_payments,          3    , "${title}: 3 AR_paid bookings");
+  is($total,                       0    , "${title}: even balance");
 }
 
 sub test_default_invoice_four_items_19_7_tax_with_skonto_4x_25_tax_included() {
@@ -949,15 +1065,19 @@ sub test_default_invoice_four_items_19_7_tax_with_skonto_4x_25_tax_included() {
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, four items, 19/7% tax with_skonto_pt 4x25';
+  my $title = $default_manager eq "swiss" ? 'default invoice, four items, 8/2.5% tax with_skonto_pt 4x25' : 'default invoice, four items, 19/7% tax with_skonto_pt 4x25';
 
-  is($invoice->netamount,   88.75,    "${title}: netamount");
+  if ($default_manager eq "swiss") {
+    is($invoice->netamount,   95.08,  "${title}: netamount");
+  } else {
+    is($invoice->netamount,   88.75,  "${title}: netamount");
+  }
   is($invoice->amount,        100,    "${title}: amount");
   is($paid_amount,           -100,    "${title}: paid amount");
   is($invoice->paid,          100,    "${title}: paid");
   is($number_of_payments,       3,    "${title}: 3 AR_paid bookings");
   { local $TODO = "currently this test fails because the code writing the invoice is buggy, the calculation of skonto is correct";
-  is($total,                    0,    "${title}: even balance");
+    is($total,                  0,    "${title}: even balance");
   }
 }
 
@@ -988,14 +1108,20 @@ sub test_default_invoice_four_items_19_7_tax_with_skonto_4x_25_multiple() {
   my ($number_of_payments, $paid_amount) = number_of_payments($invoice->transactions);
   my $total = total_amount($invoice->transactions);
 
-  my $title = 'default invoice, four items, 19/7% tax with_skonto_pt 4x25';
+  my $title = $default_manager eq "swiss" ? 'default invoice, four items, 8/2.5% tax with_skonto_pt 4x25' : 'default invoice, four items, 19/7% tax with_skonto_pt 4x25';
 
-  is($invoice->netamount,  100,     "${title}: netamount");
-  is($invoice->amount,     113,     "${title}: amount");
-  is($paid_amount,        -113,     "${title}: paid amount");
-  is($invoice->paid,       113,     "${title}: paid");
-  is($number_of_payments,    3,     "${title}: 3 AR_paid bookings");
-  is($total,                 0,     "${title}: even balance: this will fail due to rounding error in invoice post, not the skonto");
+  is($invoice->netamount,        100,     "${title}: netamount");
+  if ($default_manager eq "swiss") {
+    is($invoice->amount,         105.25,  "${title}: amount");
+    is($paid_amount,            -105.25,  "${title}: paid amount");
+    is($invoice->paid,           105.25,  "${title}: paid");
+  } else {
+    is($invoice->amount,         113,     "${title}: amount");
+    is($paid_amount,            -113,     "${title}: paid amount");
+    is($invoice->paid,           113,     "${title}: paid");
+  }
+  is($number_of_payments,          3,     "${title}: 3 AR_paid bookings");
+  is($total,                       0,     "${title}: even balance: this will fail due to rounding error in invoice post, not the skonto");
 }
 
 Support::TestSetup::login();

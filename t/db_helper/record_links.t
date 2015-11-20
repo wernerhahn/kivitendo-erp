@@ -41,9 +41,15 @@ sub reset_state {
 
   clear_up();
 
-  $buchungsgruppe  = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 19%', %{ $params{buchungsgruppe} }) || croak "No accounting group";
-  $employee        = SL::DB::Manager::Employee->current                                                                    || croak "No employee";
-  $taxzone         = SL::DB::Manager::TaxZone->find_by( description => 'Inland')                                           || croak "No taxzone";
+  if ($::lx_office_conf{system}->{default_manager} eq "swiss") {
+    $buchungsgruppe  = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 8%', %{ $params{buchungsgruppe} })  || croak "No accounting group";
+    $employee        = SL::DB::Manager::Employee->current                                                                    || croak "No employee";
+    $taxzone         = SL::DB::Manager::TaxZone->find_by( description => 'Schweiz')                                          || croak "No taxzone";
+  } else {
+    $buchungsgruppe  = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 19%', %{ $params{buchungsgruppe} }) || croak "No accounting group";
+    $employee        = SL::DB::Manager::Employee->current                                                                    || croak "No employee";
+    $taxzone         = SL::DB::Manager::TaxZone->find_by( description => 'Inland')                                           || croak "No taxzone";
+  }
 
   $currency_id     = $::instance_conf->get_currency_id;
 

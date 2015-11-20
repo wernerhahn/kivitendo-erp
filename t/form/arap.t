@@ -12,9 +12,9 @@ no warnings qw(qw);
 # calculate_arap is used for post_invoice in AR and AP
 # calculate_tax is used in calculate_arap as well as update in ar/ap/gl and post_transaction in gl
 
+my $default_manager;
 my ($ar_tax_19, $ar_tax_7,$ar_tax_0);
 my $config = {};
-$config->{numberformat} = '1.000,00';
 
 sub reset_state {
   my %params = @_;
@@ -28,9 +28,18 @@ sub reset_state {
       };
   };
 
-  $ar_tax_19 = SL::DB::Manager::Tax->find_by(taxkey => 3, rate => 0.19, %{ $params{ar_tax_19} })  || croak "No 19% tax";
-  $ar_tax_7  = SL::DB::Manager::Tax->find_by(taxkey => 2, rate => 0.07, %{ $params{ar_tax_7} })   || croak "No 7% tax";
-  $ar_tax_0  = SL::DB::Manager::Tax->find_by(taxkey => 0, rate => 0.00, %{ $params{ar_tax_0} })   || croak "No 0% tax";
+  $default_manager = $::lx_office_conf{system}->{default_manager};
+  if ($default_manager eq "swiss") {
+    $ar_tax_19 = SL::DB::Manager::Tax->find_by(taxkey => 2, rate => 0.08, %{ $params{ar_tax_19} })  || croak "No 8% tax";
+    $ar_tax_7  = SL::DB::Manager::Tax->find_by(taxkey => 3, rate => 0.025,  %{ $params{ar_tax_7} }) || croak "No 2.5% tax";
+    $config->{numberformat} = "1'000.00";
+
+  } else {
+    $ar_tax_19 = SL::DB::Manager::Tax->find_by(taxkey => 3, rate => 0.19,  %{ $params{ar_tax_19} }) || croak "No 19% tax";
+    $ar_tax_7  = SL::DB::Manager::Tax->find_by(taxkey => 2, rate => 0.07,  %{ $params{ar_tax_7} })  || croak "No 7% tax";
+    $config->{numberformat} = '1.000,00';
+  }
+  $ar_tax_0  = SL::DB::Manager::Tax->find_by(taxkey => 0, rate => 0.00,    %{ $params{ar_tax_0} })  || croak "No 0% tax";
 
 };
 
@@ -51,11 +60,11 @@ sub arap_test {
   foreach my $a ( 1 .. scalar @{$testcase->{lines}} ) {
     my ($taxrate, $form_amount, $netamount, $taxamount, $totalamount) = @{ @{ $testcase->{lines} }[$a-1] };
     my $tax;
-    if ( $taxrate == 19 ) {
+    if ( $taxrate eq ($default_manager eq "swiss" ? '8' : '19' )) {
         $tax = $ar_tax_19;
-    } elsif ( $taxrate == 7 ) {
+    } elsif ( $taxrate eq ($default_manager eq "swiss" ? '2,5' : '7' )) {
         $tax = $ar_tax_7;
-    } elsif ( $taxrate == 0 ) {
+    } elsif ( $taxrate eq '0' ) {
         $tax = $ar_tax_0;
     } else {
         croak "illegal taxrate $taxrate";
@@ -89,36 +98,79 @@ sub calculate_tax_test {
   is($calculated_net, $net, "calculated net for taxincluded = $taxincluded for net $amount and rate $rate is = $net");
 };
 
+my @testline1;
+my @testline2;
+my @testline3;
+my @testline4;
+my @testline5;
+my @testline6;
+my @testline7;
+my @testline8;
+my @testline9;
+my @testline10;
+my @testline11;
+my @testline12;
+my @testline13;
+my @testline14;
+my @testline15;
+my @testline16;
+my @testline17;
+
+sub init_testlines {
+  # define the various lines that can be used for the testcases
+  # always use positive values for buy/sell, like in the interface
+  #                   tax  input   net      tax   total  type
+  $default_manager = $::lx_office_conf{system}->{default_manager};
+  if ($default_manager eq "swiss") {
+    @testline1  = qw(8    51,30   47,50   3,80   51,30  sell);
+    @testline2  = qw(8    10,80   10,00   0,80   10,80  sell);
+    @testline3  = qw(2,5  13,79   13,45   0,34   10,80  sell);
+    @testline4  = qw(8   133,08  133,08  10,65  143,73  sell);
+    @testline5  = qw(0   100,00   83,00   0,00   83,00  sell);  # exchangerate of 0,83
+    @testline6  = qw(8    51,30   47,50   3,80   51,30   buy);
+    @testline7  = qw(8   309,86  309,86  24,79  334,65   buy);
+    @testline8  = qw(2,5 124,54  121,50   3,04  124,54   buy);
+    @testline9  = qw(2,5 121,49  121,49   3,04  124,53   buy);
+    @testline10 = qw(2,5 121,50  121,50   3,05  124,55   buy);
+    @testline11 = qw(8    -2,77   -2,77  -0,22   -2,99   buy);
+    @testline12 = qw(2,5  12,88   12,88   0,32   13,20   buy);
+    @testline13 = qw(8    41,93   41,93   3,35   45,28   buy);
+    @testline14 = qw(8    84,65   84,65   6,77   98,42   buy);
+    @testline15 = qw(8     8,39    8,39   0,66    9,05   buy);
+    @testline16 = qw(8    91,42   84,65   6,77   98,42   buy);
+    @testline17 = qw(8     9,06    8,39   0,67    9,06   buy);
+  } else {
+    @testline1  = qw(19   56,53   47,50   9,03   56,53  sell);
+    @testline2  = qw(19   11,90   10,00   1,90   11,90  sell);
+    @testline3  = qw( 7   14,39   13,45   0,94   11,90  sell);
+    @testline4  = qw(19  133,08  133,08  25,29  158,37  sell);
+    @testline5  = qw( 0  100,00   83,00   0,00   83,00  sell);  # exchangerate of 0,83
+    @testline6  = qw(19   56,53   47,50   9,03   56,53   buy);
+    @testline7  = qw(19  309,86  309,86  58,87  368,73   buy);
+    @testline8  = qw( 7  130,00  121,50   8,50  130,00   buy);
+    @testline9  = qw( 7  121,49  121,49   8,50  129,99   buy);
+    @testline10 = qw( 7  121,50  121,50   8,51  130,01   buy);
+    @testline11 = qw(19   -2,77   -2,77  -0,53   -3,30   buy);
+    @testline12 = qw( 7   12,88   12,88   0,90   13,78   buy);
+    @testline13 = qw(19   41,93   41,93   7,97   49,90   buy);
+    @testline14 = qw(19   84,65   84,65  16,08  107,73   buy);
+    @testline15 = qw(19    8,39    8,39   1,59    9,98   buy);
+    @testline16 = qw(19  100,73   84,65  16,08  107,73   buy);
+    @testline17 = qw(19    9,99    8,39   1,60    9,99   buy);
+  }
+}
+
 Support::TestSetup::login();
 
-# define the various lines that can be used for the testcases
-# always use positive values for buy/sell, like in the interface
-#                   tax  input   net      tax   total  type
-my @testline1  = qw(19   56,53   47,50   9,03   56,53  sell);
-my @testline2  = qw(19   11,90   10,00   1,90   11,90  sell);
-my @testline3  = qw( 7   14,39   13,45   0,94   11,90  sell);
-my @testline4  = qw(19  133,08  133,08  25,29  158,37  sell);
-my @testline5  = qw( 0  100,00   83,00   0,00   83,00  sell);  # exchangerate of 0,83
-my @testline6  = qw(19   56,53   47,50   9,03   56,53   buy);
-my @testline7  = qw(19  309,86  309,86  58,87  368,73   buy);
-my @testline8  = qw( 7  130,00  121,50   8,50  130,00   buy);
-my @testline9  = qw( 7  121,49  121,49   8,50  129,99   buy);
-my @testline10 = qw( 7  121,50  121,50   8,51  130,01   buy);
-my @testline11 = qw(19   -2,77   -2,77  -0,53   -3,30   buy);
-my @testline12 = qw( 7   12,88   12,88   0,90   13,78   buy);
-my @testline13 = qw(19   41,93   41,93   7,97   49,90   buy);
-my @testline14 = qw(19   84,65   84,65  16,08  107,73   buy);
-my @testline15 = qw(19    8,39    8,39   1,59    9,98   buy);
-my @testline16 = qw(19  100,73   84,65  16,08  107,73   buy);
-my @testline17 = qw(19    9,99    8,39   1,60    9,99   buy);
+init_testlines;
 
 # create testcases, made up of one or more lines, with expected values
 
 my $testcase1 = {
     lines           => [ \@testline1 ], # lines to be used in testcase
-    total_amount    => '56,53',  # expected result
+    total_amount    => $default_manager eq "swiss" ? '51,30' : '56,53',  # expected result
     total_netamount => '47,50',  # expected result
-    total_taxamount => '9,03',   # expected result
+    total_taxamount => $default_manager eq "swiss" ? '3,80' : '9,03',  # expected result
     # invoice parameters:
     taxincluded     => 1,
     exchangerate    => 1,
@@ -128,9 +180,9 @@ my $testcase1 = {
 
 my $testcase2 = {
     lines           => [ \@testline1, \@testline2, \@testline3 ],
-    total_amount    => '82,82',
+    total_amount    => $default_manager eq "swiss" ? '75,89' : '82,82',
     total_netamount => '70,95',
-    total_taxamount => '11,87',
+    total_taxamount => $default_manager eq "swiss" ? '4,94' : '11,87',
     taxincluded     => 1,
     exchangerate    => 1,
     currency        => 'EUR',
@@ -139,9 +191,9 @@ my $testcase2 = {
 
 my $testcase3 = {
     lines           => [ \@testline4 ],
-    total_amount    => '158,37',
+    total_amount    => $default_manager eq "swiss" ? '143,73' : '158,37',
     total_netamount => '133,08',
-    total_taxamount => '25,29',
+    total_taxamount => $default_manager eq "swiss" ? '10,65' : '25,29',
     taxincluded     => 0,
     exchangerate    => 1,
     currency        => 'EUR',
@@ -161,9 +213,9 @@ my $testcase4 = {
 
 my $testcase6 = {
     lines           => [ \@testline6 ],
-    total_amount    => '56,53',
+    total_amount    => $default_manager eq "swiss" ? '51,30' : '56,53',
     total_netamount => '47,50',
-    total_taxamount => '9,03',
+    total_taxamount => $default_manager eq "swiss" ? '3,80' : '9,03',
     taxincluded     => 1,
     exchangerate    => 1,
     currency        => 'EUR',
@@ -173,8 +225,8 @@ my $testcase6 = {
 my $testcase7 = {
     lines           => [ \@testline7 ],
     total_netamount => '309,86',
-    total_taxamount => '58,87',
-    total_amount    => '368,73',
+    total_taxamount => $default_manager eq "swiss" ? '24,79' : '58,87',
+    total_amount    => $default_manager eq "swiss" ? '334,65' : '368,73',
     taxincluded     => 0,
     exchangerate    => 1,
     currency        => 'EUR',
@@ -184,8 +236,8 @@ my $testcase7 = {
 my $testcase8 = {
     lines           => [ \@testline8 ],
     total_netamount => '121,50',
-    total_taxamount => '8,50',
-    total_amount    => '130,00',
+    total_taxamount => $default_manager eq "swiss" ? '3,04' : '8,50',
+    total_amount    => $default_manager eq "swiss" ? '124,54' : '130,00',
     taxincluded     => 1,
     exchangerate    => 1,
     currency        => 'EUR',
@@ -195,8 +247,8 @@ my $testcase8 = {
 my $testcase9 = {
     lines           => [ \@testline9 ],
     total_netamount => '121,49',
-    total_taxamount => '8,50',
-    total_amount    => '129,99',
+    total_taxamount => $default_manager eq "swiss" ? '3,04' : '8,50',
+    total_amount    => $default_manager eq "swiss" ? '124,53' : '129,99',
     taxincluded     => 0,
     exchangerate    => 1,
     currency        => 'EUR',
@@ -206,8 +258,8 @@ my $testcase9 = {
 my $testcase10 = {
     lines           => [ \@testline10 ],
     total_netamount => '121,50',
-    total_taxamount => '8,51',
-    total_amount    => '130,01',
+    total_taxamount => $default_manager eq "swiss" ? '3,04' : '8,51',
+    total_amount    => $default_manager eq "swiss" ? '124,54' : '130,01',
     taxincluded     => 0,
     exchangerate    => 1,
     currency        => 'EUR',
@@ -218,8 +270,8 @@ my $testcase11 = {
     # mixed invoices, -2,77€ net with 19% as credit note, 12,88€ net with 7%
     lines           => [ \@testline11 , \@testline12 ],
     total_netamount => '10,11',
-    total_taxamount => '0,37',
-    total_amount    => '10,48',
+    total_taxamount => $default_manager eq "swiss" ? '0,10' : '0,37',
+    total_amount    => $default_manager eq "swiss" ? '10,21' : '10,48',
     taxincluded     => 0,
     exchangerate    => 1,
     currency        => 'EUR',
@@ -230,8 +282,8 @@ my $testcase12 = {
     # ap transaction, example from bug 2435
     lines           => [ \@testline13 ],
     total_netamount => '41,93',
-    total_taxamount => '7,97',
-    total_amount    => '49,90',
+    total_taxamount => $default_manager eq "swiss" ? '3,35' : '7,97',
+    total_amount    => $default_manager eq "swiss" ? '45,28' : '49,90',
     taxincluded     => 0,
     exchangerate    => 1,
     currency        => 'EUR',
@@ -242,8 +294,8 @@ my $testcase13 = {
     # ap transaction, example from bug 2094, tax not included
     lines           => [ \@testline14 , \@testline15 ],
     total_netamount => '93,04',
-    total_taxamount => '17,67',
-    total_amount    => '110,71',
+    total_taxamount => $default_manager eq "swiss" ? '7,44' : '17,67',
+    total_amount    => $default_manager eq "swiss" ? '100,48' : '110,71',
     taxincluded     => 0,
     exchangerate    => 1,
     currency        => 'EUR',
@@ -254,8 +306,8 @@ my $testcase14 = {
     # ap transaction, example from bug 2094, tax included
     lines           => [ \@testline16 , \@testline17 ],
     total_netamount => '93,04',
-    total_taxamount => '17,68',
-    total_amount    => '110,72',
+    total_taxamount => $default_manager eq "swiss" ? '7,44' : '17,68',
+    total_amount    => $default_manager eq "swiss" ? '100,48' : '110,72',
     taxincluded     => 1,
     exchangerate    => 1,
     currency        => 'EUR',

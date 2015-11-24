@@ -78,7 +78,12 @@
 
           <tr>
             <td colspan="2" align="center">
-              [%- IF SELF.order.closed %] [% 'Closed' | $T8 %] [%- ELSE %] [% 'Open' | $T8 %] [%- END %]
+              [%- IF SELF.order.id %]
+                <label for="order.delivered">[% 'Delivery Order(s) for full qty created' | $T8 %]</label>
+                [% L.yes_no_tag('order.delivered', SELF.order.delivered) %]
+                <label for="order.closed">[% 'Closed' | $T8 %]</label>
+                [% L.yes_no_tag('order.closed', SELF.order.closed) %]
+              [%- END %]
             </td>
           </tr>
 

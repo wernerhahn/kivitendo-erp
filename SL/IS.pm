@@ -1445,7 +1445,8 @@ sub transfer_out {
 
 sub _determine_wh_and_bin {
   $::lxdebug->enter_sub(2);
-
+  if (@_ == 6) {my $dummy = shift;}
+$main::lxdebug->dump(0, 'WH:WAREHOUSE ',\@_);
   my ($dbh, $conf, $part_id, $qty, $unit) = @_;
   my @errors;
 
@@ -1509,6 +1510,7 @@ sub _determine_wh_and_bin {
     }
   }
 
+  $main::lxdebug->dump(0, "WH: BIN: $bin_id -- $wh_id", \@errors);
   $::lxdebug->leave_sub(2);
   return (\@errors, $wh_id, $bin_id);
 }

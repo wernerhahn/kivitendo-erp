@@ -10,6 +10,7 @@ use LWP::Authen::Digest;
 use SL::DB::ShopOrder;
 use SL::DB::ShopOrderItem;
 use Data::Dumper;
+use Sort::Naturally ();
 
 use Rose::Object::MakeMethods::Generic (
   'scalar --get_set_init' => [ qw(connector url) ],
@@ -19,9 +20,9 @@ sub get_new_orders {
   my ($self, $id) = @_;
 
   my $url = $self->url;
-  my $ordnumber = 61544;
+  my $ordnumber = 61101;
   # Muss noch angepasst werden
-  for(my $i=1;$i<=300;$i++) {
+  for(my $i=1;$i<=20;$i++) {
     my $data = $self->connector->get("http://$url/api/orders/$ordnumber?useNumberAsId=true");
     $ordnumber++;
     $::lxdebug->dump(0, "WH: DATA ", \$data);
@@ -99,22 +100,48 @@ sub get_new_orders {
     my $id = $insert->id;
     #$::lxdebug->dump(0, "WH: ID ", $insert->id);
 
-    my @positions = @{ $import->{data}->{details} };
-    #$::lxdebug->dump(0, "WH: POSITIONS ", \@positions);
+    #my @positions = @{ $import->{data}->{details} };
+    my @positions = sort { Sort::Naturally::ncmp($a->{"partnumber"}, $b->{"partnumber"}) } @{ $import->{data}->{details} };
+    # $::lxdebug->dump(0, "WH: POSITIONS ", \@positions);
+    my $position = 1;
     foreach my $pos(@positions) {
       my %pos_columns = ( description => $pos->{articleName},
-                          id          => $pos->{id},
+        #     id          => $pos->{id},
                           partnumber  => $pos->{articleNumber},
                           price       => $pos->{price},
                           quantity    => $pos->{quantity},
-                          #shop_id     => $pos->{articleId},
+                          position    => $position,
                           tax_rate    => $pos->{taxRate},
                           shop_trans_id    => $pos->{articleId},
                           shop_order_id    => $id,
                         );
       my $pos_insert = SL::DB::ShopOrderItem->new(%pos_columns);
       $pos_insert->save;
+      $position++;
       #$::lxdebug->dump(0,"WH: POS ", \%pos_columns);
+    }
+    # Versandkosten als Position am ende einfügen Dreschflegelspezifisch event. konfigurierbar machen
+    if (my $shipping = $import->{data}->{dispatch}->{name}) {
+      my %shipping_partnumbers = (
+                                  'Auslandsversand Einschreiben' => { 'partnumber' => '900650'},
+                                  'Auslandsversand'              => { 'partnumber' => '900650'},
+                                  'Standard Versand'            => { 'partnumber' => '905500'},
+                                  'Kostenloser Versand'         => { 'partnumber' => '905500'},
+                                );
+      $main::lxdebug->message(0, "WH: SHIPPING1: $shipping ");
+      my %shipping_pos = ( description => $import->{data}->{dispatch}->{name},
+        #      id          => 0,
+                           partnumber  => $shipping_partnumbers{$shipping}->{partnumber},
+                           price       => $import->{data}->{invoiceShipping},
+                           quantity    => 1,
+                           position    => $position,
+                           tax_rate    => 7,
+                           shop_trans_id  => 0,
+                           shop_order_id  => $id,
+                         );
+      $main::lxdebug->dump(0, 'WH: SHIPPING: ', \%shipping_pos);
+      my $shipping_pos_insert = SL::DB::ShopOrderItem->new(%shipping_pos);
+      $shipping_pos_insert->save;
     }
   }
   # return $import;

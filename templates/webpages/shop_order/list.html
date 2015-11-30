@@ -156,7 +156,7 @@
     <td>[% shop_order.shop_order_items.size %]<br>[% shop_order.amount_as_number %]<br>[% shop_order.shipping_costs_as_number %]</td>
     <td>[% IF shop_order.transferred == 1 %]<a href="controller.pl?id=[% shop_order.id %]&action=ShopOrder/show">[% 'Show order' | $T8 %]<br>[% shop_order.transferred_date_as_date %]</a>
         [% ELSE %]
-        [% L.checkbox_tag('id[]', checked = transferable,  value=shop_order.id) %]<br>
+        [% L.checkbox_tag('id[]', checked = '',  value=shop_order.id) %]<br>
         <a href="controller.pl?id=[% shop_order.id %]&action=ShopOrder/show">[% 'Create order' | $T8 %][% END %]</a></td>
   </tr>
   [% END %]

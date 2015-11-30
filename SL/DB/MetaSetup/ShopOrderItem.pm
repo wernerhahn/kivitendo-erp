@@ -12,6 +12,7 @@ __PACKAGE__->meta->columns(
   description   => { type => 'text' },
   id            => { type => 'serial', not_null => 1 },
   partnumber    => { type => 'text' },
+  position      => { type => 'integer' },
   price         => { type => 'numeric', precision => 15, scale => 5 },
   quantity      => { type => 'numeric', precision => 25, scale => 5 },
   shop_id       => { type => 'integer' },

@@ -4,7 +4,7 @@ use strict;
 
 use parent qw(SL::Controller::Base);
 
-use SL::BackgroundJob::ShopOrder;
+use SL::BackgroundJob::ShopOrderMassTransfer;
 use SL::System::TaskServer;
 use SL::DB::ShopOrder;
 use SL::DB::ShopOrderItem;
@@ -44,7 +44,7 @@ sub action_list {
                                                     );
   $::lxdebug->dump(0, "WH: IMPORTS I ",  \$shop_orders);
   foreach my $shop_order ( @$shop_orders ) {
-  $::lxdebug->dump(0, "WH: IMPORTS II ",  $shop_order);
+    # $::lxdebug->dump(0, "WH: IMPORTS II ",  $shop_order);
     my %billing_address = ( 'name'     => $shop_order->billing_lastname,
                             'company'  => $shop_order->billing_company,
                             'street'   => $shop_order->billing_street,
@@ -52,9 +52,14 @@ sub action_list {
                             'city'     => $shop_order->billing_city,
                           );
     my $b_address = $self->check_address(%billing_address);
+    if ($b_address) {
+      $main::lxdebug->message(0, "WH: SAVE ");
+      $shop_order->{kivi_customer_id} = $b_address->{id};
+      $shop_order->save;
+    }
     $shop_order->{kivi_cv_id} = $b_address;
   }
-  $::lxdebug->dump(0, "WH: IMPORTS III ",  \$shop_orders);
+  #$::lxdebug->dump(0, "WH: IMPORTS III ",  \$shop_orders);
   $self->render('shop_order/list',
                 title       => t8('ShopOrders'),
                 SHOPORDERS  => $shop_orders,
@@ -67,7 +72,7 @@ sub action_show {
   my $id = $::form->{id} || {};
   my $shop_order = SL::DB::Manager::ShopOrder->find_by( id => $id );
   die "can't find shoporder with id $id" unless $shop_order;
-$main::lxdebug->dump(0, 'WH:ORDER: ', \$shop_order);
+#$main::lxdebug->dump(0, 'WH:ORDER: ', \$shop_order);
   # the different importaddresscheck if there complete in the customer table to prevent duplicats inserts
   my %customer_address = ( 'name'    => $shop_order->customer_lastname,
                            'company' => $shop_order->customer_company,
@@ -141,20 +146,22 @@ sub action_mass_transfer {
   my ($self) = @_;
   my @shop_orders =  @{ $::form->{id} || [] };
   $::lxdebug->dump(0, 'WH: MT II', \@shop_orders);
+  $::lxdebug->dump(0, 'WH: MT SELF', \$self);
+  $::lxdebug->dump(0, 'WH: MT FORM', \$::form);
 
   my $job                   = SL::DB::BackgroundJob->new(
     type                    => 'once',
     active                  => 1,
-    package_name            => 'ShopOrder',
+    package_name            => 'ShopOrderMassTransfer',
   )->set_data(
-     shop_order_record_ids       => [ 606, 604, 605],
+     shop_order_record_ids       => [ @shop_orders ],
      num_order_created           => 0,
      num_delivery_order_created  => 0,
      conversation_errors         => [ ],
    )->update_next_run_at;
 
    SL::System::TaskServer->new->wake_up;
-
+$main::lxdebug->message(0, "WH: ACTION");
 }
 
 sub action_apply_customer {

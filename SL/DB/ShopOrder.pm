@@ -36,10 +36,11 @@ sub convert_to_sales_order {
   foreach my $items (@{$self->shop_order_items}) {
     my $item = SL::DB::OrderItem->new;
     my $part = SL::DB::Manager::Part->find_by( partnumber => $items->{partnumber} );
-
+$main::lxdebug->dump(0, 'WH: SO PART',\$part);
     $item->assign_attributes(
         parts_id        => $part->id,
         description     => $items->description,
+        position        => $items->position,
         qty             => $items->quantity,
         sellprice       => $items->price,
         unit            => $part->unit,

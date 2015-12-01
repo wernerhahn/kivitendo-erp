@@ -47,8 +47,6 @@ sub transfer {
 
   my ($self, @args) = @_;
 
-      $main::lxdebug->dump(0, 'WH: TRANSFER @_',\@_);
-      $main::lxdebug->dump(0, 'WH: TRANSFER SELF',\$self);
   if (!@args) {
     $::lxdebug->leave_sub;
     return;
@@ -65,8 +63,6 @@ sub transfer {
 
   my $objectify = sub {
     my ($transfer, $field, $class, @find_by) = @_;
-      $main::lxdebug->dump(0, 'WH: TRANSFER II @_',\@_);
-      $main::lxdebug->dump(0, 'WH: TRANSFER II TRANSFER',\$transfer);
 
     @find_by = (description => $transfer->{$field}) unless @find_by;
 
@@ -83,7 +79,6 @@ sub transfer {
   my $db = SL::DB::Inventory->new->db;
   $db->with_transaction(sub{
     while (my $transfer = shift @args) {
-      $main::lxdebug->dump(0, 'WH: WAREHOUSE TRANSFER ',\$transfer);
       my ($trans_id) = selectrow_query($::form, $::form->get_standard_dbh, qq|SELECT nextval('id')|);
 
       my $part          = $objectify->($transfer, 'parts',         'SL::DB::Part');
@@ -115,11 +110,8 @@ sub transfer {
                               ? $now : $transfer->{shippingdate},
           map { $_ => $transfer->{$_} } qw(chargenumber bestbefore oe_id delivery_order_items_stock_id invoice_id comment),
       );
-      my $unit_obj = $part->unit_obj;##
-$main::lxdebug->dump(0, 'WH: WAREHOUSE PART:', \$part);
-$main::lxdebug->dump(0, "WH: WAREHOUSE I QTY: $qty --", \$unit);
+
       if ($unit) {
-        $main::lxdebug->message(0, "WH: WAREHOUSE $qty -- $unit -- $part->unit_obj");
         $qty = $unit->convert_to($qty, $part->unit_obj);
       }
 

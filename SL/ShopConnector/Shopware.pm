@@ -20,9 +20,9 @@ sub get_new_orders {
   my ($self, $id) = @_;
 
   my $url = $self->url;
-  my $ordnumber = 61101;
+  my $ordnumber = 61141;
   # Muss noch angepasst werden
-  for(my $i=1;$i<=20;$i++) {
+  for(my $i=1;$i<=50;$i++) {
     my $data = $self->connector->get("http://$url/api/orders/$ordnumber?useNumberAsId=true");
     $ordnumber++;
     $::lxdebug->dump(0, "WH: DATA ", \$data);

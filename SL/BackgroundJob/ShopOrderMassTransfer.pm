@@ -9,6 +9,7 @@ use parent qw(SL::BackgroundJob::Base);
 # Workflow Dreschflegel Shoporder import -> wo geht automatisch nach Order(Auftrag) und DeliveryOrder (Lieferschein) mit auslagern transferieren
 #
 
+use SL::DBUtils;
 use SL::DB::ShopOrder;
 use SL::DB::ShopOrderItem;
 use SL::DB::Order;
@@ -17,8 +18,9 @@ use SL::DB::Inventory;
 use Sort::Naturally ();
 
 use constant WAITING_FOR_EXECUTION        => 0;
-use constant CONVERTING_TO_DELIVERY_ORDER => 1;
-use constant DONE                         => 5;
+use constant CONVERTING_TO_ORDER          => 1;
+use constant CONVERTING_TO_DELIVERY_ORDER => 2;
+use constant DONE                         => 3;
 
 # Data format:
 # my $data                  = {
@@ -31,11 +33,10 @@ use constant DONE                         => 5;
 
 sub create_order {
   my ( $self ) = @_;
-  $::lxdebug->dump(0, 'WH: Taskmanager: ', \$self);
   my $job_obj = $self->{job_obj};
   my $db      = $job_obj->db;
+
   foreach my $shop_order_id (@{ $job_obj->data_as_hash->{shop_order_record_ids} }) {
-    #my $shop_order = SL::DB::Manager::ShopOrder->find_by( id => $shop_order_id );
     my $shop_order = SL::DB::ShopOrder->new(id => $shop_order_id)->load;
     die "can't find shoporder with id $shop_order_id" unless $shop_order;
     $::lxdebug->dump(0, 'WH: CREATE:I ', \$shop_order);
@@ -89,7 +90,7 @@ sub create_order {
       my @transfers;
       my @errors;
       my $qty;
-      my @stock_out;
+      my $stock_out;
       require SL::WH;
       require SL::IS;
       require SL::DB::DeliveryOrderItemsStock;
@@ -100,44 +101,43 @@ sub create_order {
                                                            $item->{unit}
                                                            );
         if (!@{ $err } && $wh_id && $bin_id) {
-          push @transfers, {
-            'bestbefore' => undef,
-            'chargenumber' => '',
-            'shippingdate' => 'current_date',
-            'delivery_order_items_stock_id' => undef,
-            'project_id' => '',
-            'parts_id'         => $item->{parts_id},
-            'qty'              => $item->{qty},
-            'unit'             => $item->{unit},
-            'transfer_type'    => 'shipped',
-            'src_warehouse_id' => $wh_id,
-            'src_bin_id'       => $bin_id,
-            'comment' => $main::locale->text("Default transfer delivery order"),
-            'oe_id' => $delivery_order->{id},
-          };
-          $main::lxdebug->dump(0, 'WH: ITEM',\$item);
-          push @stock_out, {
+          my $delivery_order_items_stock = SL::DB::DeliveryOrderItemsStock->new;
+          $delivery_order_items_stock->assign_attributes (
             'delivery_order_item_id'  => $item->{id},
             'qty'                     => $item->{qty},
             'unit'                    => $item->{unit},
             'warehouse_id'            => $wh_id,
             'bin_id'                  => $bin_id,
-          };
+          );
+          $delivery_order_items_stock->save;
 
-          push @errors, @{ $err };
+          my ($trans_id) = selectrow_query($::form, $::form->get_standard_dbh, qq|SELECT nextval('id')|);
+          my $wh_transfer = SL::DB::Inventory->new;
+          $wh_transfer->assign_attributes (
+            'trans_id'                      => $trans_id,
+            'employee'                      => $employee->{id},
+            'bestbefore'                    => undef,
+            'chargenumber'                  => '',
+            'shippingdate'                  => DateTime->today,
+            'delivery_order_items_stock_id' => $delivery_order_items_stock->id,
+            'project_id'                    => '',
+            'parts_id'                      => $item->{parts_id},
+            'qty'                           => $item->{qty} * -1,
+            'trans_type_id'              => 889,#hardcodiert
+            'warehouse_id'                  => $wh_id,
+            'bin_id'                        => $bin_id,
+            'comment'                       => $main::locale->text("Default transfer delivery order"),
+            'oe_id'                         => $delivery_order->{id},
+          );
+          $wh_transfer->save;
         }
+        push @errors, @{ $err };
       }
       $main::lxdebug->dump(0, 'WH: LAGER II ', \@transfers);
       $main::lxdebug->dump(0, 'WH: LAGER III ', \@errors);
       if (!@errors) {
-        WH->transfer(@transfers);
-        foreach my $stock_out_item(@stock_out) {
-          $main::lxdebug->dump(0, "WH: LAGER IV ",\$stock_out_item);
-          my $delivery_order_items_stock = SL::DB::DeliveryOrderItemsStock->new(%$stock_out_item);
-          $delivery_order_items_stock->save;
           $delivery_order->delivered(1);
           $delivery_order->save;
-        }
       }
     }
   }

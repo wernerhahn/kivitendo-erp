@@ -57,7 +57,7 @@
     <td>
       [%- L.hidden_tag("order.orderitems[].active_price_source", ITEM.active_price_source.source) %]
       [%- SET EDIT_PRICE = (AUTH.assert('edit_prices', 1) && ITEM.active_price_source.source == '') %]
-      <div name="editable_price" [%- IF !EDIT_PRICE %]style="display:none"[%- END %]>
+      <div name="editable_price" style="text-align:right;[%- IF !EDIT_PRICE %]display:none[%- END %]">
         [%- L.input_tag("order.orderitems[].sellprice_as_number",
                         ITEM.sellprice_as_number,
                         size = 10,
@@ -75,7 +75,7 @@
     <td>
       [%- L.hidden_tag("order.orderitems[].active_discount_source", ITEM.active_discount_source.source) %]
       [%- SET EDIT_DISCOUNT = (AUTH.assert('edit_prices', 1) && ITEM.active_discount_source.source == '') %]
-      <div name="editable_discount" [%- IF !EDIT_DISCOUNT %]style="display:none"[%- END %]>
+      <div name="editable_discount" style="text-align:right;[%- IF !EDIT_DISCOUNT %]display:none[%- END %]">
         [%- L.input_tag("order.orderitems[].discount_as_percent",
                         ITEM.discount_as_percent,
                         size = 5,

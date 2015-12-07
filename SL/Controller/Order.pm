@@ -258,16 +258,12 @@ sub action_save_and_delivery_order {
     $self->js->flash('error', $_) foreach @{ $errors };
     return $self->js->render();
   }
-
-  my $delivery_order = $self->order->convert_to_delivery_order($self->order);
-
   flash_later('info', $::locale->text('The order has been saved'));
+
   my @redirect_params = (
-    controller => 'do.pl',
-    action     => 'edit',
-    type       => $delivery_order->type,
-    id         => $delivery_order->id,
-    vc         => $delivery_order->is_sales ? 'customer' : 'vendor',
+    controller => 'oe.pl',
+    action     => 'oe_delivery_order_from_order',
+    id         => $self->order->id,
   );
 
   $self->redirect_to(@redirect_params);

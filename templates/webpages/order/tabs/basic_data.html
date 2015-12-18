@@ -156,7 +156,7 @@
                 <th class="listheading" style='display:none'></th>
                 <th class="listheading" style='text-align:center' nowrap width="1"><img src="image/updown.png" alt="[%- LxERP.t8('reorder item') %]"></th>
                 <th class="listheading" style='text-align:center' nowrap width="1"><img src="image/close.png" alt="[%- LxERP.t8('delete item') %]"></th>
-                <th class="listheading" nowrap width="15">[%- 'Partnumber'  | $T8 %] </th>
+                <th class="listheading" nowrap width="15">[%- 'Partnumber'   | $T8 %] </th>
                 <th class="listheading" nowrap           >[%- 'Description'  | $T8 %] </th>
                 <th class="listheading" nowrap width="5" >[%- 'Qty'          | $T8 %] </th>
                 <th class="listheading" nowrap width="5" >[%- 'Price Factor' | $T8 %] </th>
@@ -480,7 +480,7 @@ function set_unit_change_with_oldval_by_id(item_id) {
   var row = $('#item_' + item_id).parents("tbody").first();
   var select_elt = $(row).find('[name="order.orderitems[].unit"]');
 
-  set_unit_change_with_oldval(select_elt)
+  set_unit_change_with_oldval(select_elt);
 }
 
 function set_unit_change_with_oldval(selects) {

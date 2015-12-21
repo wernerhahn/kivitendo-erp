@@ -48,52 +48,52 @@ use SL::Inifile;
 
 use strict;
 
-my %locales_by_language;
+my %locales_by_country;
 
 sub new {
   $main::lxdebug->enter_sub();
 
-  my ($type, $language) = @_;
+  my ($type, $country) = @_;
 
-  $language ||= $::lx_office_conf{system}->{language};
-  $language   =~ s|.*/||;
-  $language   =~ s|\.||g;
+  $country ||= $::lx_office_conf{system}->{language};
+  $country   =~ s|.*/||;
+  $country   =~ s|\.||g;
 
-  if (!$locales_by_language{$language}) {
+  if (!$locales_by_country{$country}) {
     my $self = {};
     bless $self, $type;
 
-    $self->_init($language);
+    $self->_init($country);
 
-    $locales_by_language{$language} = $self;
+    $locales_by_country{$country} = $self;
   }
 
   $main::lxdebug->leave_sub();
 
-  return $locales_by_language{$language}
+  return $locales_by_country{$country}
 }
 
 sub _init {
   my $self     = shift;
-  my $language  = shift;
+  my $country  = shift;
 
-  $self->{countrycode} = $language;
+  $self->{countrycode} = $country;
 
-  if ($language && -d "locale/$language") {
-    local *IN;
-    if (open(IN, "<", "locale/$language/all")) {
-      my $code = join("", <IN>);
+  if ($country && -d "locale/$country") {
+    if (open my $in, "<", "locale/$country/all") {
+      local $/ = undef;
+      my $code = <$in>;
       eval($code);
-      close(IN);
+      close($in);
     }
 
-    if (-d "locale/$language/more") {
-      opendir my $dh, "locale/$language/more" or die "can't open locale/$language/more: $!";
-      my @files = sort grep -f "locale/$language/more/$_", readdir $dh;
+    if (-d "locale/$country/more") {
+      opendir my $dh, "locale/$country/more" or die "can't open locale/$country/more: $!";
+      my @files = sort grep -f "locale/$country/more/$_", readdir $dh;
       close $dh;
 
       for my $file (@files) {
-        if (open my $in, "<", "locale/$language/more/$file") {
+        if (open my $in, "<", "locale/$country/more/$file") {
           local $/ = undef;
           my $code = <$in>;
           eval($code);
@@ -114,7 +114,7 @@ sub _init {
   $self->{iconv_to_iso8859} = SL::Iconv->new('UTF-8',       'ISO-8859-15');
   $self->{iconv_utf8}       = SL::Iconv->new('UTF-8',       'UTF-8');
 
-  $self->_read_special_chars_file($language);
+  $self->_read_special_chars_file($country);
 
   push @{ $self->{LONG_MONTH} },
     ("January",   "February", "March",    "April",
@@ -167,14 +167,14 @@ sub _handle_markup {
 
 sub _read_special_chars_file {
   my $self    = shift;
-  my $language = shift;
+  my $country = shift;
 
-  if (! -f "locale/$language/special_chars") {
+  if (! -f "locale/$country/special_chars") {
     $self->{special_chars_map} = {};
     return;
   }
 
-  $self->{special_chars_map} = Inifile->new("locale/$language/special_chars", 'verbatim' => 1);
+  $self->{special_chars_map} = Inifile->new("locale/$country/special_chars", 'verbatim' => 1);
 
   foreach my $format (keys %{ $self->{special_chars_map} }) {
     next if (($format eq 'FILE') || ($format eq 'ORDER') || (ref $self->{special_chars_map}->{$format} ne 'HASH'));

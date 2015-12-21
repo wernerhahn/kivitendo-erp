@@ -970,8 +970,8 @@ sub round_amount {
   return 0 if !defined $amount;
 
   if ($adjust) {
-    my $precision = SL::DB::Default->get->precision || 0.01;
-    return int( (1+2**-52) * $amount / $precision + ($amount <=> 0) * .5 ) * $precision;
+    my $precision = $::instance_conf->get_precision || 0.01;
+    return $self->round_amount( $self->round_amount($amount / $precision, 0) * $precision, $places);
   }
 
   # We use Perl's knowledge of string representation for

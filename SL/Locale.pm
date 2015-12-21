@@ -45,7 +45,6 @@ use SL::LXDebug;
 use SL::Common;
 use SL::Iconv;
 use SL::Inifile;
-use XML::LibXML;
 
 use strict;
 

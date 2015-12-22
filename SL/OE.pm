@@ -625,7 +625,7 @@ SQL
   my $tax = 0;
   map { $tax += $form->round_amount($taxaccounts{$_}, 2) } keys %taxaccounts;
 
-  $amount = $form->round_amount($netamount + $tax + $form->{invtotal}, 2, 1);
+  $amount = $form->round_amount($netamount + $tax, 2, 1);
   $netamount = $form->round_amount($netamount, 2);
 
   if ($form->{currency} eq $form->{defaultcurrency}) {

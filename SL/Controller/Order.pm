@@ -434,6 +434,16 @@ sub action_recalc_amounts_and_taxes {
   $self->js->render();
 }
 
+sub action_reorder_items {
+  my ($self) = @_;
+
+  my @to_sort = map { { old_pos => $_->position, partnumber => $_->part->partnumber } } @{ $self->order->items_sorted };
+  @to_sort    = sort { $a->{partnumber} cmp $b->{partnumber} } @to_sort;
+  $self->js
+    ->run('redisplay_items', \@to_sort)
+    ->render;
+}
+
 sub action_price_popup {
   my ($self) = @_;
 

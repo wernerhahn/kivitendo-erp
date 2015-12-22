@@ -463,9 +463,10 @@ sub form_footer {
     }
   }
 
-  my $total = $form->round_amount( $form->{invtotal}, 2, 1 );
-  $form->{rounding} = $form->round_amount( $total-$form->{invtotal}, 2 );
-  $form->{invtotal} = $total;
+  $form->{rounding} = $form->round_amount(
+    $form->round_amount($form->{invtotal}, 2, 1) - $form->round_amount($form->{invtotal}, 2), 2
+  );
+  $form->{invtotal} = $form->round_amount( $form->{invtotal}, 2, 1 );
 
   # follow ups
   if ($form->{id}) {

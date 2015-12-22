@@ -556,10 +556,11 @@ sub form_footer {
     }
   }
 
-  # beware numeric effects
-  $form->{oldinvtotal} = $form->round_amount( $form->{invtotal},2,1 );
-  $form->{rounding} = $form->round_amount( $form->{oldinvtotal}-$form->{invtotal}, 2 );
-  $form->{invtotal} = $form->{oldinvtotal};
+  $form->{rounding} = $form->round_amount(
+    $form->round_amount($form->{invtotal}, 2, 1) - $form->round_amount($form->{invtotal}, 2)
+  );
+  $form->{invtotal} = $form->round_amount( $form->{invtotal}, 2, 1);
+  $form->{oldinvtotal} = $form->{invtotal};
 
   $TMPL_VAR{ALL_DELIVERY_TERMS} = SL::DB::Manager::DeliveryTerm->get_all_sorted();
 
@@ -625,7 +626,7 @@ sub update {
     if ($form->{type} =~ /^sales/) {
       IS->retrieve_item(\%myconfig, \%$form);
       $mode = 'IS';
-  } else {
+    } else {
       IR->retrieve_item(\%myconfig, \%$form);
       $mode = 'IR';
     }

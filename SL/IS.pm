@@ -989,7 +989,9 @@ SQL
   foreach my $trans_id (keys %{ $form->{amount_cogs} }) {
     foreach my $accno (keys %{ $form->{amount_cogs}{$trans_id} }) {
       next unless ($form->{expense_inventory} =~ /\Q$accno\E/);
+
       $form->{amount_cogs}{$trans_id}{$accno} = $form->round_amount($form->{amount_cogs}{$trans_id}{$accno}, 2);
+
       if (!$payments_only && ($form->{amount_cogs}{$trans_id}{$accno} != 0)) {
         $query =
           qq|INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, tax_id, taxkey, project_id, chart_link)
@@ -1002,6 +1004,7 @@ SQL
 
     foreach my $accno (keys %{ $form->{amount_cogs}{$trans_id} }) {
       $form->{amount_cogs}{$trans_id}{$accno} = $form->round_amount($form->{amount_cogs}{$trans_id}{$accno}, 2);
+
       if (!$payments_only && ($form->{amount_cogs}{$trans_id}{$accno} != 0)) {
         $query =
           qq|INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, tax_id, taxkey, project_id, chart_link)
@@ -1015,7 +1018,9 @@ SQL
   foreach my $trans_id (keys %{ $form->{amount} }) {
     foreach my $accno (keys %{ $form->{amount}{$trans_id} }) {
       next unless ($form->{expense_inventory} =~ /\Q$accno\E/);
+
       $form->{amount}{$trans_id}{$accno} = $form->round_amount($form->{amount}{$trans_id}{$accno}, 2);
+
       if (!$payments_only && ($form->{amount}{$trans_id}{$accno} != 0)) {
         $query =
           qq|INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, tax_id, taxkey, project_id, chart_link)
@@ -1041,8 +1046,10 @@ SQL
         $form->{amount}{$trans_id}{$accno} = 0;
       }
     }
+
     foreach my $accno (keys %{ $form->{amount}{$trans_id} }) {
       $form->{amount}{$trans_id}{$accno} = $form->round_amount($form->{amount}{$trans_id}{$accno}, 2);
+
       if (!$payments_only && ($form->{amount}{$trans_id}{$accno} != 0)) {
         $query =
           qq|INSERT INTO acc_trans (trans_id, chart_id, amount, transdate, tax_id, taxkey, project_id, chart_link)

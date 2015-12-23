@@ -437,8 +437,17 @@ sub action_recalc_amounts_and_taxes {
 sub action_reorder_items {
   my ($self) = @_;
 
-  my @to_sort = map { { old_pos => $_->position, partnumber => $_->part->partnumber } } @{ $self->order->items_sorted };
-  @to_sort    = sort { $a->{partnumber} cmp $b->{partnumber} } @to_sort;
+  my %sort_keys = (
+    partnumber  => sub { $_[0]->part->partnumber },
+    description => sub { $_[0]->description },
+    qty         => sub { $_[0]->qty },
+    sellprice   => sub { $_[0]->sellprice },
+    discount    => sub { $_[0]->discount },
+  );
+
+  my $method = $sort_keys{$::form->{order_by}};
+  my @to_sort = map { { old_pos => $_->position, order_by => $method->($_) } } @{ $self->order->items_sorted };
+  @to_sort    = sort { $a->{order_by} cmp $b->{order_by} } @to_sort;
   $self->js
     ->run('redisplay_items', \@to_sort)
     ->render;

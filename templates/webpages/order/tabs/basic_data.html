@@ -157,14 +157,14 @@
                 <th class="listheading" nowrap width="3" >[%- 'position'     | $T8 %] </th>
                 <th class="listheading" style='text-align:center' nowrap width="1"><img src="image/updown.png" alt="[%- LxERP.t8('reorder item') %]"></th>
                 <th class="listheading" style='text-align:center' nowrap width="1"><img src="image/close.png" alt="[%- LxERP.t8('delete item') %]"></th>
-                <th class="listheading" nowrap width="15"><a href='#' onClick='javascript:reorder_items("partnumber")'>[%- 'Partnumber' | $T8 %]<img src="image/updown.png" alt="[%- LxERP.t8('sort items') %]"></a></th>
-                <th class="listheading" nowrap           >[%- 'Description'  | $T8 %] </th>
-                <th class="listheading" nowrap width="5" >[%- 'Qty'          | $T8 %] </th>
+                <th class="listheading" nowrap width="15"><a href='#' onClick='javascript:reorder_items("partnumber")'> [%- 'Partnumber'  | $T8 %]<img src="image/updown.png" alt="[%- LxERP.t8('sort items') %]"></a></th>
+                <th class="listheading" nowrap           ><a href='#' onClick='javascript:reorder_items("description")'>[%- 'Description' | $T8 %]<img src="image/updown.png" alt="[%- LxERP.t8('sort items') %]"></a></th>
+                <th class="listheading" nowrap width="5" ><a href='#' onClick='javascript:reorder_items("qty")'>        [%- 'Qty'         | $T8 %]<img src="image/updown.png" alt="[%- LxERP.t8('sort items') %]"></a></th>
                 <th class="listheading" nowrap width="5" >[%- 'Price Factor' | $T8 %] </th>
                 <th class="listheading" nowrap width="5" >[%- 'Unit'         | $T8 %] </th>
                 <th class="listheading" nowrap width="5" >[%- 'Price Source' | $T8 %] </th>
-                <th class="listheading" nowrap width="15">[%- 'Price'        | $T8 %] </th>
-                <th class="listheading" nowrap width="5" >[%- 'Discount'     | $T8 %] </th>
+                <th class="listheading" nowrap width="15" ><a href='#' onClick='javascript:reorder_items("sellprice")'> [%- 'Price'       | $T8 %]<img src="image/updown.png" alt="[%- LxERP.t8('sort items') %]"></a></th>
+                <th class="listheading" nowrap width="15" ><a href='#' onClick='javascript:reorder_items("discount")'>  [%- 'Discount'    | $T8 %]<img src="image/updown.png" alt="[%- LxERP.t8('sort items') %]"></a></th>
                 <th class="listheading" nowrap width="10">[%- 'Extended'     | $T8 %] </th>
               </tr>
             </thead>
@@ -526,10 +526,10 @@ function renumber_positions() {
   });
 }
 
-function reorder_items(by) {
+function reorder_items(order_by) {
   var data = $('#order_form').serialize();
   data += '&action=Order/reorder_items';
-  data += '&by=' + by;
+  data += '&order_by=' + order_by;
 
   $.post("controller.pl", data, kivi.eval_json_result);
 }

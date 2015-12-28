@@ -531,12 +531,24 @@ function renumber_positions() {
 }
 
 function reorder_items(order_by) {
+  var dir = $('#' + order_by + '_header_id a img').attr("data-sort-dir");
   $('#row_table_id thead a img').remove();
-  $('#' + order_by + '_header_id a').append('<img border=0 src="image/down.png" alt="[%- LxERP.t8('sort items') %]">');
+
+  var src;
+  if (dir == "1") {
+    dir = "0";
+    src = "image/up.png";
+  } else {
+    dir = "1";
+    src = "image/down.png";
+  };
+
+  $('#' + order_by + '_header_id a').append('<img border=0 data-sort-dir=' + dir + ' src=' + src + ' alt="[%- LxERP.t8('sort items') %]">');
 
   var data = $('#order_form').serialize();
   data += '&action=Order/reorder_items';
   data += '&order_by=' + order_by;
+  data += '&sort_dir=' + dir;
 
   $.post("controller.pl", data, kivi.eval_json_result);
 }

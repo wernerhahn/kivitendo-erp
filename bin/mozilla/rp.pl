@@ -130,7 +130,7 @@ sub report {
   my %title = (
     balance_sheet        => $::locale->text('Balance Sheet'),
     income_statement     => $::locale->text('Income Statement'),
-    erfolgsrechnung      => ('Erfolgsrechnung'),
+    erfolgsrechnung      => $::locale->text('Erfolgsrechnung'),
     trial_balance        => $::locale->text('Trial Balance'),
     ar_aging             => $::locale->text('Search AR Aging'),
     ap_aging             => $::locale->text('Search AP Aging'),
@@ -144,13 +144,10 @@ sub report {
 
   $::form->{title} = $title{$::form->{report}};
   $::request->{layout}->add_javascripts('autocomplete_customer.js');
-  $::form->{dateformat} = $::myconfig{dateformat};
-  my $year = DateTime->today->year;
-  $::form->{fromdate} = $::locale->reformat_date(\%::myconfig, '01.01.'.$year, $::myconfig{dateformat});
-  $::form->{todate} = $::locale->reformat_date(\%::myconfig, '31.01.'.$year, $::myconfig{dateformat});
+  $::form->{fromdate} = DateTime->today->truncate(to => 'year')->to_kivitendo;
+  $::form->{todate} = DateTime->today->truncate(to => 'year')->add(years => 1)->add(days => -1)->to_kivitendo;
 
   # get departments
-
   $::form->all_departments(\%::myconfig);
   if (@{ $::form->{all_departments} || [] }) {
     $::form->{selectdepartment} = "<option>\n";

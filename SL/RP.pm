@@ -1876,12 +1876,13 @@ sub erfolgsrechnung {
   $main::lxdebug->enter_sub();
 
   my ($self, $myconfig, $form) = @_;
-  ($form->{company}, $form->{adress}) = get_defaults_ch();
+  $form->{company} = $::instance_conf->get_company;
+  $form->{address} = $::instance_conf->get_address;
 
   # wrong user inputs should be handled during users input
   # e.g.  spaces, tabs, wrong format or wrong dates
-  $form->{fromdate} = "01.01.2000" if ! $form->{fromdate};
-  $form->{todate} = $form->current_date(%{$myconfig}) if ! $form->{todate};
+  $form->{fromdate} = "01.01.2000" if !$form->{fromdate};
+  $form->{todate} = $form->current_date(%{$myconfig}) if !$form->{todate};
 
   my %categories = (I => "ERTRAG", E => "AUFWAND");
   my $fromdate = conv_dateq($form->{fromdate});
@@ -1909,32 +1910,27 @@ sub erfolgsrechnung {
   return {};
 }
 
-sub get_defaults_ch {
-  $main::lxdebug->enter_sub();
-
-  my $query = q|SELECT company, address FROM defaults|;
-  my $row = @{_query($query)}[0];
-  my ($company, $adress) = ($row->{company}, $row->{address});
-
-  $main::lxdebug->leave_sub();
-  return ($company, $adress);
-}
-
 sub get_accounts_ch {
   $main::lxdebug->enter_sub();
 
   my ($category) = @_;
-  my ($query, $inclusion);
-  if ($category eq 'I') {$inclusion = "AND pos_eur = NULL OR pos_eur > '0' AND pos_eur <= '5'";}
-  elsif ($category eq 'E') {$inclusion = "AND pos_eur = NUll OR pos_eur >= '6' AND pos_eur < '100'";}
-  else {$inclusion = "";}
-  $query = qq|
+  my ($inclusion);
+
+  if ($category eq 'I') {
+    $inclusion = "AND pos_eur = NULL OR pos_eur > '0' AND pos_eur <= '5'";
+  } elsif ($category eq 'E') {
+    $inclusion = "AND pos_eur = NULL OR pos_eur >= '6' AND pos_eur < '100'";
+  } else {
+    $inclusion = "";
+  }
+
+  my $query = qq|
     SELECT id, accno, description, category
     FROM chart
-    WHERE category = '$category' $inclusion
+    WHERE category = ? $inclusion
     ORDER BY accno
   |;
-  my $accounts = _query($query);
+  my $accounts = selectall_hashref_query($::form, $::form->get_standard_dbh, $query, $category);
 
   $main::lxdebug->leave_sub();
   return $accounts;
@@ -1946,18 +1942,17 @@ sub get_total_ch {
   my ($chart_id, $fromdate, $todate) = @_;
   my $total = 0;
   my $query = qq|
-    SELECT amount
+    SELECT SUM(amount)
     FROM acc_trans
-    WHERE chart_id = '$chart_id'
-      AND transdate >= $fromdate
-      AND transdate <= $todate
+    WHERE chart_id = ?
+      AND transdate >= ?
+      AND transdate <= ?
   |;
-  $total += $_->{amount} foreach (_query($query));
+  my $data = selectfirst_hashref_query($::form, $::form->get_standard_dbh, $query, $chart_id, $fromdate, $todate);
+  $total += $data->{sum};
 
   $main::lxdebug->leave_sub();
   return $total;
 }
-
-sub _query {return selectall_hashref_query($::form, $::form->get_standard_dbh, $_[0]);}
 
 1;

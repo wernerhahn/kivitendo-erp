@@ -288,13 +288,11 @@ sub dbcreate {
   $self->create_schema_info_table($form, $dbh);
   $dbupdater->process_query($dbh, "sql/Pg-upgrade2/defaults_add_precision.sql");
   $dbh->do("INSERT INTO schema_info (tag, login) VALUES ('defaults_add_precision', 'admin')");
-  $dbupdater->process_query($dbh, "sql/Pg-upgrade2/defaults_add_country_mode.sql");
-  $dbh->do("INSERT INTO schema_info (tag, login) VALUES ('defaults_add_country_mode', 'admin')");
 
   # load chart of accounts
   $dbupdater->process_query($dbh, "sql/$form->{chart}-chart.sql");
 
-  $query = qq|UPDATE defaults SET coa = ?, accounting_method = ?, profit_determination = ?, inventory_system = ?, curr = ?, precision = ?, country_mode = ?|;
+  $query = qq|UPDATE defaults SET coa = ?, accounting_method = ?, profit_determination = ?, inventory_system = ?, curr = ?, precision = ?|;
   do_query($form, $dbh, $query, map { $form->{$_} } qw(chart accounting_method profit_determination inventory_system defaultcurrency precision countrymode));
 
   $dbh->disconnect;

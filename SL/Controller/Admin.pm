@@ -39,6 +39,7 @@ sub keep_auth_vars {
 
 sub action_login {
   my ($self) = @_;
+
   return $self->login_form if !$::form->{do_login};
   return                   if !$self->authenticate_root;
   return                   if !$self->check_auth_db_and_tables;
@@ -109,6 +110,7 @@ sub action_show {
 
 sub action_new_user {
   my ($self) = @_;
+
   my $defaults = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
   $self->user(SL::DB::AuthUser->new(
     config_values => {
@@ -555,8 +557,8 @@ sub init_all_countrycodes {
 
 sub setup_layout {
   my ($self, $action) = @_;
-  my $defaults = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
 
+  my $defaults = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
   $::request->layout(SL::Layout::Dispatcher->new(style => 'admin'));
   $::form->{favicon} = "favicon.ico";
   %::myconfig        = (
@@ -627,17 +629,17 @@ sub database_administration_login_form {
 
 sub create_dataset_form {
   my ($self, %params) = @_;
-  my $defaults = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
 
-  $::request->layout(SL::Layout::Dispatcher->new(style => 'admin'));
+  my $defaults = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
   $::form->{favicon} = "favicon.ico";
-  $::form->{countrymode}          = $defaults->country( 'DE' );
-  $::form->{chart}                = $defaults->chart_of_accounts( 'Germany-DATEV-SKR03EU' );
-  $::form->{defaultcurrency}      = $defaults->currency( 'EUR' );
-  $::form->{precision}            = $defaults->precision( '0.01' );
-  $::form->{accounting_method}    = $defaults->accounting_method( 'cash' );
-  $::form->{inventory_system}     = $defaults->inventory_system( 'periodic' );
-  $::form->{profit_determination} = $defaults->profit_determination( 'balance' );
+  $::form->{countrymode}          = $defaults->country('DE');
+  $::form->{chart}                = $defaults->chart_of_accounts('Germany-DATEV-SKR03EU');
+  $::form->{defaultcurrency}      = $defaults->currency('EUR');
+  $::form->{precision}            = $defaults->precision(0.01);
+  $::form->{accounting_method}    = $defaults->accounting_method('cash');
+  $::form->{inventory_system}     = $defaults->inventory_system('periodic');
+  $::form->{profit_determination} = $defaults->profit_determination('balance');
+
   $self->render('admin/create_dataset', title => (t8('Database Administration') . " / " . t8('Create Dataset')));
 }
 

@@ -14,7 +14,6 @@ sub today_local {
 
 package main;
 
-use SL::LxOfficeConf;
 use Test::More tests => 80;
 
 use lib 't';
@@ -38,21 +37,12 @@ Support::TestSetup::login();
 our ($ar_chart, $buchungsgruppe, $currency_id, $customer, $employee, $order, $part, $tax_zone, $unit, @invoices);
 
 sub init_common_state {
-  if ($::lx_office_conf{system}->{default_manager} eq "swiss") {
-    $ar_chart       = SL::DB::Manager::Chart->find_by(accno => '3200')                        || croak "No AR chart";
-    $buchungsgruppe = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 8%')  || croak "No accounting group";
-    $currency_id    = SL::DB::Default->get->currency_id;
-    $employee       = SL::DB::Manager::Employee->current                                      || croak "No employee";
-    $tax_zone       = SL::DB::Manager::TaxZone->find_by( description => 'Schweiz')            || croak "No taxzone";
-    $unit           = SL::DB::Manager::Unit->find_by(name => 'pauschal')                      || croak "No unit";
-  } else {
-    $ar_chart       = SL::DB::Manager::Chart->find_by(accno => '1400')                        || croak "No AR chart";
-    $buchungsgruppe = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 19%') || croak "No accounting group";
-    $currency_id    = SL::DB::Default->get->currency_id;
-    $employee       = SL::DB::Manager::Employee->current                                      || croak "No employee";
-    $tax_zone       = SL::DB::Manager::TaxZone->find_by( description => 'Inland')             || croak "No taxzone";
-    $unit           = SL::DB::Manager::Unit->find_by(name => 'psch')                          || croak "No unit";
-  }
+  $ar_chart       = SL::DB::Manager::Chart->find_by(accno => '1400')                        || croak "No AR chart";
+  $buchungsgruppe = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 19%') || croak "No accounting group";
+  $currency_id    = SL::DB::Default->get->currency_id;
+  $employee       = SL::DB::Manager::Employee->current                                      || croak "No employee";
+  $tax_zone       = SL::DB::Manager::TaxZone->find_by( description => 'Inland')             || croak "No taxzone";
+  $unit           = SL::DB::Manager::Unit->find_by(name => 'psch')                          || croak "No unit";
 }
 
 sub clear_up {

@@ -22,7 +22,6 @@ use SL::DB::Part;
 use SL::DB::Unit;
 use SL::DB::TaxZone;
 
-my $default_manager;
 my ($customer, $currency_id, @parts, $buchungsgruppe, $buchungsgruppe7, $unit, $employee, $tax, $tax7, $taxzone);
 
 sub clear_up {
@@ -40,24 +39,13 @@ sub reset_state {
 
   clear_up();
 
-  $default_manager = $::lx_office_conf{system}->{default_manager};
-  if ($default_manager eq "swiss") {
-    $buchungsgruppe  = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 8%', %{ $params{buchungsgruppe} })  || croak "No accounting group for 8\%";
-    $buchungsgruppe7 = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 2.5%', %{ $params{buchungsgruppe} })|| croak "No accounting group for 2.5\%";
-    $unit            = SL::DB::Manager::Unit->find_by(name => 'kg', %{ $params{unit} })                                      || croak "No unit";
-    $employee        = SL::DB::Manager::Employee->current                                                                    || croak "No employee";
-    $tax             = SL::DB::Manager::Tax->find_by(taxkey => 2, rate => 0.08, %{ $params{tax} })                           || croak "No tax for 8\%";
-    $tax7            = SL::DB::Manager::Tax->find_by(taxkey => 3, rate => 0.025)                                             || croak "No tax for 2.5\%";
-    $taxzone         = SL::DB::Manager::TaxZone->find_by( description => 'Schweiz')                                          || croak "No taxzone";
-  } else {
-    $buchungsgruppe  = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 19%', %{ $params{buchungsgruppe} }) || croak "No accounting group";
-    $buchungsgruppe7 = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 7%')                                || croak "No accounting group for 7\%";
-    $unit            = SL::DB::Manager::Unit->find_by(name => 'kg', %{ $params{unit} })                                      || croak "No unit";
-    $employee        = SL::DB::Manager::Employee->current                                                                    || croak "No employee";
-    $tax             = SL::DB::Manager::Tax->find_by(taxkey => 3, rate => 0.19, %{ $params{tax} })                           || croak "No tax";
-    $tax7            = SL::DB::Manager::Tax->find_by(taxkey => 2, rate => 0.07)                                              || croak "No tax for 7\%";
-    $taxzone         = SL::DB::Manager::TaxZone->find_by( description => 'Inland')                                           || croak "No taxzone";
-  }
+  $buchungsgruppe  = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 19%', %{ $params{buchungsgruppe} }) || croak "No accounting group";
+  $buchungsgruppe7 = SL::DB::Manager::Buchungsgruppe->find_by(description => 'Standard 7%')                                || croak "No accounting group for 7\%";
+  $unit            = SL::DB::Manager::Unit->find_by(name => 'kg', %{ $params{unit} })                                      || croak "No unit";
+  $employee        = SL::DB::Manager::Employee->current                                                                    || croak "No employee";
+  $tax             = SL::DB::Manager::Tax->find_by(taxkey => 3, rate => 0.19, %{ $params{tax} })                           || croak "No tax";
+  $tax7            = SL::DB::Manager::Tax->find_by(taxkey => 2, rate => 0.07)                                              || croak "No tax for 7\%";
+  $taxzone         = SL::DB::Manager::TaxZone->find_by( description => 'Inland')                                           || croak "No taxzone";
 
   $currency_id     = $::instance_conf->get_currency_id;
 
@@ -134,14 +122,14 @@ sub test_default_invoice_one_item_19_tax_not_included() {
   my $taxkey = $item->part->get_taxkey(date => DateTime->today_local, is_sales => 1, taxzone => $invoice->taxzone_id);
 
   # sellprice 2.34 * qty 2.5 = 5.85
-  # 19%(5.85) = 1.1115; rounded = 1.11             # 8%(5.85) = 0.468; rounded = 0.47
-  # total rounded = 6.96                           # total rounded = 6.32
+  # 19%(5.85) = 1.1115; rounded = 1.11
+  # total rounded = 6.96
 
   # lastcost 1.93 * qty 2.5 = 4.825; rounded 4.83
   # line marge_total = 1.02
   # line marge_percent = 17.4358974358974
 
-  my $title = $default_manager eq "swiss" ? 'default invoice, one item, 8% tax not included' : 'default invoice, one item, 19% tax not included';
+  my $title = 'default invoice, one item, 19% tax not included';
   my %data  = $invoice->calculate_prices_and_taxes;
 
   is($item->marge_total,        1.02,             "${title}: item marge_total");
@@ -149,11 +137,7 @@ sub test_default_invoice_one_item_19_tax_not_included() {
   is($item->marge_price_factor, 1,                "${title}: item marge_price_factor");
 
   is($invoice->netamount,       5.85,             "${title}: netamount");
-  if ($default_manager eq "swiss") {
-    is($invoice->amount,        6.32,             "${title}: amount");
-  } else {
-    is($invoice->amount,        6.96,             "${title}: amount");
-  }
+  is($invoice->amount,          6.96,             "${title}: amount");
   is($invoice->marge_total,     1.02,             "${title}: marge_total");
   is($invoice->marge_percent,   17.4358974358974, "${title}: marge_percent");
 
@@ -163,7 +147,7 @@ sub test_default_invoice_one_item_19_tax_not_included() {
       $buchungsgruppe->income_accno_id($taxzone) => {
         amount                                   => 5.85,
         tax_id                                   => $tax->id,
-        taxkey                                   => $default_manager eq "swiss" ? 2 : 3,
+        taxkey                                   => 3,
       },
     },
     amounts_cogs                                 => {},
@@ -172,13 +156,13 @@ sub test_default_invoice_one_item_19_tax_not_included() {
     ],
     exchangerate                                 => 1,
     taxes                                        => {
-      $tax->chart_id                             => $default_manager eq "swiss" ? 0.47 : 1.11,
+      $tax->chart_id                             => 1.11,
     },
     items                                        => [
       { linetotal                                => 5.85,
         linetotal_cost                           => 4.83,
         sellprice                                => 2.34,
-        tax_amount                               => $default_manager eq "swiss" ? 0.468 : 1.1115,
+        tax_amount                               => 1.1115,
         taxkey_id                                => $taxkey->id,
       },
     ],
@@ -200,8 +184,8 @@ sub test_default_invoice_two_items_19_7_tax_not_included() {
 
   # item 1:
   # sellprice 2.34 * qty 2.5 = 5.85
-  # 19%(5.85) = 1.1115; rounded = 1.11                # 8%(5.85) = 0.468; rounded = 0.47
-  # total rounded = 6.96                              # total rounded = 6.32
+  # 19%(5.85) = 1.1115; rounded = 1.11
+  # total rounded = 6.96
 
   # lastcost 1.93 * qty 2.5 = 4.825; rounded 4.83
   # line marge_total = 1.02
@@ -209,14 +193,14 @@ sub test_default_invoice_two_items_19_7_tax_not_included() {
 
   # item 2:
   # sellprice 9.714 * qty 1.2 = 11.6568 rounded 11.66
-  # 7%(11.6568) = 0.815976; rounded = 0.82            # 2.5%(11.6568) = 0.29142; rounded = 0.29
-  # total rounded = 12.48                             # total rounded = 11.95
+  # 7%(11.6568) = 0.815976; rounded = 0.82
+  # total rounded = 12.48
 
   # lastcost 5.473 * qty 1.2 = 6.5676; rounded 6.57
   # line marge_total = 5.09
   # line marge_percent = 43.6535162950257
 
-  my $title = $default_manager eq "swiss" ? 'default invoice, two item, 8/2.5% tax not included' : 'default invoice, two item, 19/7% tax not included';
+  my $title = 'default invoice, two item, 19/7% tax not included';
   my %data  = $invoice->calculate_prices_and_taxes;
 
   is($item1->marge_total,        1.02,             "${title}: item1 marge_total");
@@ -228,11 +212,7 @@ sub test_default_invoice_two_items_19_7_tax_not_included() {
   is($item2->marge_price_factor, 1,                "${title}: item2 marge_price_factor");
 
   is($invoice->netamount,        5.85 + 11.66,     "${title}: netamount");
-  if ($default_manager eq "swiss") {
-    is($invoice->amount,         6.32 + 11.95,     "${title}: amount");
-  } else {
-    is($invoice->amount,         6.96 + 12.48,     "${title}: amount");
-  }
+  is($invoice->amount,           6.96 + 12.48,     "${title}: amount");
   is($invoice->marge_total,      1.02 + 5.09,      "${title}: marge_total");
   is($invoice->marge_percent,    34.8943460879497, "${title}: marge_percent");
 
@@ -242,12 +222,12 @@ sub test_default_invoice_two_items_19_7_tax_not_included() {
       $buchungsgruppe->income_accno_id($taxzone)  => {
         amount                                    => 5.85,
         tax_id                                    => $tax->id,
-        taxkey                                    => $default_manager eq "swiss" ? 2 : 3,
+        taxkey                                    => 3,
       },
       $buchungsgruppe7->income_accno_id($taxzone) => {
         amount                                    => 11.66,
         tax_id                                    => $tax7->id,
-        taxkey                                    => $default_manager eq "swiss" ? 3 : 2,
+        taxkey                                    => 2,
       },
     },
     amounts_cogs                                  => {},
@@ -256,20 +236,20 @@ sub test_default_invoice_two_items_19_7_tax_not_included() {
     ],
     exchangerate                                  => 1,
     taxes                                         => {
-      $tax->chart_id                              => $default_manager eq "swiss" ? 0.47 : 1.11,
-      $tax7->chart_id                             => $default_manager eq "swiss" ? 0.29 : 0.82,
+      $tax->chart_id                              => 1.11,
+      $tax7->chart_id                             => 0.82,
     },
     items                                        => [
       { linetotal                                => 5.85,
         linetotal_cost                           => 4.83,
         sellprice                                => 2.34,
-        tax_amount                               => $default_manager eq "swiss" ? 0.468 : 1.1115,
+        tax_amount                               => 1.1115,
         taxkey_id                                => $taxkey1->id,
       },
       { linetotal                                => 11.66,
         linetotal_cost                           => 6.57,
         sellprice                                => 9.714,
-        tax_amount                               => $default_manager eq "swiss" ? 0.2915 : 0.8162,
+        tax_amount                               => 0.8162,
         taxkey_id                                => $taxkey2->id,
       },
     ],
@@ -300,8 +280,8 @@ sub test_default_invoice_three_items_sellprice_rounding_discount() {
   # discount = sellprice 5.55 * discount (0.05) = 0.2775; rounded 0.28
   # sellprice = sellprice 5.55 - discount 0.28 = 5.27; rounded 5.27
   # linetotal = sellprice 5.27 * qty 1 = 5.27; rounded 5.27
-  # 19%(5.27) = 1.0013; rounded = 1.00           # 8%(5.27) = 0.4216; rounded = 0.42
-  # total rounded = 6.27                         # total rounded = 5.69
+  # 19%(5.27) = 1.0013; rounded = 1.00
+  # total rounded = 6.27
 
   # lastcost 1.93 * qty 1 = 1.93; rounded 1.93
   # line marge_total = 3.34
@@ -311,8 +291,8 @@ sub test_default_invoice_three_items_sellprice_rounding_discount() {
   # discount = sellprice 5.50 * discount 0.05 = 0.275; rounded 0.28
   # sellprice = sellprice 5.50 - discount 0.28 = 5.22; rounded 5.22
   # linetotal = sellprice 5.22 * qty 1 = 5.22; rounded 5.22
-  # 19%(5.22) = 0.9918; rounded = 0.99           # 8%(5.22) = 0.4176; rounded = 0.42
-  # total rounded = 6.21                         # total rounded = 5.64
+  # 19%(5.22) = 0.9918; rounded = 0.99
+  # total rounded = 6.21
 
   # lastcost 1.93 * qty 1 = 1.93; rounded 1.93
   # line marge_total = 5.22 - 1.93 = 3.29
@@ -322,8 +302,8 @@ sub test_default_invoice_three_items_sellprice_rounding_discount() {
   # discount = sellprice 5.00 * discount 0.25 = 0.25; rounded 0.25
   # sellprice = sellprice 5.00 - discount 0.25 = 4.75; rounded 4.75
   # linetotal = sellprice 4.75 * qty 1 = 4.75; rounded 4.75
-  # 19%(4.75) = 0.9025; rounded = 0.90           # 8%(4.75) = 0.38; rounded = 0.38
-  # total rounded = 5.65                         # total rounded = 5.13
+  # 19%(4.75) = 0.9025; rounded = 0.90
+  # total rounded = 5.65
 
   # lastcost 1.93 * qty 1 = 1.93; rounded 1.93
   # line marge_total = 2.82
@@ -337,7 +317,7 @@ sub test_default_invoice_three_items_sellprice_rounding_discount() {
   is($item1->marge_price_factor, 1,                  "${title}: item1 marge_price_factor");
 
   is($item2->marge_total,        3.29,               "${title}: item2 marge_total");
-  is($item2->marge_percent,      63.0268199233716,   "${title}: item2 marge_percent");
+  is($item2->marge_percent,      63.0268199233716,  "${title}: item2 marge_percent");
   is($item2->marge_price_factor, 1,                  "${title}: item2 marge_price_factor");
 
   is($item3->marge_total,        2.82,               "${title}: item3 marge_total");
@@ -346,14 +326,10 @@ sub test_default_invoice_three_items_sellprice_rounding_discount() {
 
   is($invoice->netamount,        5.27 + 5.22 + 4.75, "${title}: netamount");
 
-  # 6.27 + 6.21 + 5.65 = 18.13                         # 5.69 + 5.64 + 5.13 = 16.46
-  # 1.19*(5.27 + 5.22 + 4.75) = 18.1356; rounded 18.14 # 0.08*(15.24) = 1.2192; rounded 1.22
+  # 6.27 + 6.21 + 5.65 = 18.13
+  # 1.19*(5.27 + 5.22 + 4.75) = 18.1356; rounded 18.14
   #is($invoice->amount,           6.27 + 6.21 + 5.65, "${title}: amount");
-  if ($default_manager eq "swiss") {
-    is($invoice->amount,         16.46,              "${title}: amount");
-  } else {
-    is($invoice->amount,         18.14,              "${title}: amount");
-  }
+  is($invoice->amount,           18.14,              "${title}: amount");
 
   is($invoice->marge_total,      3.34 + 3.29 + 2.82, "${title}: marge_total");
   is($invoice->marge_percent,    62.007874015748,    "${title}: marge_percent");
@@ -364,7 +340,7 @@ sub test_default_invoice_three_items_sellprice_rounding_discount() {
       $buchungsgruppe->income_accno_id($taxzone) => {
         amount                                   => 15.24,
         tax_id                                   => $tax->id,
-        taxkey                                   => $default_manager eq "swiss" ? 2 : 3,
+        taxkey                                   => 3,
       },
     },
     amounts_cogs                                 => {},
@@ -373,25 +349,25 @@ sub test_default_invoice_three_items_sellprice_rounding_discount() {
     ],
     exchangerate                                 => 1,
     taxes                                        => {
-      $tax->chart_id                             => $default_manager eq "swiss" ? 1.22 : 2.9,
+      $tax->chart_id                             => 2.9,
     },
     items                                        => [
       { linetotal                                => 5.27,
         linetotal_cost                           => 1.93,
         sellprice                                => 5.27,
-        tax_amount                               => $default_manager eq "swiss" ? 0.4216 : 1.0013,
+        tax_amount                               => 1.0013,
         taxkey_id                                => $taxkeys{$item1->parts_id}->id,
       },
       { linetotal                                => 5.22,
         linetotal_cost                           => 1.93,
         sellprice                                => 5.22,
-        tax_amount                               => $default_manager eq "swiss" ? 0.4176 : 0.9918,
+        tax_amount                               => 0.9918,
         taxkey_id                                => $taxkeys{$item2->parts_id}->id,
       },
       { linetotal                                => 4.75,
         linetotal_cost                           => 1.93,
         sellprice                                => 4.75,
-        tax_amount                               => $default_manager eq "swiss" ? 0.38 : 0.9025,
+        tax_amount                               => 0.9025,
         taxkey_id                                => $taxkeys{$item3->parts_id}->id,
       }
     ],

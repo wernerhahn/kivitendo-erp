@@ -117,17 +117,12 @@ sub create_initial_schema {
   $dbh           = SL::DBConnect->connect(@dbi_options) || BAIL_OUT("Database connection failed: " . $DBI::errstr);
   $::auth->{dbh} = $dbh;
   my $dbupdater  = SL::DBUpgrade2->new(form => $::form, return_on_error => 1, silent => 1);
-  my $defaults   = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
-  my $coa        = $defaults->chart_of_accounts( 'Germany-DATEV-SKR03EU' );
-  my $am         = $defaults->accounting_method( 'cash' );
-  my $pd         = $defaults->profit_determination( 'balance' );
-  my $is         = $defaults->inventory_system( 'periodic' );
-  my $curr       = $defaults->currency( 'EUR' );
+  my $coa        = 'Germany-DATEV-SKR03EU';
 
   apply_dbupgrade($dbupdater, "sql/lx-office.sql");
   apply_dbupgrade($dbupdater, "sql/${coa}-chart.sql");
 
-  dbh_do($dbh, qq|UPDATE defaults SET coa = '${coa}', accounting_method = '${am}', profit_determination = '${pd}', inventory_system = '${is}', curr = '${curr}'|);
+  dbh_do($dbh, qq|UPDATE defaults SET coa = '${coa}', accounting_method = 'cash', profit_determination = 'income', inventory_system = 'periodic', curr = 'EUR'|);
   dbh_do($dbh, qq|CREATE TABLE schema_info (tag TEXT, login TEXT, itime TIMESTAMP DEFAULT now(), PRIMARY KEY (tag))|);
 }
 
@@ -144,34 +139,6 @@ sub apply_upgrades {
   my @unapplied_scripts = $dbupdater->unapplied_upgrade_scripts($dbh);
 
   apply_dbupgrade($dbupdater, $_) for @unapplied_scripts;
-
-  # some dpupgrades are hardcoded for Germany and will be recovered by the same nasty code
-  if ((not defined $params{auth}) && ($::lx_office_conf{system}->{default_manager} eq "swiss")) {
-    my $defaults    = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
-    my $precision   = $defaults->precision( '0.01' );
-    my $countrymode = $defaults->country( 'DE' );
-    dbh_do($dbh, qq|UPDATE defaults SET precision = '${precision}', country_mode = '${countrymode}'|);
-    # buchungsgruppen_sortkey.sql depends release_2_4_1
-    dbh_do($dbh, qq|UPDATE buchungsgruppen SET sortkey=1  WHERE description='Standard 8%'|);
-    dbh_do($dbh, qq|UPDATE buchungsgruppen SET sortkey=2  WHERE description='Standard 2.5%'|);
-    # steuerfilterung.pl depends release_3_0_0
-    dbh_do($dbh, qq|ALTER TABLE tax ADD chart_categories TEXT|);
-    dbh_do($dbh, qq|UPDATE tax SET chart_categories = 'I' WHERE (taxnumber='2200') OR (taxnumber='2201')|);
-    dbh_do($dbh, qq|UPDATE tax SET chart_categories = 'E' WHERE (taxnumber='1170') OR (taxnumber='1171')|);
-    dbh_do($dbh, qq|UPDATE tax SET chart_categories = 'ALQCIE' WHERE chart_categories IS NULL|);
-    dbh_do($dbh, qq|ALTER TABLE tax ALTER COLUMN chart_categories SET NOT NULL|);
-    # taxzone_id_in_oe_delivery_orders.sql depends release_3_1_0
-    dbh_do($dbh, qq|UPDATE oe SET taxzone_id = (SELECT id FROM tax_zones WHERE description = 'Schweiz') WHERE (taxzone_id = 0) OR (taxzone_id IS NULL)|);
-    dbh_do($dbh, qq|UPDATE delivery_orders SET taxzone_id = (SELECT id FROM tax_zones WHERE description = 'Schweiz') WHERE (taxzone_id = 0) OR (taxzone_id IS NULL)|);
-    dbh_do($dbh, qq|UPDATE ar SET taxzone_id = (SELECT id FROM tax_zones WHERE description = 'Schweiz') WHERE (taxzone_id = 0) OR (taxzone_id IS NULL)|);
-    dbh_do($dbh, qq|UPDATE ap SET taxzone_id = (SELECT id FROM tax_zones WHERE description = 'Schweiz') WHERE (taxzone_id = 0) OR (taxzone_id IS NULL)|);
-    # tax_skonto_automatic.sql depends release_3_2_0
-    dbh_do($dbh, qq|UPDATE tax SET skonto_purchase_chart_id = (SELECT id FROM chart WHERE accno = '4900')|);
-    dbh_do($dbh, qq|UPDATE tax SET skonto_sales_chart_id = (SELECT id FROM chart WHERE accno = '3800')|);
-    # not available
-    dbh_do($dbh, qq|UPDATE defaults SET rndgain_accno_id = (SELECT id FROM CHART WHERE accno='6953')|);
-    dbh_do($dbh, qq|UPDATE defaults SET rndloss_accno_id = (SELECT id FROM CHART WHERE accno='6943')|);
-  }
 }
 
 sub create_client_user_and_employee {

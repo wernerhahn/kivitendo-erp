@@ -43,6 +43,7 @@ sub grouped_record_list {
   my $output = '';
 
   $output .= _requirement_spec_list(       $self, $groups{requirement_specs},        %params) if $groups{requirement_specs};
+  $output .= _shop_order_list(             $self, $groups{shop_orders},               %params) if $groups{shop_orders};
   $output .= _sales_quotation_list(        $self, $groups{sales_quotations},         %params) if $groups{sales_quotations};
   $output .= _sales_order_list(            $self, $groups{sales_orders},             %params) if $groups{sales_orders};
   $output .= _sales_delivery_order_list(   $self, $groups{sales_delivery_orders},    %params) if $groups{sales_delivery_orders};
@@ -165,9 +166,10 @@ sub record_list {
 
 sub _group_records {
   my ($list) = @_;
-
+$main::lxdebug->dump(0, 'WH: GROUP_RECORDS: ',\@_);
   my %matchers = (
     requirement_specs        => sub { (ref($_[0]) eq 'SL::DB::RequirementSpec')                                         },
+    shop_orders              => sub { (ref($_[0]) eq 'SL::DB::ShopOrder')                                               },
     sales_quotations         => sub { (ref($_[0]) eq 'SL::DB::Order')           &&  $_[0]->is_type('sales_quotation')   },
     sales_orders             => sub { (ref($_[0]) eq 'SL::DB::Order')           &&  $_[0]->is_type('sales_order')       },
     sales_delivery_orders    => sub { (ref($_[0]) eq 'SL::DB::DeliveryOrder')   &&  $_[0]->is_sales                     },
@@ -224,6 +226,27 @@ sub _requirement_spec_list {
       [ $::locale->text('Title'),                   'title'                                                         ],
       [ $::locale->text('Project'),                 'project',                                                      ],
       [ $::locale->text('Status'),                  sub { $_[0]->status->description }                              ],
+    ],
+    %params,
+  );
+}
+
+sub _shop_order_list {
+  my ($self, $list, %params) = @_;
+$main::lxdebug->dump(0, 'WH: ORDER_LIST: ',\@_);
+  return $self->record_list(
+    $list,
+    title   => $::locale->text('Shop Orders'),
+    type    => 'shop_order',
+    columns => [
+      [ $::locale->text('Shop Order Date'),         'order_date'                                                              ],
+      [ $::locale->text('Shop Order Number'),        sub { $self->shop_order($_[0], display => 'table-cell') }                 ],
+      [ $::locale->text('Transfer Date'),           'transfer_date'                                                            ],
+      #     [ $::locale->text('Customer'),                'customer'                                                                 ],
+      [ $::locale->text('Net amount'),              'netamount'                                                                ],
+      #[ $::locale->text('Transaction description'), 'transaction_description'                                                  ],
+      #[ $::locale->text('Project'),                 'globalproject', ],
+      #[ $::locale->text('Closed'),                  'closed'                                                                   ],
     ],
     %params,
   );

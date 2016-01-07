@@ -111,7 +111,7 @@
         </table>
       </td>
       <td style="padding-left: 20px; vertical-align: top;">
-        [% UNLESS IMPORT.tranferred %]
+        [% UNLESS IMPORT.transferred %]
         [% IF PROPOSALS %]
         <div style="height: 120px; overflow:auto;">
           <table>
@@ -138,6 +138,11 @@
        [% ELSE %]
         <div>
           Wurde schon übernommen
+          <div id="recordlinks"></div>
+          <script type="text/javascript">
+            var url = 'controller.pl?action=RecordLinks/ajax_list&object_model=ShopOrder&object_id=[% IMPORT.id %]';
+            $('#recordlinks').load(url);
+          </script>
         </div>
         [% END %]
       </td>
@@ -177,4 +182,4 @@
     $.post("controller.pl", { action: 'ShopOrder/list'});
   }
 </script>
-[% L.dump(IMPORT) %] 
+[% L.dump(IMPORT) %]

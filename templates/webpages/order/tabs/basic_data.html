@@ -309,7 +309,6 @@ function add_item() {
 
   var data = $('#order_form').serialize();
   data += '&action=Order/add_item';
-  data += '&type=' + $('#type').val();
 
   $.post("controller.pl", data, kivi.eval_json_result);
 }
@@ -319,8 +318,6 @@ function show_multi_items_dialog() {
 
   $('#row_table_id thead a img').remove();
 
-  var data = 'type=' + $('#type').val();
-  data += 'type=' + $('#type').val();
   kivi.popup_dialog({
     url: 'controller.pl?action=Order/show_multi_items_dialog',
     data: $.extend({},
@@ -437,7 +434,6 @@ function reformat_number(event) {
 function recalc_amounts_and_taxes() {
   var data = $('#order_form').serialize();
   data += '&action=Order/recalc_amounts_and_taxes';
-  data += '&type=' + $('#type').val();
 
   $.post("controller.pl", data, kivi.eval_json_result);
 }

@@ -320,10 +320,9 @@ function show_multi_items_dialog() {
 
   kivi.popup_dialog({
     url: 'controller.pl?action=Order/show_multi_items_dialog',
-    data: $.extend({},
-                   { 'type': $('#type').val(),
-                     'callback': 'Order/add_multi_items',
-                     'callback_data_id': 'order_form' }),
+    data: { type: $('#type').val(),
+            callback: 'Order/add_multi_items',
+            callback_data_id: 'order_form' },
     id: 'jq_multi_items_dialog',
     dialog: {
       title: kivi.t8('Add multiple items'),

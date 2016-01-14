@@ -1646,12 +1646,6 @@ sub form_header {
   if ( $form->{id} ) {
     require SL::DB::Part;
     my $part = SL::DB::Part->new( id => $form->{id} )->load;
-    if ( $form->{id} ) {
-      if ( $part->is_variant ) {
-        $form->{is_variant} = 1; # for checking in the template
-          @{ $form->{PART_VARIANTS} } = grep { $_->id != $part->id } @{$part->part_variants->[0]->parts};
-      };
-    };
     $form->{SHOP_PARTS} = SL::DB::Manager::ShopPart->get_all( query => [ part_id => $part->id , 'shop.obsolete' => 0 ], with_objects => ['shop'] );
     # $form->{ACTIVE_SHOPS} = $active_shops;
     # foreach my $shop ( @$active_shops ) {

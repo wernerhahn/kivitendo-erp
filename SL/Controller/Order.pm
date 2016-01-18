@@ -879,7 +879,11 @@ sub _pre_render {
   $self->{print_options}   = SL::Helper::PrintOptions->get_print_options(
     form => $print_form,
     options => {dialog_name_prefix => 'print_options.',
-                show_headers       => 1,},
+                show_headers       => 1,
+                no_queue           => 1,
+                no_postscript      => 1,
+                no_opendocument    => 1,
+                no_html            => 1},
   );
 
   foreach my $item (@{$self->order->orderitems}) {

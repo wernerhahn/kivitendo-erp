@@ -36,6 +36,7 @@ sub convert_to_sales_order {
   foreach my $items (@{$self->shop_order_items}) {
     my $item = SL::DB::OrderItem->new;
     my $part = SL::DB::Manager::Part->find_by( partnumber => $items->{partnumber} );
+    die "can't find PART with partnumber $items->{partnumber}" unless $part;
 $main::lxdebug->dump(0, 'WH: SO PART',\$part);
     $item->assign_attributes(
         parts_id        => $part->id,

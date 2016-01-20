@@ -20,9 +20,9 @@ sub get_new_orders {
   my ($self, $id) = @_;
 
   my $url = $self->url;
-  my $ordnumber = 61141;
+  my $ordnumber = 63641;
   # Muss noch angepasst werden
-  for(my $i=1;$i<=50;$i++) {
+  for(my $i=1;$i<=350;$i++) {
     my $data = $self->connector->get("http://$url/api/orders/$ordnumber?useNumberAsId=true");
     $ordnumber++;
     $::lxdebug->dump(0, "WH: DATA ", \$data);
@@ -41,7 +41,7 @@ sub get_new_orders {
       billing_greeting        => ($import->{data}->{billing}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
       billing_lastname        => $import->{data}->{billing}->{lastName},
       billing_phone           => $import->{data}->{billing}->{phone},
-      billing_street          => $import->{data}->{billing}->{street} . " " . $import->{data}->{billing}->{streetNumber},
+      billing_street          => $import->{data}->{billing}->{street}, # . " " . $import->{data}->{billing}->{streetNumber},
       billing_vat             => $import->{data}->{billing}->{vatId},
       billing_zipcode         => $import->{data}->{billing}->{zipCode},
       customer_city           => $import->{data}->{billing}->{city},
@@ -54,7 +54,7 @@ sub get_new_orders {
       customer_greeting       => ($import->{data}->{billing}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
       customer_lastname       => $import->{data}->{billing}->{lastName},
       customer_phone          => $import->{data}->{billing}->{phone},
-      customer_street         => $import->{data}->{billing}->{street} . " " . $import->{data}->{billing}->{streetNumber},
+      customer_street         => $import->{data}->{billing}->{street}, # . " " . $import->{data}->{billing}->{streetNumber},
       customer_vat            => $import->{data}->{billing}->{vatId},
       customer_zipcode        => $import->{data}->{billing}->{zipCode},
       customer_newsletter     => $import->{data}->{customer}->{newsletter},
@@ -68,7 +68,7 @@ sub get_new_orders {
       delivery_greeting       => ($import->{data}->{shipping}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
       delivery_lastname       => $import->{data}->{shipping}->{lastName},
       delivery_phone          => $import->{data}->{shipping}->{phone},
-      delivery_street         => $import->{data}->{shipping}->{street} . " " . $import->{data}->{shipping}->{streetNumber},
+      delivery_street         => $import->{data}->{shipping}->{street}, # . " " . $import->{data}->{shipping}->{streetNumber},
       delivery_vat            => $import->{data}->{shipping}->{vatId},
       delivery_zipcode        => $import->{data}->{shipping}->{zipCode},
       host                    => $import->{data}->{shop}->{hosts},
@@ -155,12 +155,14 @@ sub init_url {
 
 sub init_connector {
   my ($self) = @_;
+  $main::lxdebug->dump(0, 'WH: CONNECTOR: ',\$self);
   my $ua = LWP::UserAgent->new;
   $ua->credentials(
       $self->url,
-      "Shopware4 REST-API",
+      "Shopware REST-API",
       $self->config->login => $self->config->password
   );
+  $main::lxdebug->dump(0, 'WH: UA: ',\$ua);
   return $ua;
 };
 

@@ -11,12 +11,16 @@ use SL::DB::ShopOrderItem;
 use SL::DB::Shop;
 use SL::Shop;
 use SL::Presenter;
+use SL::Helper::Flash;
 use SL::Locale::String;
 use SL::Controller::Helper::ParseFilter;
 use Rose::Object::MakeMethods::Generic
 (
-  'scalar --get_set_init' => [ qw(shop_order transferred) ],
+  'scalar --get_set_init' => [ qw(shop_order transferred js) ],
 );
+
+__PACKAGE__->run_before('setup');
+
 use Data::Dumper;
 
 sub action_get_orders {
@@ -32,19 +36,14 @@ sub action_get_orders {
 
 sub action_list {
   my ( $self ) = @_;
-  $::lxdebug->dump(0, "WH: LIST ", \$::form);
   my %filter = ($::form->{filter} ? parse_filter($::form->{filter}) : query => [ transferred => 0 ]);
   my $transferred = $::form->{filter}->{transferred_eq_ignore_empty} ne '' ? $::form->{filter}->{transferred_eq_ignore_empty} : '';
-  #$::lxdebug->dump(0, "WH: FILTER ",  $::form->{filter}->{_eq_ignore_empty}." - ".$transferred);
-  #$::lxdebug->dump(0, "WH: FILTER2 ",  \%filter);
   my $sort_by = $::form->{sort_by} ? $::form->{sort_by} : 'order_date';
   $sort_by .=$::form->{sort_dir} ? ' DESC' : ' ASC';
   my $shop_orders = SL::DB::Manager::ShopOrder->get_all( %filter, sort_by => $sort_by,
                                                       with_objects => ['shop_order_items'],
                                                     );
-  $::lxdebug->dump(0, "WH: IMPORTS I ",  \$shop_orders);
   foreach my $shop_order ( @$shop_orders ) {
-    # $::lxdebug->dump(0, "WH: IMPORTS II ",  $shop_order);
     my %billing_address = ( 'name'     => $shop_order->billing_lastname,
                             'company'  => $shop_order->billing_company,
                             'street'   => $shop_order->billing_street,
@@ -53,13 +52,11 @@ sub action_list {
                           );
     my $b_address = $self->check_address(%billing_address);
     if ($b_address) {
-      $main::lxdebug->message(0, "WH: SAVE ");
       $shop_order->{kivi_customer_id} = $b_address->{id};
       $shop_order->save;
     }
     $shop_order->{kivi_cv_id} = $b_address;
   }
-  #$::lxdebug->dump(0, "WH: IMPORTS III ",  \$shop_orders);
   $self->render('shop_order/list',
                 title       => t8('ShopOrders'),
                 SHOPORDERS  => $shop_orders,
@@ -72,7 +69,6 @@ sub action_show {
   my $id = $::form->{id} || {};
   my $shop_order = SL::DB::Manager::ShopOrder->find_by( id => $id );
   die "can't find shoporder with id $id" unless $shop_order;
-#$main::lxdebug->dump(0, 'WH:ORDER: ', \$shop_order);
   # the different importaddresscheck if there complete in the customer table to prevent duplicats inserts
   my %customer_address = ( 'name'    => $shop_order->customer_lastname,
                            'company' => $shop_order->customer_company,
@@ -98,6 +94,7 @@ sub action_show {
   ####
 
   my $lastname = $shop_order->customer_lastname;
+  $main::lxdebug->message(0, "WH: HIER");
   my $proposals = SL::DB::Manager::Customer->get_all(
        where => [
                    or => [
@@ -157,18 +154,36 @@ sub action_mass_transfer {
      shop_order_record_ids       => [ @shop_orders ],
      num_order_created           => 0,
      num_delivery_order_created  => 0,
+     status                      => SL::BackgroundJob::ShopOrderMassTransfer->WAITING_FOR_EXECUTION(),
      conversation_errors         => [ ],
    )->update_next_run_at;
 
    SL::System::TaskServer->new->wake_up;
-$main::lxdebug->message(0, "WH: ACTION");
+
+   my $html = $self->render('shop_order/_transfer_status', { output => 0 }, job => $job);
+
+$main::lxdebug->dump(0, 'WH: iHTML: ',\$html);
+   $self->js
+      ->html('#status_mass_transfer', $html)
+      ->run('kivi.ShopOrder.massTransferStarted')
+      ->render;
 }
 
+sub action_transfer_status {
+  my ($self)  = @_;
+  $main::lxdebug->dump(0, 'WH: STATUS1 ',\$self);
+  $main::lxdebug->dump(0, 'WH: STATUS2 ',\$::form);
+  my $job     = SL::DB::BackgroundJob->new(id => $::form->{job_id})->load;
+  my $html    = $self->render('shop_order/_transfer_status', { output => 0 }, job => $job);
+
+  $self->js->html('#status_mass_transfer', $html);
+  $self->js->run('kivi.ShopOrder.massTransferFinished') if $job->data_as_hash->{status} == SL::BackgroundJob::ShopOrderMassTransfer->DONE();
+  $self->js->render;
+
+}
 sub action_apply_customer {
   my ( $self ) = @_;
-  $::lxdebug->dump(0, "WH: CUSTOMER ", \$::form);
   my $what = $::form->{create_customer}; # billing, customer or delivery
-  $::lxdebug->dump(0, "WH: WHAT ",$what);
   my %address = ( 'name'       => $::form->{$what.'_name'},
                   'street'     => $::form->{$what.'_street'},
                   'zipcode'    => $::form->{$what.'_zipcode'},
@@ -180,7 +195,6 @@ sub action_apply_customer {
                   'currency'   => 1,  # hardcoded
                 );
   $address{contact} = ($address{name} ne $::form->{$what.'_firstname'} . " " . $::form->{$what.'_lastname'} ? $::form->{$what.'_firstname'} . " " . $::form->{$what.'_lastname'} : '');
-  $::lxdebug->dump(0, "WH: ADDRESS ",\%address);
   my $customer = SL::DB::Customer->new(%address);
   $customer->save;
   if($::form->{$what.'_country'} ne "Deutschland") {   # hardcoded
@@ -189,6 +203,14 @@ sub action_apply_customer {
     $self->redirect_to(action => 'show', id => $::form->{import_id});
   }
 }
+
+sub setup {
+  my ($self) = @_;
+  $::auth->assert('invoice_edit');
+
+  $::request->layout->use_javascript("${_}.js")  for qw(kivi.ShopOrder);
+}
+
 #
 # Helper
 #
@@ -201,7 +223,6 @@ sub check_address {
                                            'zipcode'=> { like => $address{'zipcode'} },
                                            'city'   => { like => $address{'city'} },
                                          ]);
-  $::lxdebug->dump(0, "WH: CUSTOMER ", \$addressdata);
   return @{$addressdata}[0];
 }
 

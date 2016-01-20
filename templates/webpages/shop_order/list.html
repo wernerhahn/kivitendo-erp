@@ -4,7 +4,7 @@
 <h1>[% title %]</h1>
 [%- PROCESS 'shop_order/_filter.html' filter=SELF.models.filtered.laundered %]
 <hr>
- <form method="post" action="controller.pl">
+ <form method="post" action="controller.pl" name="shop_orders" id="shoporders">
  <table id="shoplist">
   <thead>
    <tr class="listheading">
@@ -157,7 +157,7 @@
     <td>[% IF shop_order.transferred == 1 %]<a href="controller.pl?id=[% shop_order.id %]&action=ShopOrder/show">[% 'Show order' | $T8 %]<br>[% shop_order.transferred_date_as_date %]</a>
         [% ELSE %]
           [% IF transferable == 1 %]
-            [% L.checkbox_tag('id[]', checked = transferable,  value=shop_order.id) %]<br>
+            [% L.checkbox_tag('id[]', checked = '',  value=shop_order.id) %]<br>
           [% END %]
         <a href="controller.pl?id=[% shop_order.id %]&action=ShopOrder/show">[% 'Create order' | $T8 %][% END %]</a></td>
   </tr>
@@ -165,7 +165,11 @@
  </table>
  <hr>
   <p>
-   [% L.hidden_tag("action", "ShopOrder/mass_transfer") %]
-   [% L.submit_tag("", LxERP.t8("Transfer all marked")) %]
+ <!--  [% L.hidden_tag("action", "ShopOrder/mass_transfer") %]
+   [% L.submit_tag("mass_transfer", LxERP.t8("Transfer all marked")) %] -->
+ [% L.button_tag("kivi.ShopOrder.setup();", LxERP.t8("Transfer all marked"), id="mass_transfer") %]
   </p>
+  <div id="status_mass_transfer" style="display: none;">
+    [%- INCLUDE 'shop_order/_transfer_status.html' %]
+  </div>
  </form>

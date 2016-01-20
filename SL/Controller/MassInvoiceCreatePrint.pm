@@ -144,7 +144,6 @@ sub action_create_print_all_start {
   SL::System::TaskServer->new->wake_up;
 
   my $html = $self->render('mass_invoice_create_print_from_do/_create_print_all_status', { output => 0 }, job => $job);
-
   $self->js
     ->html('#create_print_all_dialog', $html)
     ->run('kivi.MassInvoiceCreatePrint.massConversionStarted')

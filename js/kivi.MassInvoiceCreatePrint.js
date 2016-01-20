@@ -75,5 +75,4 @@ namespace('kivi.MassInvoiceCreatePrint', function(ns) {
     $('#action_print').click(kivi.MassInvoiceCreatePrint.checkInvoiceSelection);
   };
 });
-
 $(kivi.MassInvoiceCreatePrint.setup);

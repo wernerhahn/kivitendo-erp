@@ -36,31 +36,26 @@ sub create_order {
   my $job_obj = $self->{job_obj};
   my $db      = $job_obj->db;
 
+  $job_obj->set_data(CONVERTING_TO_DELIVERY_ORDER())->save;
+
   foreach my $shop_order_id (@{ $job_obj->data_as_hash->{shop_order_record_ids} }) {
     my $shop_order = SL::DB::ShopOrder->new(id => $shop_order_id)->load;
     die "can't find shoporder with id $shop_order_id" unless $shop_order;
-    $::lxdebug->dump(0, 'WH: CREATE:I ', \$shop_order);
     #TODO Kundenabfrage so ändern, dass es nicht abricht
     my $customer = SL::DB::Manager::Customer->find_by(id => $shop_order->{kivi_customer_id});
     die "Can't find customer" unless $customer;
     my $employee = SL::DB::Manager::Employee->current;
     my $items = SL::DB::Manager::ShopOrderItem->get_all( where => [shop_order_id => $shop_order_id],
                                                           sort_by => 'partnumber::int' );
-    $::lxdebug->dump(0, 'WH: CREATE:I ', \$shop_order);
-    $::lxdebug->dump(0, 'WH: CREATE:II ', \$items);
-
     # check inventory onhand > 0
     my $onhand = 0;
     foreach my $item (@$items) {
       my $qty = SL::DB::Manager::Part->find_by(partnumber => $item->{partnumber})->onhand; # > 0 ? $onhand = 1 : 0;
       $qty >= $item->{quantity} ? $onhand = 1 : 0;
-      $main::lxdebug->message(0, "WH: STOCK: $qty -- $onhand");
       last if $onhand == 0;
     }
-    $main::lxdebug->message(0, "WH:ONHAND: $onhand ");
     if ($onhand == 1) {
       $shop_order->{shop_order_items} = $items;
-      $main::lxdebug->dump(0, 'WH: TRANSFER SHOPORDER', \$shop_order);
 
       my $order = $shop_order->convert_to_sales_order(customer => $customer, employee => $employee);
       $order->save;
@@ -76,11 +71,7 @@ sub create_order {
       my $delivery_order_items = $delivery_order->{orderitems};
       # Lagerentnahme
       # entsprechende defaults holen, falls standardlagerplatz verwendet werden soll
-      $main::lxdebug->dump(0, 'WH: LAGER: ', \$delivery_order_items);
       my $test = $::instance_conf->get_transfer_default_use_master_default_bin;
-      $main::lxdebug->message(0, "WH: TEST $test ");
-      $main::lxdebug->dump(0, 'WH: KONF ',$::instance_conf);
-      $main::lxdebug->message(0, "WH:NACH ");
       require SL::DB::Inventory;
       my $rose_db = SL::DB::Inventory->new->db;
       my $dbh = $db->dbh;
@@ -133,8 +124,6 @@ sub create_order {
         }
         push @errors, @{ $err };
       }
-      $main::lxdebug->dump(0, 'WH: LAGER II ', \@transfers);
-      $main::lxdebug->dump(0, 'WH: LAGER III ', \@errors);
       if (!@errors) {
           $delivery_order->delivered(1);
           $delivery_order->save;
@@ -143,14 +132,8 @@ sub create_order {
   }
 }
 
-sub create_delivery_order {
-  my ( $self ) = @_;
-}
-
 sub run {
-  $main::lxdebug->message(0, "WH: RUN");
   my ($self, $job_obj) = @_;
-  $::lxdebug->dump(0, 'WH: RUN: ', \$self);
 
   $self->{job_obj}         = $job_obj;
   $self->create_order;

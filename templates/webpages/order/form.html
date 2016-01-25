@@ -47,11 +47,21 @@
   [% L.button_tag('show_print_options()', LxERP.t8('Print')) %]
   [% L.button_tag('email()', LxERP.t8('E-mail')) %]
   [% L.button_tag('save_and_delivery_order()', LxERP.t8('Save and Delivery Order')) %]
+[%- IF SELF.order.id %]
+  [% L.button_tag('delete_order()', LxERP.t8('Delete'), confirm=LxERP.t8("Are you sure?")) %]
+[%- END %]
 
 </form>
 
 
 <script type='text/javascript'>
+
+function delete_order() {
+  var data = $('#order_form').serializeArray();
+  data.push({ name: 'action', value: 'Order/delete' });
+
+  $.post("controller.pl", data, kivi.eval_json_result);
+}
 
 function save() {
   if (!check_cv()) return;

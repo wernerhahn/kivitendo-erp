@@ -47,7 +47,7 @@
   [% L.button_tag('show_print_options()', LxERP.t8('Print')) %]
   [% L.button_tag('email()', LxERP.t8('E-mail')) %]
   [% L.button_tag('save_and_delivery_order()', LxERP.t8('Save and Delivery Order')) %]
-[%- IF SELF.order.id %]
+[%- IF SELF.order.id && ( (SELF.cv == 'customer' && INSTANCE_CONF.get_sales_order_show_delete) || (SELF.cv == 'vendor' && INSTANCE_CONF.get_purchase_order_show_delete) ) %]
   [% L.button_tag('delete_order()', LxERP.t8('Delete'), confirm=LxERP.t8("Are you sure?")) %]
 [%- END %]
 

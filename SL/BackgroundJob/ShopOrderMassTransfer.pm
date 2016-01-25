@@ -35,13 +35,16 @@ sub create_order {
   my ( $self ) = @_;
   my $job_obj = $self->{job_obj};
   my $db      = $job_obj->db;
-
+  my %error_report;
   $job_obj->set_data(CONVERTING_TO_DELIVERY_ORDER())->save;
 
   foreach my $shop_order_id (@{ $job_obj->data_as_hash->{shop_order_record_ids} }) {
     my $shop_order = SL::DB::ShopOrder->new(id => $shop_order_id)->load;
-    die "can't find shoporder with id $shop_order_id" unless $shop_order;
+    # die "can't find shoporder with id $shop_order_id" unless $shop_order;
     #TODO Kundenabfrage so ändern, dass es nicht abricht
+    unless($shop_order){
+      push @{ $error_report{$shop_order_id}} }, 'Shoporder not found';
+    }
     my $customer = SL::DB::Manager::Customer->find_by(id => $shop_order->{kivi_customer_id});
     die "Can't find customer" unless $customer;
     my $employee = SL::DB::Manager::Employee->current;

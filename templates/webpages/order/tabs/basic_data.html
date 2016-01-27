@@ -602,6 +602,27 @@ function show_longdescription_dialog(clicked) {
   kivi.SalesPurchase.edit_longdescription_with_params(params);
 }
 
+function check_save_duplicate_parts() {
+  var id_arr = $('[name="order.orderitems[].parts_id"]').map(function() {return this.value;}).get();
+
+  var i, obj = {}, pos = [];
+
+  for (i = 0; i < id_arr.length; i++) {
+    var id = id_arr[i];
+    if (obj.hasOwnProperty(id)) {
+      pos.push(i + 1);
+    }
+    obj[id] = 0;
+  }
+
+  if (pos.length > 0) {
+    return confirm(kivi.t8("There are duplicate parts at positions") + "\n"
+                   + pos.join(', ') + "\n"
+                   + kivi.t8("Do you really want to save?"));
+  }
+  return true;
+}
+
 $(function(){
   $('#order_[%- cv_id %]').change(reload_cv_dependend_selections);
   [%- IF SELF.cv == 'customer' %]

@@ -65,6 +65,11 @@ function delete_order() {
 
 function save() {
   if (!check_cv()) return;
+
+[%- IF INSTANCE_CONF.get_order_warn_duplicate_parts %]
+  if (!check_save_duplicate_parts()) return;
+[%- END %]
+
   var data = $('#order_form').serializeArray();
   data.push({ name: 'action', value: 'Order/save' });
 
@@ -113,6 +118,11 @@ function email() {
 
 function save_and_delivery_order() {
   if (!check_cv()) return;
+
+[%- IF INSTANCE_CONF.get_order_warn_duplicate_parts %]
+  if (!check_save_duplicate_parts()) return;
+[%- END %]
+
   var data = $('#order_form').serializeArray();
   data.push({ name: 'action', value: 'Order/save_and_delivery_order' });
 

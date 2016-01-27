@@ -131,7 +131,11 @@ function save_and_delivery_order() {
 
 function check_cv() {
   if ($('#order_[%- cv_id %]').val() == '') {
-    alert(kivi.t8('Please select a [%- SELF.cv %].'));
+    [%- IF SELF.cv == 'customer' %]
+      alert(kivi.t8('Please select a customer.'));
+    [%- ELSE %]
+      alert(kivi.t8('Please select a vendor.'));
+    [%- END %]
     return false;
   }
   return true;

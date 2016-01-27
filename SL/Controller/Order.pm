@@ -197,7 +197,7 @@ sub action_print {
     my $printer;
     $printer = SL::DB::Printer->new(id => $printer_id)->load if $printer_id;
     if (!$printer) {
-      return $self->js->flash('error', t8('Priner not found.'))->render;
+      return $self->js->flash('error', t8('Printer not found.'))->render;
     }
 
     my $command = SL::Template::create(type => 'ShellCommand', form => Form->new(''))->parse($printer->printer_command);
@@ -251,7 +251,7 @@ sub action_show_email_dialog {
   my $cv_method = $self->cv;
 
   if (!$self->order->$cv_method) {
-    return $self->js->flash('error', t8('Cannot send E-mail without ' . $self->cv))
+    return $self->js->flash('error', $self->cv eq 'customer' ? t8('Cannot send E-mail without customer given') : t8('Cannot send E-mail without vendor given'))
                     ->render($self);
   }
 

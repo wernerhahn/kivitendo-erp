@@ -487,7 +487,9 @@ function set_unit_change_with_oldval_by_id(item_id) {
 }
 
 function set_unit_change_with_oldval(selects) {
-  selects.data('oldval', selects.val());
+  selects.each(function(idx,elt) {
+    $(elt).data('oldval', $(elt).val());
+  });
 
   selects.change(unit_change);
 }

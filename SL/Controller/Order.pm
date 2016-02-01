@@ -417,12 +417,7 @@ sub action_add_item {
 
   $self->js
     ->append('#row_table_id', $row_as_html)
-    ->val('#add_item_parts_id', '')
-    ->val('#add_item_parts_id_name', '')
-    ->val('#add_item_description', '')
-    ->val('#add_item_qty_as_number', '')
-    ->val('#add_item_sellprice_as_number', '')
-    ->val('#add_item_discount_as_percent', '')
+    ->val('.add_item_input', '')
     ->run('row_table_scroll_down')
     ->run('row_set_keyboard_events_by_id', $item_id)
     ->run('set_unit_change_with_oldval_by_id', $item_id)

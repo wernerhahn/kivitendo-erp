@@ -6,6 +6,7 @@ use SL::DB::AuthGroup;
 use SL::DB::AuthGroupRight;
 use SL::DB::AuthUserConfig;
 use SL::DB::AuthUser;
+use SL::DB::AuthFeature;
 
 1;
 

@@ -149,8 +149,7 @@ sub apply_upgrades {
   if ((not defined $params{auth}) && ($::lx_office_conf{system}->{default_manager} eq "swiss")) {
     my $defaults    = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
     my $precision   = $defaults->precision( '0.01' );
-    my $countrymode = $defaults->country( 'DE' );
-    dbh_do($dbh, qq|UPDATE defaults SET precision = '${precision}', country_mode = '${countrymode}'|);
+    dbh_do($dbh, qq|UPDATE defaults SET precision = '${precision}'|);
     # buchungsgruppen_sortkey.sql depends release_2_4_1
     dbh_do($dbh, qq|UPDATE buchungsgruppen SET sortkey=1  WHERE description='Standard 8%'|);
     dbh_do($dbh, qq|UPDATE buchungsgruppen SET sortkey=2  WHERE description='Standard 2.5%'|);

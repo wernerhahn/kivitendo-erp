@@ -91,6 +91,24 @@
  </p>
 [%- END %]
 
+ <h2>[%- LxERP.t8("Features") %]</h2>
+
+[% IF SELF.all_features.size %]
+ <p>
+  [%- LxERP.t8("The following features are valid for this client") %]:
+ </p>
+
+ <div class="clearfix">
+  [% L.select_tag("client.features[]", SELF.all_features, id="client_features", title_key="name", default=SELF.init_all_default_features, default_value_key='id', multiple=1) %]
+  [% L.multiselect2side("client_features", labelsx => LxERP.t8("All features"), labeldx => LxERP.t8("Features valid for this client")) %]
+ </div>
+
+[%- ELSE %]
+ <p>
+  [% LxERP.t8("No features have been created yet.") %]
+ </p>
+[%- END %]
+
 <hr size="3" noshade>
 
 <p>

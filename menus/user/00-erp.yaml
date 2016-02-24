@@ -575,6 +575,7 @@
   name: DATEV - Export Assistent
   icon: datev
   order: 400
+  check: datev
   access: datev_export
   module: datev.pl
   params:
@@ -773,10 +774,22 @@
     action: report
     report: trial_balance
 - parent: reports
+  id: reports_erfolgsrechnung
+  name: Erfolgsrechnung
+  icon: income_statement
+  order: 300
+  check: erfolgsrechnung
+  access: report
+  module: rp.pl
+  params:
+    action: report
+    report: erfolgsrechnung
+- parent: reports
   id: reports_income_statement
   name: Income Statement
   icon: income_statement
   order: 300
+  check: eur
   access: report
   module: rp.pl
   params:
@@ -786,6 +799,7 @@
   id: reports_bwa
   name: BWA
   order: 400
+  check: eur
   access: report
   module: rp.pl
   params:
@@ -796,6 +810,7 @@
   name: Balance Sheet
   icon: balance_sheet
   order: 500
+  check: bilanz
   access: report
   module: rp.pl
   params:
@@ -806,6 +821,7 @@
   name: UStVa
   icon: ustva
   order: 600
+  check: ustva
   access: advance_turnover_tax_return
   module: ustva.pl
   params:
@@ -985,6 +1001,7 @@
   id: system_ustva_einstellungen
   name: UStVa Einstellungen
   order: 200
+  check: ustva
   module: ustva.pl
   params:
     action: config_step1

@@ -10,6 +10,7 @@ sub inventory_system     { 'periodic' }
 sub profit_determination { 'balance' }
 sub currency             { 'CHF' }
 sub precision            { 0.05 }
+sub features             { ['bilanz', 'erfolgsrechnung'] }
 
 # user defaults
 sub numberformat        { "1'000.00" }

@@ -22,16 +22,6 @@
   </tr>
 
   <tr>
-   <th valign="top" align="right" nowrap>[% LxERP.t8('Country') %]</th>
-   <td>[% L.select_tag('countrymode', SELF.all_countrymodes, title_key="title", default=(FORM.countrymode), onchange='select_country_defaults(this.value)') %]</td>
-  </tr>
-
-  <tr>
-   <td colspan="1"> </td>
-   <td><hr size="1" noshade></td>
-  </tr>
-
-  <tr>
    <th align="right" nowrap>[% LxERP.t8('Default currency') %]</th>
    <td>[% L.input_tag('defaultcurrency', FORM.defaultcurrency) %]</td>
   </tr>
@@ -89,25 +79,6 @@ function comment_selected_chart(s) {
          "fuer Kunden im Ausland." +
          "\n" +
          "Hinweis vom 20.09.2011");
-  }
-  return true;
-}
-
-function select_country_defaults(country) {
-  if (/^CH/.test(country)) {
-    document.getElementById('defaultcurrency').value='CHF';
-    document.getElementById('precision').value='0.05';
-    document.getElementById('chart').value='Switzerland-deutsch-MWST-2014';
-    document.getElementById('accounting_method').value='accrual';
-    document.getElementById('inventory_system').value='periodic';
-    document.getElementById('profit_determination').value='balance';
-  } else {
-    document.getElementById('defaultcurrency').value='EUR';
-    document.getElementById('precision').value='0.01';
-    document.getElementById('chart').value='Germany-DATEV-SKR03EU';
-    document.getElementById('accounting_method').value='cash';
-    document.getElementById('inventory_system').value='periodic';
-    document.getElementById('profit_determination').value='income';
   }
   return true;
 }

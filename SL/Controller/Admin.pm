@@ -10,6 +10,7 @@ use List::Util qw(first);
 use SL::Common ();
 use SL::DB::AuthUser;
 use SL::DB::AuthGroup;
+use SL::DB::AuthFeature;
 use SL::DB::Printer;
 use SL::Helper::Flash;
 use SL::Locale::String qw(t8);
@@ -19,13 +20,18 @@ use SL::Layout::AdminLogin;
 
 use Rose::Object::MakeMethods::Generic
 (
-  'scalar --get_set_init' => [ qw(client user group printer db_cfg is_locked
-                                  all_dateformats all_numberformats all_countrycodes all_countrymodes all_stylesheets all_menustyles all_clients all_groups all_users all_rights all_printers
+  'scalar --get_set_init' => [ qw(client user group feature printer db_cfg is_locked
+                                  all_dateformats all_numberformats all_countrycodes all_stylesheets all_menustyles
+                                  all_clients all_groups all_features all_users all_rights all_printers all_default_features
                                   all_dbsources all_used_dbsources all_accounting_methods all_inventory_systems all_profit_determinations all_charts) ],
 );
 
 __PACKAGE__->run_before(\&setup_layout);
 __PACKAGE__->run_before(\&setup_client, only => [ qw(list_printers new_printer edit_printer save_printer delete_printer) ]);
+
+
+my $defaults = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
+
 
 sub get_auth_level { "admin" };
 sub keep_auth_vars {
@@ -109,7 +115,6 @@ sub action_show {
 
 sub action_new_user {
   my ($self) = @_;
-  my $defaults = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
   $self->user(SL::DB::AuthUser->new(
     config_values => {
       vclimit      => 200,
@@ -221,8 +226,9 @@ sub action_save_client {
   my $is_new = !$params->{id};
 
   # Assign empty arrays if the browser doesn't send those controls.
-  $params->{groups} ||= [];
-  $params->{users}  ||= [];
+  $params->{groups}   ||= [];
+  $params->{users}    ||= [];
+  $params->{features} ||= [];
 
   $self->client($is_new ? SL::DB::AuthClient->new : SL::DB::AuthClient->new(id => $params->{id})->load)->assign_attributes(%{ $params });
 
@@ -488,13 +494,15 @@ sub action_lock_system {
 sub init_db_cfg            { $::lx_office_conf{'authentication/database'}                                                    }
 sub init_is_locked         { SL::System::InstallationLock->is_locked                                                         }
 sub init_client            { SL::DB::Manager::AuthClient->find_by(id => ($::form->{id} || ($::form->{client}  || {})->{id})) }
-sub init_user              { SL::DB::AuthUser  ->new(id => ($::form->{id} || ($::form->{user}    || {})->{id}))->load        }
-sub init_group             { SL::DB::AuthGroup ->new(id => ($::form->{id} || ($::form->{group}   || {})->{id}))->load        }
-sub init_printer           { SL::DB::Printer   ->new(id => ($::form->{id} || ($::form->{printer} || {})->{id}))->load        }
-sub init_all_clients       { SL::DB::Manager::AuthClient->get_all_sorted                                                     }
-sub init_all_users         { SL::DB::Manager::AuthUser  ->get_all_sorted                                                     }
-sub init_all_groups        { SL::DB::Manager::AuthGroup ->get_all_sorted                                                     }
-sub init_all_printers      { SL::DB::Manager::Printer   ->get_all_sorted                                                     }
+sub init_user              { SL::DB::AuthUser    ->new(id => ($::form->{id} || ($::form->{user}    || {})->{id}))->load      }
+sub init_group             { SL::DB::AuthGroup   ->new(id => ($::form->{id} || ($::form->{group}   || {})->{id}))->load      }
+sub init_feature           { SL::DB::AuthFeature ->new(id => ($::form->{id} || ($::form->{feature} || {})->{id}))->load      }
+sub init_printer           { SL::DB::Printer     ->new(id => ($::form->{id} || ($::form->{printer} || {})->{id}))->load      }
+sub init_all_clients       { SL::DB::Manager::AuthClient ->get_all_sorted                                                    }
+sub init_all_users         { SL::DB::Manager::AuthUser   ->get_all_sorted                                                    }
+sub init_all_groups        { SL::DB::Manager::AuthGroup  ->get_all_sorted                                                    }
+sub init_all_features      { SL::DB::Manager::AuthFeature->get_all_sorted                                                    }
+sub init_all_printers      { SL::DB::Manager::Printer    ->get_all_sorted                                                    }
 sub init_all_dateformats   { [ qw(mm/dd/yy dd/mm/yy dd.mm.yy yyyy-mm-dd)      ]                                              }
 sub init_all_numberformats { [ '1,000.00', '1000.00', '1.000,00', '1000,00', "1'000.00" ]                                    }
 sub init_all_stylesheets   { [ qw(lx-office-erp.css Mobile.css kivitendo.css) ]                                              }
@@ -549,9 +557,9 @@ sub init_all_countrycodes {
   return [ map { id => $_, title => $cc{$_} }, sort { $cc{$a} cmp $cc{$b} } keys %cc ];
 }
 
-sub init_all_countrymodes {
-  my %cm = SL::DefaultManager->country_modes;
-  return [ map { id => $_, title => "$_ ($cm{$_})" }, sort keys %cm ];
+sub init_all_default_features {
+  my ($self) = @_;
+  return $self->client->id ? $self->client->features : SL::DB::Manager::AuthFeature->get_all_sorted( where => [ name => $defaults->features ] );
 }
 
 #
@@ -560,7 +568,6 @@ sub init_all_countrymodes {
 
 sub setup_layout {
   my ($self, $action) = @_;
-  my $defaults = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
 
   $::request->layout(SL::Layout::Dispatcher->new(style => 'admin'));
   $::form->{favicon} = "favicon.ico";
@@ -632,11 +639,9 @@ sub database_administration_login_form {
 
 sub create_dataset_form {
   my ($self, %params) = @_;
-  my $defaults = SL::DefaultManager->new($::lx_office_conf{system}->{default_manager});
 
   $::request->layout(SL::Layout::Dispatcher->new(style => 'admin'));
   $::form->{favicon} = "favicon.ico";
-  $::form->{countrymode}          = $defaults->country( 'DE' );
   $::form->{chart}                = $defaults->chart_of_accounts( 'Germany-DATEV-SKR03EU' );
   $::form->{defaultcurrency}      = $defaults->currency( 'EUR' );
   $::form->{precision}            = $defaults->precision( '0.01' );

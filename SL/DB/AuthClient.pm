@@ -23,6 +23,12 @@ __PACKAGE__->meta->add_relationship(
     map_from  => 'client',
     map_to    => 'group',
   },
+  features => {
+    type      => 'many to many',
+    map_class => 'SL::DB::AuthClientFeature',
+    map_from  => 'client',
+    map_to    => 'feature',
+  },
 );
 
 __PACKAGE__->meta->initialize;

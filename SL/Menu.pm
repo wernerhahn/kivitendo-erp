@@ -230,11 +230,13 @@ sub clear_access {
 
 sub set_access {
   my ($self) = @_;
+  my $features = $::auth->load_features_for_client;
   # 1. evaluate access for all
   # 2. if a menu has no visible children, its not visible either
 
   for my $node (reverse $self->tree_walk("all")) {
-    $node->{visible} = $node->{access}           ? $self->parse_access_string($node)
+    $node->{visible} = $node->{check}            ? $node->{check} ~~ $features : 1
+                    && $node->{access}           ? $self->parse_access_string($node)
                      : !$node->{children}        ? 1
                      : $node->{visible_children} ? 1
                      :                             0;

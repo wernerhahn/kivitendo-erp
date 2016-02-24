@@ -10,6 +10,7 @@ sub inventory_system     { 'periodic' }
 sub profit_determination { 'income' }
 sub currency             { 'EUR' }
 sub precision            { 0.01 }
+sub features             { ['bilanz', 'datev', 'eur', 'ustva' ] }
 
 # user defaults
 sub numberformat        { '1.000,00' }

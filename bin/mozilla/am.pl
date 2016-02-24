@@ -213,9 +213,10 @@ sub account_header {
     }
   }
 
+  $::form->{$_} = 1 foreach (@{$::auth->load_features_for_client});
   my $select_eur = q|<option value=""> |. $locale->text('None') .q|</option>\n|;
   my %eur;
-  if (($form->{country_mode} = SL::DB::Default->get->country_mode) eq 'CH') {
+  if (!$form->{eur}) {
     %eur = (
          1  => "Ertrag",
          6  => "Aufwand",

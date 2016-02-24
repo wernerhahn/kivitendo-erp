@@ -1198,6 +1198,24 @@ sub load_rights_for_user {
   return $rights;
 }
 
+sub load_features_for_client {
+  my $self = shift;
+  my $dbh   = $self->dbconnect;
+  my $query = qq|
+    SELECT f.name FROM auth.feature f, auth.clients_features cf
+    WHERE f.id = cf.feature_id AND cf.client_id = ?
+  |;
+  my $sth = prepare_execute_query($::form, $dbh, $query, $self->client->{id});
+  my $features = [];
+
+  while (my $row=$sth->fetchrow_hashref()) {
+    push @{$features}, $row->{name};
+  }
+  $sth->finish();
+
+  return $features;
+}
+
 1;
 __END__
 

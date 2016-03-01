@@ -1,0 +1,77 @@
+[%- USE LxERP -%][%- USE L -%][%- USE HTML -%][%- USE JavaScript -%][% USE Base64 %]
+[% SET style="width: 500px" %]
+[% SET id_base = "fileupload" %]
+[% L.dump(DATA) %]
+<form method="post" id="fileupload_form" method="POST" enctype="multipart/form-data">
+ [% L.hidden_tag('form_prefix',                    id_base,         id=id_base _ '_form_prefix') %]
+ [% L.hidden_tag('id',                             DATA.id, no_id=1) %]
+ [% L.hidden_tag('modul',                          DATA.modul) %]
+
+ <h2>
+  [%- IF SELF.file.id %]
+   [%- LxERP.t8("Edit file properties ", SELF.file.number) %]
+  [%- ELSE %]
+   [%- LxERP.t8("Add file to webdav") %]
+  [%- END %]
+ </h2>
+
+ <table>
+[% IF SELF.file.number %]
+  <tr>
+   <th align="right">[%- LxERP.t8("Number") %]:</th>
+   <td>[% HTML.escape(SELF.file.number) %]</td>
+  </tr>
+[% END %]
+
+  <tr>
+   <th align="right">[%- LxERP.t8("Description") %]:</th>
+   <td>[% L.input_tag(id_base _ '.description', SELF.file.description, style=style) %]</td>
+  </tr>
+
+  <tr>
+   <th align="right">[%- LxERP.t8("Title") %]:</th>
+   <td>[% L.input_tag(id_base _ '.title', SELF.file.title, style=style) %]</td>
+  </tr>
+
+[% IF SELF.file.file_content %]
+  <tr>
+   <th align="right">[%- LxERP.t8("File name") %]:</th>
+   <td>[% HTML.escape(SELF.file.file_file_name) %]</td>
+  </tr>
+
+  <tr>
+   <th align="right">[%- LxERP.t8("MIME type") %]:</th>
+   <td>[% HTML.escape(SELF.file.file_content_type) %]</td>
+  </tr>
+
+  <tr>
+   <th align="right">[%- LxERP.t8("Dimensions") %]:</th>
+   <td>[% HTML.escape(SELF.file.file_width) %]x[% HTML.escape(SELF.file.file_height) %]</td>
+  </tr>
+
+  <tr>
+   <th align="right">[%- LxERP.t8("Uploaded at") %]:</th>
+   <td>[% HTML.escape(SELF.file.file_mtime.to_kivitendo(precision='second')) %]</td>
+  </tr>
+[% END %]
+
+  <tr>
+   <th align="right">[%- LxERP.t8("Select file to upload") %]:</th>
+   <td>[% L.input_tag(id_base _ '.file_content', '', type='file') %]</td>
+  </tr>
+ </table>
+
+ <p>
+  [%- L.ajax_submit_tag('controller.pl?action=FileUploader/ajax_upload_file', '#fileupload_form', LxERP.t8('Save'), no_id=1) %]
+  <a href="#" onclick="$('#jqueryui_popup_dialog').dialog('close');">[%- LxERP.t8("Cancel") %]</a>
+ </p>
+
+</form>
+
+[% IF SELF.file.id %]
+<h2>[% LxERP.t8("Current file") %]</h2>
+
+<div>
+ <img src="data:[% HTML.escape(SELF.file.file_content_type) %];base64,[% SELF.file.file_content.encode_base64 %]">
+</div>
+[% END %]

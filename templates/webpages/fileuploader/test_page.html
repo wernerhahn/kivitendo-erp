@@ -1,0 +1,57 @@
+[% USE L %]
+
+<h1>Fileupload Testpage</h1>
+<form method="post" id="fileupload" method="POST" enctype="multipart/form-data">
+  <div id="testfunctions" style="width:50%; float:left; border:thin solid green">
+    <div id="part_1" height="75px">
+      Part: Select Part Where to store the file<br>
+      [% L.part_picker('part_id1','',fat_set_item=1) %]<br>
+      Part: <span id="change1"> </span> -- <span id="change2"></span><br>
+      <div id="fileupload_button" style="display:none;">
+        [% L.hidden_tag("id") %]
+        [% L.hidden_tag("modul","part") %]
+        [% L.button_tag("add_file(this.form.id.value,this.form.modul.value)", 'Fileupload') %]
+      </div>
+    </div>
+    <div id="shoppart" height="75px">
+      ShopPart: Select Part Where to store the file<br>
+      [% L.part_picker('shoppart','',fat_set_item=1) %]<br>
+      ShopPart: <span id="shoppartchange1"> </span> -- <span id="shoppartchange2"></span><br>
+      <div id="shop_img_upload_button" style="display:none;">
+        [% L.hidden_tag("shop_part_id") %]
+        [% L.hidden_tag("shop_part_modul","shop_part") %]
+        [% L.button_tag("add_file(this.form.shop_part_id.value,this.form.shop_part_modul.value)", 'Fileupload') %]
+      </div>
+    </div>
+  </div>
+</form>
+
+<div id="testviews" style="width:50%; float:left; border:thin solid green">
+  <div id="viewpart" height="75px">
+  </div>
+  <div id="viewshoppart" height="75px">
+  </div>
+</div>
+<script type='text/javascript'>
+<!--
+ $('#part_id1').change(function() { $('#change1').html($('#part_id1').val()) });
+ $('#part_id1').on('set_item:PartPicker', function(e,o) { $('#id').val(o.id);
+                                                          $('#change2').html(o.id);
+                                                          $('#fileupload_button').show();
+                                                                  });
+ $('#shoppart').change(function() { $('#shoppartchange1').html($('#shoppart').val()) });
+ $('#shoppart').on('set_item:PartPicker', function(e,o) { $('#shop_part_id').val(o.id);
+                                                          $('#shoppartchange2').html(o.id);
+                                                          $('#shop_img_upload_button').show();
+                                                                  });
+function add_file(id,modul) {
+  //var id = this.$('#part').val();
+  kivi.popup_dialog({
+        url :           'controller.pl?action=FileUploader/ajax_add_file',
+        data:           'id=' + id + '&modul=' + modul,
+        dialog:         { title: kivi.t8('File upload') }
+  } );
+  return true;
+}
+-->
+</script>

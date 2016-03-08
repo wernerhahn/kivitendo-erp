@@ -1009,7 +1009,79 @@ SL::Controller::Order - controller for orders
 
 =head1 TODO
 
-Testing, PriceSources, pricefactor, units, currency, delivered, delivery order created, ...
+=over 2
+
+=item *
+
+testing
+
+
+=item *
+
+currency
+
+
+=item *
+
+customer/vendor details ('D'-button)
+
+
+=item *
+
+credit limit
+
+
+=item *
+
+more workflows (save as new / invoice)
+
+
+=item *
+
+price sources: little symbols showing better price / better discount
+
+
+=item *
+
+custom shipto address
+
+
+=item *
+
+periodic invoices
+
+
+=item *
+
+more details on second row (marge, ...)
+
+
+=item *
+
+language / part translations
+
+
+=item *
+
+access rights
+
+
+=item *
+
+preset salesman from customer
+
+
+=item *
+
+display weights
+
+
+=item *
+
+force project if enabled in client config
+
+
+=back
 
 =head1 AUTHOR
 

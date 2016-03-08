@@ -54,8 +54,10 @@ namespace("kivi").setupLocale({
 "Part picker":"Artikelauswahl",
 "Paste":"Einfügen",
 "Paste template":"Vorlage einfügen",
-"Please select a [%- SELF.cv %].":"",
+"Please select a customer.":"Bitte wählen Sie einen Kunden aus.",
+"Please select a vendor.":"Bitte wählen Sie einen Lieferanten aus.",
 "Price Types":"Preistypen",
+"Print options":"Druckoptionen",
 "Project link actions":"Projektverknüpfungs-Aktionen",
 "Quotations/Orders actions":"Aktionen für Angebote/Aufträge",
 "Re-numbering all sections and function blocks in the order they are currently shown cannot be undone.":"Das Neu-Nummerieren aller Abschnitte und Funktionsblöcke kann nicht rückgängig gemacht werden.",
@@ -92,5 +94,6 @@ namespace("kivi").setupLocale({
 "Version actions":"Aktionen für Versionen",
 "Yes":"Ja",
 "flat-rate position":"Pauschalposition",
+"sort items":"Positionen sortieren",
 "time and effort based position":"Aufwandsposition"
 });

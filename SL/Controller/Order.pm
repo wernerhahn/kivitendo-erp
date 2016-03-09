@@ -147,7 +147,7 @@ sub action_print {
   }
 
   my $language;
-  my $language = SL::DB::Language->new(id => $::form->{print_options}->{language_id})->load if $::form->{print_options}->{language_id};
+  $language = SL::DB::Language->new(id => $::form->{print_options}->{language_id})->load if $::form->{print_options}->{language_id};
 
   my $form = Form->new;
   $form->{ordnumber} = $self->order->ordnumber;

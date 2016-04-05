@@ -1873,18 +1873,20 @@ sub erfolgsrechnung {
   my ($self, $myconfig, $form) = @_;
   $form->{company} = $::instance_conf->get_company;
   $form->{address} = $::instance_conf->get_address;
-
-  # wrong user inputs should be handled during users input
-  # e.g.  spaces, tabs, wrong format or wrong dates
-  $form->{fromdate} = "01.01.2000" if !$form->{fromdate};
-  $form->{todate} = $form->current_date(%{$myconfig}) if !$form->{todate};
+  #injection-filter
+  $form->{fromdate} =~ s/[^0-9\.]//g;
+  $form->{todate} =~ s/[^0-9\.]//g;
+  #input validation
+  $form->{fromdate} = "01.01.2000" if $form->{fromdate} !~ m/[0-9]*\.[0-9]*\.[0-9]*/;
+  $form->{todate} = $form->current_date(%{$myconfig}) if $form->{todate} !~ m/[0-9]*\.[0-9]*\.[0-9]*/;
 
   my %categories = (I => "ERTRAG", E => "AUFWAND");
   my $fromdate = conv_dateq($form->{fromdate});
   my $todate = conv_dateq($form->{todate});
 
   $form->{total} = 0;
-  foreach my $category (keys %categories) {
+
+  foreach my $category ('I', 'E') {
     my %category = (
       name => $categories{$category},
       total => 0,
@@ -1922,10 +1924,10 @@ sub get_accounts_ch {
   my $query = qq|
     SELECT id, accno, description, category
     FROM chart
-    WHERE category = ? $inclusion
+    WHERE category = '$category' $inclusion
     ORDER BY accno
   |;
-  my $accounts = selectall_hashref_query($::form, $::form->get_standard_dbh, $query, $category);
+  my $accounts = _query($query);
 
   $main::lxdebug->leave_sub();
   return $accounts;
@@ -1939,15 +1941,16 @@ sub get_total_ch {
   my $query = qq|
     SELECT SUM(amount)
     FROM acc_trans
-    WHERE chart_id = ?
-      AND transdate >= ?
-      AND transdate <= ?
+    WHERE chart_id = '$chart_id'
+      AND transdate >= $fromdate
+      AND transdate <= $todate
   |;
-  my $data = selectfirst_hashref_query($::form, $::form->get_standard_dbh, $query, $chart_id, $fromdate, $todate);
-  $total += $data->{sum};
+  $total += _query($query)->[0]->{sum};
 
   $main::lxdebug->leave_sub();
   return $total;
 }
+
+sub _query {return selectall_hashref_query($::form, $::form->get_standard_dbh, @_);}
 
 1;

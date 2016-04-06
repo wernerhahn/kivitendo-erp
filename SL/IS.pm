@@ -969,15 +969,20 @@ SQL
   }
 
   # Invoice Summary includes Rounding
+  my $grossamount = $netamount + $tax;
   my $rounding = $form->round_amount(
-    $form->round_amount($netamount + $tax, 2, 1) - $form->round_amount($netamount + $tax, 2), 2
+    $form->round_amount($grossamount, 2, 1) - $form->round_amount($grossamount, 2),
+    2
   );
   my $rnd_accno = $rounding == 0 ? 0
                 : $rounding > 0  ? $form->{rndgain_accno}
-                :                  $form->{rndloss_accno};
-  $form->{amount}{ $form->{id} }{ $form->{AR} } = $form->round_amount($netamount + $tax, 2, 1);
-  $form->{paid} =
-    $form->round_amount($form->{paid} * $form->{exchangerate} + $diff, 2);
+                :                  $form->{rndloss_accno}
+  ;
+  $form->{amount}{ $form->{id} }{ $form->{AR} } = $form->round_amount($grossamount, 2, 1);
+  $form->{paid} = $form->round_amount(
+    $form->{paid} * $form->{exchangerate} + $diff,
+    2
+  );
 
   # reverse AR
   $form->{amount}{ $form->{id} }{ $form->{AR} } *= -1;

@@ -560,10 +560,12 @@ sub form_footer {
     }
   }
 
-  $form->{rounding} = $form->round_amount(
-    $form->round_amount($form->{invtotal}, 2, 1) - $form->round_amount($form->{invtotal}, 2)
-  );
+  my $grossamount = $form->{invtotal};
   $form->{invtotal} = $form->round_amount( $form->{invtotal}, 2, 1);
+  $form->{rounding} = $form->round_amount(
+    $form->{invtotal} - $form->round_amount($grossamount, 2),
+    2
+  );
   $form->{oldinvtotal} = $form->{invtotal};
 
   $TMPL_VAR{ALL_DELIVERY_TERMS} = SL::DB::Manager::DeliveryTerm->get_all_sorted();

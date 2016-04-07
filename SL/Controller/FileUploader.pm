@@ -27,15 +27,12 @@ sub action_upload_form{
   $self->render('common/file_upload', {header => 0});
 }
 
-<<<<<<< HEAD
 sub action_show_files {
   my ($self) = @_;
 
 
 }
 
-=======
->>>>>>> 85669d3... Fileuploader: Textpage für Parts und Shopparts ohne callback, Bilder werden mit thumbnails in der Datenbank gespeichert
 sub action_ajax_add_file{
   my ($self) = @_;
   $self->file(SL::DB::File->new);

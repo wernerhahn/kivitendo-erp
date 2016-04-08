@@ -1,5 +1,5 @@
 [%- USE HTML %][%- USE L -%][%- USE P -%][%- USE LxERP -%]
-
+[%- USE Dumper %]
 <div id="shop_variables">
 [% LxERP.t8("Active shops:") %]
  <table>
@@ -37,5 +37,26 @@
 
 
 [% # L.dump(shop_part) %]
+<hr>
+  [%- IF CUSTOM_VARIABLES.size %]
+  <div id="shop_custom_variables">
+   <p>
+    <table>
+     [%- FOREACH var = CUSTOM_VARIABLES %]
+      [%- IF var.name.match('^shop_') %]
+       <tr>
+        [%- IF !var.partsgroup_filtered %]
+          <td align="right" valign="top">[% HTML.escape(var.description) %]</td>
+        [%- END %]
+        <td valign="top">[% var.HTML_CODE %]</td>
+       </tr>
+      [%- END %]
+     [%- END %]
+    </table>
+   </p>
+  </div>
+  [%- END %]
+  <div id="shop_images">
+  </div>
 </div>
 

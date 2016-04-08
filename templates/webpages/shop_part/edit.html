@@ -1,4 +1,8 @@
-[%- USE HTML %][%- USE L -%][%- USE P -%][%- USE LxERP -%]
+[%- USE HTML %]
+[%- USE T8 %]
+[%- USE L -%]
+[%- USE P -%]
+[%- USE LxERP -%]
 
 [% LxERP.t8("Part") %]: [% HTML.escape(SELF.shop_part.part.displayable_name) %]<br>
 [% LxERP.t8("Shop") %]: [% HTML.escape(SELF.shop_part.shop.description) %]
@@ -15,7 +19,9 @@
  <table>
   <tr>
    <td>[% LxERP.t8("Description") %]</td>
-   <td>[% L.textarea_tag("shop_part.shop_description", SELF.shop_part.shop_description) %]</td>
+   <td>[% L.textarea_tag('shop_part.shop_description_as_restricted_html', SELF.shop_part.shop_description_as_restricted_html, style='width:100%', rows=20, class="texteditor") %]</td>
+     <td>[% L.textarea_tag('letter.body_as_restricted_html', letter.body_as_restricted_html, style='width:100%', rows=20, class="texteditor") %]</td>
+   <!--   <td>[% L.textarea_tag("shop_part.shop_description", SELF.shop_part.shop_description) %]</td> -->
   </tr>
   <tr>
    <td>[% LxERP.t8("Active") %]</td>

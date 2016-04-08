@@ -1,6 +1,8 @@
 [%- USE T8 %]
 [%- USE HTML %]
 [%- USE LxERP %][%- USE L -%][%- USE P -%]
+[% USE Dumper %]
+[% # Dumper.dump(CUSTOM_VARIABLES) %]
 [% PROCESS 'common/select_warehouse_bin.html' %]
  <h1>[% title %]  [% HTML.escape(partnumber) %]  [% HTML.escape(description) %]</h1>
 

@@ -1,0 +1,26 @@
+[%- USE HTML %][%- USE L -%][%- USE P -%][%- USE LxERP -%]
+[%- USE T8 %][% USE Base64 %]
+[%- USE Dumper %]
+<table width="100%" id="images_list">
+  <thead>
+    <tr class="listheading">
+      <th width="70px"></th>
+      <th>[% 'Title' | $T8 %]</th>
+      <th>[% 'Description' | $T8 %]</th>
+      <th>[% 'Filename' | $T8 %]</th>
+      <th>[% 'Orig. Size w/h' | $T8 %]</th>
+    </tr>
+  </thead>
+  <tbody>
+   [%-  FOREACH img = IMAGES %]
+   <tr class="listrow" id="image_id_[%  img.id %]">
+     <td><img src="data:[%  img.thumbnail_img_content_type %];base64,[%  img.thumbnail_img_content.encode_base64 %]" alt="[%  img.title %]"></td>
+     <td>[%  HTML.escape(img.title) %]</td>
+     <td>[%  HTML.escape(img.description) %]</td>
+     <td>[%  HTML.escape(img.filename) %]</td>
+     <td>[%  HTML.escape(img.thumbnail_img_width) _  ' x ' _ HTML.escape(img.thumbnail_img_height) %]</td>
+   </tr>
+   [%  END %]
+  </tbody>
+</table>
+

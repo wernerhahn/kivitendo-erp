@@ -1,5 +1,6 @@
 [%- USE HTML %][%- USE L -%][%- USE P -%][%- USE LxERP -%]
 [%- USE Dumper %]
+[%- USE JavaScript -%]
 <div id="shop_variables">
 [% LxERP.t8("Active shops:") %]
  <table>
@@ -56,7 +57,17 @@
    </p>
   </div>
   [%- END %]
-  <div id="shop_images">
+  <script type="text/javascript">
+    function show_images() {
+      var url = 'controller.pl?action=ShopPart/show_files&modul=shop_part&id=[% shop_part.part_id %]';
+      $('#shop_images').load(url);
+    }
+
+$(window).load(function() {
+        show_images();
+});
+  </script>
+  <div id="shop_images" border=1 >
   </div>
 </div>
 

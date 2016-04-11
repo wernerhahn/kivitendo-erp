@@ -52,12 +52,30 @@ sub action_update_shop {
 
 };
 
+sub action_show_files {
+  my ($self) = @_;
+$main::lxdebug->dump(0, 'WH: Show_Files',\$::form);
+  require SL::DB::File;
+  my $images = SL::DB::Manager::File->get_all( where => [ trans_id => $::form->{id}, modul => $::form->{modul}, file_content_type => { like => 'image/%' } ] );
+  $main::lxdebug->dump(0, 'WH: ',\$images);
+  #my $html = $self->render('shop_part/_list_images', { output => 0 }, IMAGES => $images);
+  $self->render('shop_part/_list_images', { header => 0 }, IMAGES => $images);
+  #$main::lxdebug->dump(0, 'WH: ',\$html);
+
+  #$self->js->html('#shop_images', $html);
+  #$self->js->render;
+
+  # $self->render('customer_vendor_turnover/count_open_items_by_year', { layout => 0 });
+
+
+}
+
 
 
 # old:
 # sub action_edit {
 #   my ($self) = @_;
-# 
+#
 #   $self->render('shop_part/edit'); #, { output => 0 }); #, price_source => $price_source)
 # }
 #

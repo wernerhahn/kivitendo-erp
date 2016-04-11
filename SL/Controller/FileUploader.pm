@@ -29,6 +29,9 @@ sub action_upload_form{
 
 sub action_show_files {
   my ($self) = @_;
+$main::lxdebug->dump(0, 'WH: Show_Files',\$::form);
+  my $images = SL::DB::Manager::File->get_all( query => [ trans_id => $::form->{id}, modul => $::form->{modul} ] );
+  $main::lxdebug->dump(0, 'WH: ',\$images);
 
 
 }

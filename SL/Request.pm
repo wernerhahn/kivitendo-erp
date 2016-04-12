@@ -18,7 +18,7 @@ our @EXPORT_OK = qw(flatten unflatten read_cgi_input);
 
 use Rose::Object::MakeMethods::Generic
 (
-  scalar                  => [ qw(applying_database_upgrades) ],
+  scalar                  => [ qw(applying_database_upgrades routing_type controller action) ],
   'scalar --get_set_init' => [ qw(cgi layout presenter is_ajax type) ],
 );
 
@@ -537,6 +537,23 @@ an 'AJAX' request.
 =item C<type>
 
 Returns the requested content type (either C<html>, C<js> or C<json>).
+
+=item C<controller>
+
+Returns the name of the current controller. This is either the base
+name of a script in C<bin/mozilla> (e.g. C<oe>; for the old routing
+type) or the base name of one of the packages in C<SL/Controller>
+(e.g. C<BackgroundJob>; for the new controller routing type).
+
+=item C<action>
+
+Returns the name of the current action.
+
+=item C<routing_type>
+
+Returns the routing type. This depends on the requested controller. It
+can be either C<old> for one of the scripts in C<bin/mozilla> or
+C<controller> for one of the new controllers in C<SL/Controller>.
 
 =item C<layout>
 

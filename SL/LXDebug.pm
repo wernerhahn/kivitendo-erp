@@ -296,10 +296,10 @@ sub begin_request {
 }
 
 sub end_request {
-  my ($self, %params) = @_;
+  my ($self) = @_;
   return 1 unless want_request_timer();
 
-  $self->_write("time", sprintf('%f (%s/%s)', $self->get_request_time, $params{script_name}, $params{action}));
+  $self->_write("time", $::request ? sprintf('%f (%s/%s)', $self->get_request_time, $::request->controller, $::request->action) : sprintf('%f', $self->get_request_time));
 
   $self->{calldepth} = 0;
 }

@@ -23,7 +23,7 @@ use DateTime;
 use Encode;
 use English qw(-no_match_vars);
 use File::Basename;
-use List::MoreUtils qw(all);
+use List::MoreUtils qw(apply all);
 use List::Util qw(first);
 use SL::ArchiveZipFixes;
 use SL::Auth;
@@ -240,6 +240,8 @@ sub handle_request {
   $::lxdebug->log_request($routing_type, $script_name, $action);
 
   $::request->type(lc($routing{request_type} || 'html'));
+  $::request->routing_type($routing{type});
+  $::request->controller(apply { s{.*/|\.pl$}{}g } $routing{controller});
 
   if ($routing_type eq 'old') {
     $::form->{action}  =  lc $::form->{action};
@@ -250,9 +252,15 @@ sub handle_request {
 
     $::form->{script} = $script . $suffix;
 
+    my $actual_action = $::locale->findsub($routing{action});
+    $actual_action    = apply { s{^action_}{} } first { m{^action_} && $::form->{$_} } keys %{ $::form } if $actual_action eq 'dispatcher';
+
+    $::request->action($actual_action);
+
   } else {
     _require_controller($script_name);
     $::form->{script} = "controller.pl";
+    $::request->action($routing{action});
   }
 
   eval {
@@ -324,7 +332,7 @@ sub handle_request {
     $self->{request}->Finish;
   }
 
-  $::lxdebug->end_request(routing_type => $routing_type, script_name => $script_name, action => $action);
+  $::lxdebug->end_request;
 
   # cleanup
   $::auth->save_session;

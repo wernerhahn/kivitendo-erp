@@ -54,7 +54,7 @@ our @lost        = ();
 
 my %ignore_unused_templates = (
   map { $_ => 1 } qw(ct/testpage.html generic/autocomplete.html oe/periodic_invoices_email.txt part/testpage.html t/render.html t/render.js task_server/failure_notification_email.txt
-                     failed_background_jobs_report/email.txt)
+                     failed_background_jobs_report/email.txt help/content)
 );
 
 my (%referenced_html_files, %locale, %htmllocale, %alllocales, %cached, %submit, %jslocale);
@@ -683,7 +683,7 @@ sub search_unused_htmlfiles {
 
     foreach my $entry (<$dir/*>) {
       if (-d $entry) {
-        push @unscanned_dirs, $entry;
+        push @unscanned_dirs, $entry unless $ignore_unused_templates{strip_base($entry)};
 
       } elsif (!$ignore_unused_templates{strip_base($entry)} && -f $entry && !$referenced_html_files{$entry}) {
         print "W: unused HTML template: " . strip_base($entry) . "\n";

@@ -6,7 +6,9 @@ use parent qw(Rose::Object);
 
 use Carp;
 use IO::File;
+use List::MoreUtils qw(apply);
 use List::Util qw(first);
+use SL::HelpSystem;
 use SL::Request qw(flatten);
 use SL::MoreCommon qw(uri_encode);
 use SL::Presenter;
@@ -229,6 +231,17 @@ sub _run_hooks {
 }
 
 #
+# Other class methods
+#
+
+sub override_help_contexts {
+  my $class      = shift;
+  my $controller = apply { s{.+:}{} } $class;
+
+  SL::HelpSystem->override_help_contexts($controller, @_);
+}
+
+#
 #  behaviour. override these
 #
 
@@ -244,7 +257,6 @@ sub get_auth_level {
 sub keep_auth_vars_in_form {
   return 0;
 }
-
 #
 # private functions -- for use in Base only
 #
@@ -625,6 +637,35 @@ L<SL::Presenter/get>.
 =item C<js>
 
 Returns an L<SL::ClientJS> instance for this controller.
+
+=back
+
+=head2 OTHER CLASS FUNCTIONS
+
+=over 4
+
+=item C<override_help_contexts %help_contexts>
+
+Created overrides for the help context auto-detection by
+L<SL::HelpSystem/context>. The keys given in the hash are action names
+for which the help context is overridden.
+
+The value can contain a slash in which case its used
+verbatim. Otherwise value is taken to be an action name in the calling
+controller and the controller's name will be prepended.
+
+For example, in this example both targets will effectively be
+C<BackgroundJob/edit>:
+
+
+  package SL::Controller::BackgroundJob;
+
+  use parent qw(SL::Controller::Base);
+
+  __PACKAGE__->set_help_contexts(
+    new    => 'edit',
+    create => 'BackgroundJob/edit',
+  );
 
 =back
 

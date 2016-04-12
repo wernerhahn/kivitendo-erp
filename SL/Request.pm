@@ -10,6 +10,7 @@ use List::MoreUtils qw(all any apply);
 use Exporter qw(import);
 
 use SL::Common;
+use SL::HelpSystem;
 use SL::MoreCommon qw(uri_encode uri_decode);
 use SL::Layout::None;
 use SL::Presenter;
@@ -19,7 +20,7 @@ our @EXPORT_OK = qw(flatten unflatten read_cgi_input);
 use Rose::Object::MakeMethods::Generic
 (
   scalar                  => [ qw(applying_database_upgrades routing_type controller action) ],
-  'scalar --get_set_init' => [ qw(cgi layout presenter is_ajax type) ],
+  'scalar --get_set_init' => [ qw(cgi layout presenter is_ajax type help_system) ],
 );
 
 sub init_cgi {
@@ -32,6 +33,10 @@ sub init_layout {
 
 sub init_presenter {
   return SL::Presenter->new;
+}
+
+sub init_help_system {
+  return SL::HelpSystem->new;
 }
 
 sub init_is_ajax {

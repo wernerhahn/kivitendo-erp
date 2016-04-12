@@ -257,6 +257,14 @@ template = template1
 # database ID or its name.
 client =
 
+# The help system is currently disabled by default as most of its
+# content is still missing. It would be a disservice to users if it
+# were enabled in such a state. For developers and documenters working
+# on the documentation the feature must be turned on. Once enough
+# documentation has been written the feature will be enabled
+# unconditionally.
+enable_help_system = 0
+
 [debug]
 # Use DBIx::Log4perl for logging DBI calls. The string LXDEBUGFILE
 # will be replaced by the file name configured for $::lxdebug.

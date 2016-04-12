@@ -14,6 +14,14 @@ sub pre_content {
   # certain columns that are only created by said database upgrades.
   push @options, (quick_search => SL::Controller::TopQuickSearch->new) unless $::request->applying_database_upgrades;
 
+  # The help system is currently disabled by default as most of its
+  # content is still missing. It would be a disservice to users if it
+  # were enabled in such a state. For developers and documenters
+  # working on the documentation the feature must be turned on. Once
+  # enough documentation has been written the feature will be enabled
+  # unconditionally.
+  push @options, (help_context => $::request->help_system->context) if $::lx_office_conf{devel}->{enable_help_system};
+
   $self->presenter->render('menu/header',
     now        => DateTime->now_local,
     is_fastcgi => $::dispatcher ? scalar($::dispatcher->interface_type =~ /fastcgi/i) : 0,

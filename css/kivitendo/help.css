@@ -1,0 +1,25 @@
+.kivitendo-help pre {
+  background-color: #eee;
+  overflow: auto;
+}
+
+.kivitendo-help thead th {
+	padding: 0.2em;
+	background-color: #EBEBEB;
+	color: #006400;
+	font-weight: bolder;
+	text-align: left;
+	border-style: none;
+}
+
+.kivitendo-help tbody tr:nth-child(odd) {
+	background-color: #FFFF99;
+	color: black;
+	vertical-align: top;
+}
+
+.kivitendo-help tbody tr:nth-child(even) {
+	background-color: #FFFFFF;
+	color: black;
+	vertical-align: top;
+}

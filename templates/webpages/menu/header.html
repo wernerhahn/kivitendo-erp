@@ -1,10 +1,13 @@
-[%- USE T8 %][%- USE LxERP -%]
+[%- USE T8 %][%- USE LxERP -%][%- USE HTML -%]
 [%- UNLESS skip_frame_header %]
 <div id="frame-header">
 [%- UNLESS is_links %]
  <span class="frame-header-element frame-header-left">
     [<a href="controller.pl?action=LoginScreen/user_login" target="_blank" title="[% 'Open a further kivitendo window or tab' | $T8 %]">[% 'New window/tab' | $T8 %]</a>]
     [<a href="JavaScript:top.print();" title="[% 'Hardcopy' | $T8 %]">[% 'Print' | $T8 %]</a>]
+[%- IF help_context %]
+    [<a href="controller.pl?action=Help/show&context=[% HTML.url(help_context) %]" target="_kivitendo_help", title="[% LxERP.t8("Open kivitendo's help system in a new window") %]">[% LxERP.t8("Help") %]</a>]
+[%- END %]
 
 [%- FOREACH search = quick_search.enabled_modules %]
     [<input id="top-quick-search-[% search.name %]" module="[% search.name %]" placeholder="[% search.description_field %]" maxlength="20">]

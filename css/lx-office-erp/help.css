@@ -1,4 +1,45 @@
 .kivitendo-help pre {
-  background-color: #eee;
+  background-color: rgb(208,207,201);
   overflow: auto;
+}
+
+.kivitendo-help thead th {
+  font-size: 9pt;
+  padding:3px;
+  background-color:
+  rgb(236,233,216);
+  color: black;
+  font-weight: bolder;
+  text-align:left;
+  background-image: url("../../image/fade.png");
+  border-style:dotted;
+  border-width:thin;
+}
+
+.kivitendo-help tbody tr:nth-child(odd) {
+	background-color: rgb(236,233,216);
+	color: black;
+	vertical-align: top;
+}
+
+.kivitendo-help tbody tr:nth-child(even) {
+  background-color: rgb(208,207,201);
+  color: black;
+  vertical-align: top;
+}
+
+.kivitendo-help div.attention {
+	background-color: rgb(236,233,216);
+  border: 1px solid #cacaca;
+  margin: 5px 20px;
+  padding: 0px 5px;
+}
+
+.kivitendo-help div.attention p {
+  margin: 5px 0px;
+}
+
+.kivitendo-help div.attention p:nth-child(1) {
+  background-color: rgb(208,207,201);
+  padding: 2px;
 }

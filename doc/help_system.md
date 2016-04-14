@@ -104,6 +104,10 @@ Das Styling kann über CSS geregelt werden. Zusätzlich zum von der BenutzerIn a
 
 In der Hilfe-Ausgabe selber besitzt das `<body>`-Element die CSS-Klasse `kivitendo-help`. Darüber können CSS-Regeln alle Elemente greifen.
 
+## Einfache Hilfe-Links
+
+Links auf andere Hilfe-Texte können wie andere Links auch angegeben werden. Um die Verlinkung zu erleichtern, wird als Link-Ziel die folgende Syntax unterstützt: `help:WANTED_CONTROLLER/WANTED_ACTION`
+
 ## Zu implementierende Features, zu behebende Bugs
 
 Die folgenden Dinge müssen in `Text::MultiMarkup` implementiert bzw. behoben werden:
@@ -113,10 +117,6 @@ Die folgenden Dinge müssen in `Text::MultiMarkup` implementiert bzw. behoben we
 Einfache Zeilenumbrüche im Fließtext (also keine Leerzeile danach) werden in der Ausgabe nicht als <br/> gerendert, sodass gar dort gar keine Zeilenumbrüche zu sehen sind.
 
 Auf Github existiert dafür auch ein [pull request](https://github.com/bobtfish/text-multimarkdown/pull/17).
-
-### Einfachere Hilfe-Links
-
-Links auf andere Hilfe-Texte müssen momentan mühsam als `controller.pl?action=Help/show&context=WANTED_CONTROLLER/WANTED_ACTION` angegeben werden. Schöner wäre es, wenn man einfach als Linkziel `help:WANTED_CONTROLLER/WANTED_ACTION` angeben könnte.
 
 ## Zukünftige Erweiterungsmöglichkeiten
 

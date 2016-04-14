@@ -108,10 +108,6 @@ In der Hilfe-Ausgabe selber besitzt das `<body>`-Element die CSS-Klasse `kiviten
 
 Die folgenden Dinge müssen in `Text::MultiMarkup` implementiert bzw. behoben werden:
 
-### Codeblöcke mit Backticks
-
-Codeblöcke können normalerweise auch ohne Einrückung gesetzt werden, wenn sie vorne und hinten mit je einer Zeile mit drei Backticks eingeschlossen wird. Dies wird von `Text::MultiMarkdown` momentan nicht unterstützt und als eingebetteter Code erkannt.
-
 ### Zeilenumbrüche
 
 Einfache Zeilenumbrüche im Fließtext (also keine Leerzeile danach) werden in der Ausgabe nicht als <br/> gerendert, sodass gar dort gar keine Zeilenumbrüche zu sehen sind.

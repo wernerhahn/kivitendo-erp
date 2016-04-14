@@ -287,6 +287,39 @@ sub _CleanUpRunData {
     $self->SUPER::_CleanUpRunData($options);
 }
 
+sub _DoCodeBlocksMultiBackticks {
+#
+# Process Markdown code blocks embedded within lines consisting of three backticks: ```
+# * encode <, >, & into HTML entities
+# * escape Markdown special characters into MD5 hashes
+# * trim leading and trailing newlines
+#
+    my ($self, $text) = @_;
+
+    $text =~ s{
+        (?:\n\n|\A)
+        ```[^\n]*\n
+        (                # $1 = the code block -- one or more lines
+            .*?
+        )
+        ```(?:\n|\Z)
+    }{
+        my $codeblock = $1;
+        my $result;  # return value
+
+        $codeblock = $self->_EncodeCode($codeblock);
+        $codeblock = $self->_Detab($codeblock);
+        $codeblock =~ s/\A\n+//;  # trim leading newlines
+        $codeblock =~ s/\n+\z//;  # trim trailing newlines
+
+        $result = "\n\n<pre><code>" . $codeblock . "\n</code></pre>\n\n";
+
+        $result;
+    }egmsx;
+
+    return $text;
+}
+
 sub _Markdown {
 #
 # Main function. The order in which other subs are called here is
@@ -309,6 +342,7 @@ sub _Markdown {
 
     # MMD only
     $text = $self->_StripMarkdownReferences($text);
+    $text = $self->_DoCodeBlocksMultiBackticks($text);
 
     $text = $self->_RunBlockGamut($text, {wrap_in_p_tags => 1});
 

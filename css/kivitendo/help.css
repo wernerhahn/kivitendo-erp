@@ -23,3 +23,19 @@
 	color: black;
 	vertical-align: top;
 }
+
+.kivitendo-help div.attention {
+  background-color: #ebebeb;
+  border: 1px solid #cacaca;
+  margin: 5px 20px;
+  padding: 0px 5px;
+}
+
+.kivitendo-help div.attention p {
+  margin: 5px 0px;
+}
+
+.kivitendo-help div.attention p:nth-child(1) {
+  background-color: #ffff99;
+  padding: 2px;
+}

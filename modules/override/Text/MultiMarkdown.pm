@@ -320,6 +320,26 @@ sub _DoCodeBlocksMultiBackticks {
     return $text;
 }
 
+sub _DoAttentionBlocks {
+    my ($self, $text) = @_;
+
+    $text =~ s{
+        (?:\n\n+|\A)
+        ==
+        ( .*? )
+        ==
+        (?:\n+|\Z)
+    }{
+        my $result = qq|\n\n<div class="attention">|;
+        $result   .= $self->_RunBlockGamut($1, { wrap_in_p_tags => 1 });
+        $result   .= qq|</div>\n\n|;
+
+        $result;
+    }egmsx;
+
+    return $text;
+}
+
 sub _Markdown {
 #
 # Main function. The order in which other subs are called here is
@@ -343,6 +363,7 @@ sub _Markdown {
     # MMD only
     $text = $self->_StripMarkdownReferences($text);
     $text = $self->_DoCodeBlocksMultiBackticks($text);
+    $text = $self->_DoAttentionBlocks($text);
 
     $text = $self->_RunBlockGamut($text, {wrap_in_p_tags => 1});
 

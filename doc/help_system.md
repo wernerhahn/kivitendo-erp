@@ -108,6 +108,12 @@ In der Hilfe-Ausgabe selber besitzt das `<body>`-Element die CSS-Klasse `kiviten
 
 Links auf andere Hilfe-Texte können wie andere Links auch angegeben werden. Um die Verlinkung zu erleichtern, wird als Link-Ziel die folgende Syntax unterstützt: `help:WANTED_CONTROLLER/WANTED_ACTION`
 
+## Bilder speichern und einbinden
+
+Für Bilder gibt es eine Verzeichnisstruktur unterhalb von `image/help`, die analog zur Hilfeseiten-Verzeichnisstruktur aufgebaut ist. Bilder zu einer Seite sollten daher im korrespondierenden Verzeichnis gespeichert werden. Wenn es z.B. um die deutsche Seite zum Thema `CustomerVendor/edit` geht, so sollte das Bild im Verzeichnis `image/help/de/CustomerVendor/edit` liegen.
+
+Beim Einbinden eines Bildes muss der relative Pfad angegeben werden. Wenn es z.B. um ein Bild `maske.png` im oben genannten Beispiel geht, so lautet der einzutragende Pfad fürs Bild `image/help/de/CustomerVendor/edit/maske.png`.
+
 ## Zukünftige Erweiterungsmöglichkeiten
 
 ### Kommentare von BenutzerInnen

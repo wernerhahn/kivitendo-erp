@@ -2,6 +2,17 @@
 
 Im Layout wird immer ein Hilfe-Link gerendert. Dieser öffnet ein Popupfenster und ruft darin die Action `Help/show` auf. Ihr wird eine Kontextinformation übergeben, mit der der Controller entscheiden kann, welche Hilfeseite angezeigt wird. Diese Kontextinformation wird automatisch aus dem aktuellen Controller und der aktuellen Action abgeleitet, kann aber im Controller überschrieben werden.
 
+## Aktivierung
+
+Da ein Hilfesystem ohne Inhalt wenig Sinn ergibt, ist es momentan per default deaktiviert. Um es einzuschalten, muss man in der `kivitendo.conf` einen Schalter setzen:
+
+```
+[devel]
+enable_help_system = 1
+```
+
+Nur wenn es aktiviert, wird auch ein Hilfelink auf jeder Seite in der Kopfzeile angezeigt.
+
 ## Popup-Fenster
 
 Hilfetexte werden in einem Popup-Fenster angezeigt. Das Link-Target für dieses Popup lautet `_kivitendo_help`.

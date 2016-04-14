@@ -1067,36 +1067,43 @@ sub _DoTables {
 
         my $alignment_string = $1;
         my $body = $2;
+        my $colgroup = '';
 
         # Process column alignment
         while ($alignment_string =~ /\|?\s*(.+?)\s*(\||\Z)/gs) {
             my $cell = $self->_RunSpanGamut($1);
             if ($cell =~ /\:$/) {
                 if ($cell =~ /^\:/) {
-                    $result .= qq[<col align="center"$self->{empty_element_suffix}\n];
+                    $colgroup .= qq[<col align="center"$self->{empty_element_suffix}\n];
                     push(@alignments,"center");
                 }
                 else {
-                    $result .= qq[<col align="right"$self->{empty_element_suffix}\n];
+                    $colgroup .= qq[<col align="right"$self->{empty_element_suffix}\n];
                     push(@alignments,"right");
                 }
             }
             else {
                 if ($cell =~ /^\:/) {
-                    $result .= qq[<col align="left"$self->{empty_element_suffix}\n];
+                    $colgroup .= qq[<col align="left"$self->{empty_element_suffix}\n];
                     push(@alignments,"left");
                 }
                 else {
                     if (($cell =~ /^\./) || ($cell =~ /\.$/)) {
-                        $result .= qq[<col align="char"$self->{empty_element_suffix}\n];
+                        $colgroup .= qq[<col align="char"$self->{empty_element_suffix}\n];
                         push(@alignments,"char");
                     }
                     else {
-                        $result .= "<col$self->{empty_element_suffix}\n";
+                        $colgroup .= "<col$self->{empty_element_suffix}\n";
                         push(@alignments,"");
                     }
                 }
             }
+        }
+
+        if ($colgroup) {
+            $result .= qq|<colgroup$self->{empty_element_suffix}\n|
+              . $colgroup
+              . qq|</colgroup$self->{empty_element_suffix}\n|;
         }
 
         # Process headers

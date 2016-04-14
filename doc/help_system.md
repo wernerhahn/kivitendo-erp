@@ -122,10 +122,6 @@ Auf Github existiert dafür auch ein [pull request](https://github.com/bobtfish/
 
 Ein Block soll hervorgehoben darsgestellt werden (wie z.B. solche »Achtung!«- oder »Information«-Blöcke in Textbüchern zu Programmiersprachen), wenn sie vorhe und hinten mit zwei Gleichheitszeichen eingeschlossen werden. Das unterstützt `Text::MultiMarkdown` momentan gar nicht.
 
-### Tabellen und <colgroup>
-
-Für Tabellen werden zwar <col>-Elemente ausgegeben, diese stecken allerdings direkt in <table> und nicht in einem <colgroup>-Element.
-
 ### Einfachere Hilfe-Links
 
 Links auf andere Hilfe-Texte müssen momentan mühsam als `controller.pl?action=Help/show&context=WANTED_CONTROLLER/WANTED_ACTION` angegeben werden. Schöner wäre es, wenn man einfach als Linkziel `help:WANTED_CONTROLLER/WANTED_ACTION` angeben könnte.

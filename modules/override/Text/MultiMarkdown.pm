@@ -412,6 +412,8 @@ sub _RunSpanGamut {
         $text = $self->_DoAnchors($text);
     }
 
+    $text =~ s{ \n }{ qq|<br| . $self->{empty_element_suffix} . qq|\n| }gex;
+
     return $text;
 }
 

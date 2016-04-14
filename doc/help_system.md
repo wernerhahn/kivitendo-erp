@@ -108,16 +108,6 @@ In der Hilfe-Ausgabe selber besitzt das `<body>`-Element die CSS-Klasse `kiviten
 
 Links auf andere Hilfe-Texte können wie andere Links auch angegeben werden. Um die Verlinkung zu erleichtern, wird als Link-Ziel die folgende Syntax unterstützt: `help:WANTED_CONTROLLER/WANTED_ACTION`
 
-## Zu implementierende Features, zu behebende Bugs
-
-Die folgenden Dinge müssen in `Text::MultiMarkup` implementiert bzw. behoben werden:
-
-### Zeilenumbrüche
-
-Einfache Zeilenumbrüche im Fließtext (also keine Leerzeile danach) werden in der Ausgabe nicht als <br/> gerendert, sodass gar dort gar keine Zeilenumbrüche zu sehen sind.
-
-Auf Github existiert dafür auch ein [pull request](https://github.com/bobtfish/text-multimarkdown/pull/17).
-
 ## Zukünftige Erweiterungsmöglichkeiten
 
 ### Kommentare von BenutzerInnen

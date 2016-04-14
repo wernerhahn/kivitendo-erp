@@ -114,6 +114,12 @@ Für Bilder gibt es eine Verzeichnisstruktur unterhalb von `image/help`, die ana
 
 Beim Einbinden eines Bildes muss der relative Pfad angegeben werden. Wenn es z.B. um ein Bild `maske.png` im oben genannten Beispiel geht, so lautet der einzutragende Pfad fürs Bild `image/help/de/CustomerVendor/edit/maske.png`.
 
+## Testseiten
+
+Es gibt einen Bereich im Hilfe-Verzeichinsbaum, der explizit für Tests und Entwicklung des Hilfesystems vorgesehen ist: `templates/help/content/de/_tests` und das dazugehörige Bilder-Verzeichnis `image/help/de/_tests`. Dort gibt es momentan eine Seite, die alle unterstützten Features benutzt. Aufruf über `http://…/controller.pl?action=Help/show&context=_tests/features_1`
+
+Eine Seite mit etwas längerem Lorem Ipsum gibt's auch, um z.B. Verlinkung zu Ankern zu testen: `http://…/controller.pl?action=Help/show&context=_tests/lorem_ipsum`
+
 ## Zukünftige Erweiterungsmöglichkeiten
 
 ### Kommentare von BenutzerInnen

@@ -304,17 +304,11 @@ sub _DoCodeBlocksMultiBackticks {
         )
         ```(?:\n|\Z)
     }{
-        my $codeblock = $1;
-        my $result;  # return value
+        my $spaces    =  ' ' x $self->{tab_width};
+        my $codeblock =  $1;
+        $codeblock    =~ s{^}{$spaces}mg;
 
-        $codeblock = $self->_EncodeCode($codeblock);
-        $codeblock = $self->_Detab($codeblock);
-        $codeblock =~ s/\A\n+//;  # trim leading newlines
-        $codeblock =~ s/\n+\z//;  # trim trailing newlines
-
-        $result = "\n\n<pre><code>" . $codeblock . "\n</code></pre>\n\n";
-
-        $result;
+        $codeblock;
     }egmsx;
 
     return $text;

@@ -53,7 +53,7 @@ sub convert_page_to_html {
 
   my $file_name = $self->file_name_for_page(%page);
 
-  return -f $file_name ? $self->driver->convert_to_html($file_name) : undef;
+  return -f $file_name ? $self->driver->convert_page_to_html($file_name) : undef;
 }
 
 sub sanitize {

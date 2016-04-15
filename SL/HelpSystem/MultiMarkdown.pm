@@ -21,12 +21,18 @@ sub init_multimarkdown {
 
 sub file_name_extension { "mmd" }
 
-sub convert_to_html {
+sub convert_page_to_html {
   my ($self, $file_name) = @_;
 
   my $markup = Encode::decode('utf-8', scalar(File::Slurp::slurp($file_name)));
-  my $html   = $self->multimarkdown->markdown($markup);
-  $html      = $self->_processh_intra_help_links($html);
+  return $self->convert_content_to_html($markup);
+}
+
+sub convert_content_to_html {
+  my ($self, $content) = @_;
+
+  my $html = $self->multimarkdown->markdown($content);
+  $html    = $self->_processh_intra_help_links($html);
 
   return $html;
 }

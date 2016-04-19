@@ -79,7 +79,6 @@ sub action_get_categories {
   require SL::Shop;
   my $shop = SL::Shop->new( config => $shop_part->shop );
   my $categories = $shop->connector->get_categories;
-  $main::lxdebug->dump(0, 'WH: GET',\$categories);
 
   $self->js
     ->run(
@@ -144,21 +143,26 @@ sub render_shop_part_edit_dialog {
   $self->js->render;
 }
 
-sub render_shop_categories_edit_dialog {
+sub action_save_categories {
   my ($self) = @_;
 
-  # when self->shop_part is called in template, it will be an existing shop_part with id,
-  # or a new shop_part with only part_id and shop_id set
-  $self->js
-    ->run(
-      'kivi.shop_part.shop_part_dialog',
-      t8('Shopcategories'),
-      $self->render('shop_part/categories', { output => 0 }) #, shop_part => $self->shop_part)
-    )
-    ->reinit_widgets;
+  my @categories =  @{ $::form->{categories} || [] };
+  my $categories->{shop_category} = \@categories;
 
-  $self->js->render;
+  my $params = delete($::form->{shop_part}) || { };
+
+  $self->shop_part->assign_attributes(%{ $params });
+  $self->shop_part->assign_attributes(%{ $categories });
+
+  $self->shop_part->save;
+
+  flash('info', t8('The categories has been saved.'));
+
+  $self->js->run('kivi.shop_part.close_dialog')
+           ->flash('info', t8("Updated categories"))
+           ->render;
 }
+
 sub action_reorder {
   my ($self) = @_;
 $main::lxdebug->message(0, "WH:REORDER ");

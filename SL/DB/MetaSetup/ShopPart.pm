@@ -17,7 +17,7 @@ __PACKAGE__->meta->columns(
   meta_tags        => { type => 'text' },
   mtime            => { type => 'timestamp' },
   part_id          => { type => 'integer', not_null => 1 },
-  shop_category    => { type => 'text' },
+  shop_category    => { type => 'array' },
   shop_description => { type => 'text' },
   shop_id          => { type => 'integer', not_null => 1 },
   show_date        => { type => 'date' },

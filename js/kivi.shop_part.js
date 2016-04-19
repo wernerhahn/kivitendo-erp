@@ -78,10 +78,11 @@ namespace('kivi.shop_part', function(ns) {
     });
   }
   // write categories in kivi DB not in the shops DB TODO: create new categories in the shops db
-  ns.set_categorie = function(shop_id, shop_part_id) {
+  ns.save_categories = function(shop_part_id, shop_id) {
     var form = $('form').serializeArray();
-    form.push( { name: 'action', value: 'ShopPart/set_categorie' }
+    form.push( { name: 'action', value: 'ShopPart/save_categories' }
              , { name: 'shop_id', value: shop_id }
+             , { name: 'shop_part_id', value: shop_part_id }
     );
 
     $.post('controller.pl', form, function(data) {

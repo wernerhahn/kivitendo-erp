@@ -1,0 +1,35 @@
+[%- USE HTML %]
+[%- USE T8 %]
+[%- USE L -%]
+[%- USE P -%]
+[%- USE LxERP -%]
+[%- USE Dumper -%]
+
+[%  LxERP.t8("Part") %]: [% HTML.escape(SELF.shop_part.part.displayable_name) %]<br>
+[%  LxERP.t8("Shop") %]: [% HTML.escape(SELF.shop_part.shop.description) %]
+
+[% #  Dumper.dump_html(CATEGORIES) %]
+
+<form action="controller.pl" method="post">
+  [% BLOCK recurse %]
+    [% FOREACH obj = data %]
+      <ul>
+        <li>[% L.checkbox_tag('categories[]',value=obj.name) %][% HTML.escape(obj.name) %]</li>
+        [% IF obj.childrenCount >= 1 %]
+          [% INCLUDE recurse data=obj.children %]
+        [% END %]
+      </ul>
+    [% END %]
+  [% END %]
+  <div><h2>[% LxERP.t8("Shopcategories") %]</h2>
+      [% FOREACH row = CATEGORIES %]
+        [% IF row.name == 'Root' %]
+          [% IF row.childrenCount >= 1 %]
+            [% INCLUDE recurse data=row.children %]
+          [% END %]
+        [% END %]
+      [% END %]
+  </div>
+    [% L.button_tag("kivi.shop_part.save_categories(" _ SELF.shop_part.id _", " _ SELF.shop_part.shop.id _")", LxERP.t8("Save"))  %]</td>
+</form>
+

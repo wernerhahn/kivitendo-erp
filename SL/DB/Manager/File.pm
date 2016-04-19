@@ -6,6 +6,7 @@ package SL::DB::Manager::File;
 use strict;
 
 use parent qw(SL::DB::Helper::Manager);
+use SL::DB::Helper::Sorted;
 
 sub object_class { 'SL::DB::File' }
 

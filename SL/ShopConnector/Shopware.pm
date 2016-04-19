@@ -20,15 +20,17 @@ sub get_new_orders {
   my ($self, $id) = @_;
 
   my $url = $self->url;
+  #TODO Letzte Bestellnummer und Anzahl der abzuholenden Bestellungen muss noch in die Shopconfig
   my $ordnumber = 63641;
-  # Muss noch angepasst werden
+  #TODO Muss noch angepasst werden
   for(my $i=1;$i<=350;$i++) {
-    my $data = $self->connector->get("http://$url/api/orders/$ordnumber?useNumberAsId=true");
+    my $data = $self->connector->get("https://$url/api/orders/$ordnumber?useNumberAsId=true");
     $ordnumber++;
     $::lxdebug->dump(0, "WH: DATA ", \$data);
     my $data_json = $data->content;
     my $import = SL::JSON::decode_json($data_json);
     $::lxdebug->dump(0, "WH: IMPORT ", \$import);
+    # Mapping to table shoporders
     my %columns = (
       amount                  => $import->{data}->{invoiceAmount},
       billing_city            => $import->{data}->{billing}->{city},
@@ -146,6 +148,35 @@ sub get_new_orders {
   }
   # return $import;
 };
+
+sub get_categories {
+  my ($self) = @_;
+
+  my $url = $self->url;
+
+  my $data = $self->connector->get("http://$url/api/categories");
+  my $data_json = $data->content;
+  my $import = SL::JSON::decode_json($data_json);
+  my @daten = @{$import->{data}};
+  my %categories = map { ($_->{id} => $_) } @daten;
+
+  for(@daten) {
+    my $parent = $categories{$_->{parentId}};
+    $parent->{children} ||= [];
+    push @{$parent->{children}},$_;
+  }
+
+  return \@daten;
+}
+
+sub get_article {
+}
+
+sub get_articles {
+}
+
+sub set_article {
+}
 
 sub init_url {
   my ($self) = @_;

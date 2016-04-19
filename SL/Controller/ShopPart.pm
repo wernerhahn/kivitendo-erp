@@ -7,6 +7,7 @@ use parent qw(SL::Controller::Base);
 use Data::Dumper;
 use SL::Locale::String qw(t8);
 use SL::DB::ShopPart;
+use SL::DB::Default;
 use SL::Helper::Flash;
 
 use Rose::Object::MakeMethods::Generic
@@ -56,7 +57,7 @@ sub action_show_files {
   my ($self) = @_;
 $main::lxdebug->dump(0, 'WH: Show_Files',\$::form);
   require SL::DB::File;
-  my $images = SL::DB::Manager::File->get_all( where => [ trans_id => $::form->{id}, modul => $::form->{modul}, file_content_type => { like => 'image/%' } ] );
+  my $images = SL::DB::Manager::File->get_all_sorted( where => [ trans_id => $::form->{id}, modul => $::form->{modul}, file_content_type => { like => 'image/%' } ], sort_by => 'position' );
   $main::lxdebug->dump(0, 'WH: ',\$images);
   #my $html = $self->render('shop_part/_list_images', { output => 0 }, IMAGES => $images);
   $self->render('shop_part/_list_images', { header => 0 }, IMAGES => $images);
@@ -70,7 +71,26 @@ $main::lxdebug->dump(0, 'WH: Show_Files',\$::form);
 
 }
 
+sub action_get_categories {
+  my ($self) = @_;
 
+  my $shop_part = SL::DB::Manager::ShopPart->find_by(id => $::form->{shop_part_id});
+  die unless $shop_part;
+  require SL::Shop;
+  my $shop = SL::Shop->new( config => $shop_part->shop );
+  my $categories = $shop->connector->get_categories;
+  $main::lxdebug->dump(0, 'WH: GET',\$categories);
+
+  $self->js
+    ->run(
+      'kivi.shop_part.shop_part_dialog',
+      t8('Shopcategories'),
+      $self->render('shop_part/categories', { output => 0 }, CATEGORIES => $categories ) #, shop_part => $self->shop_part)
+    )
+    ->reinit_widgets;
+
+  $self->js->render;
+}
 
 # old:
 # sub action_edit {
@@ -122,6 +142,31 @@ sub render_shop_part_edit_dialog {
     ->reinit_widgets;
 
   $self->js->render;
+}
+
+sub render_shop_categories_edit_dialog {
+  my ($self) = @_;
+
+  # when self->shop_part is called in template, it will be an existing shop_part with id,
+  # or a new shop_part with only part_id and shop_id set
+  $self->js
+    ->run(
+      'kivi.shop_part.shop_part_dialog',
+      t8('Shopcategories'),
+      $self->render('shop_part/categories', { output => 0 }) #, shop_part => $self->shop_part)
+    )
+    ->reinit_widgets;
+
+  $self->js->render;
+}
+sub action_reorder {
+  my ($self) = @_;
+$main::lxdebug->message(0, "WH:REORDER ");
+  require SL::DB::File;
+  SL::DB::File->reorder_list(@{ $::form->{image_id} || [] });
+  $main::lxdebug->message(0, "WH:REORDER II ");
+
+  $self->render(\'', { type => 'json' });
 }
 
 #

@@ -22,6 +22,7 @@
    <td>[% L.html_tag('span', shop_part.last_update.to_kivitendo('precision' => 'minute'), id => 'shop_part_last_update_' _ shop_part.id ) %]</td>
    <td>[% L.button_tag("kivi.shop_part.edit_shop_part(" _ shop_part.id _ ")", LxERP.t8("Edit"))  %]</td>
    <td>[% L.button_tag("kivi.shop_part.update_shop_part(" _ shop_part.id _ ")", LxERP.t8("Update"))  %]</td>
+   <td>[% L.button_tag("kivi.shop_part.get_all_categories(" _ shop_part.id _ ")", LxERP.t8("Shopcategories"))  %]</td>
   </tr>
   [%- END %]
   [%- FOREACH shop = SHOPS_NOT_ASSIGNED %]

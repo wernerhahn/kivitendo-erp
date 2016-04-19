@@ -8,60 +8,63 @@
 [% LxERP.t8("Shop") %]: [% HTML.escape(SELF.shop_part.shop.description) %]
 
 <form action="controller.pl" method="post">
+  <div>
+    [% IF SELF.shop_part.id %]
+    [%- L.hidden_tag("shop_part.id", SELF.shop_part.id) %]
+    [%- L.hidden_tag("shop_part.shop_id", SELF.shop_part.shop_id) %]
+    [% ELSE %]
+    [%- L.hidden_tag("shop_part.shop_id", FORM.shop_id) %]
+    [%- L.hidden_tag("shop_part.part_id", FORM.part_id) %]
+    [% END %]
 
-[% IF SELF.shop_part.id %]
-[%- L.hidden_tag("shop_part.id", SELF.shop_part.id) %]
-[% ELSE %]
-[%- L.hidden_tag("shop_part.shop_id", FORM.shop_id) %]
-[%- L.hidden_tag("shop_part.part_id", FORM.part_id) %]
-[% END %]
+    <table>
+    <tr>
+     <td>[% LxERP.t8("Description") %]</td>
+     <td>[% L.textarea_tag('shop_part.shop_description_as_restricted_html', SELF.shop_part.shop_description_as_restricted_html, style='width:100%', rows=20, class="texteditor") %]</td>
+    </tr>
+    <tr>
+     <td>[% LxERP.t8("Active") %]</td>
+     <td>[% L.yes_no_tag("shop_part.active", SELF.shop_part.active) %]</td>
+    </tr>
+    <tr>
+     <td>[% LxERP.t8("Sort order") %]</td>
+     <td>[% L.input_tag("shop_part.sortorder", SELF.shop_part.sortorder, size=2) %]</td>
+    </tr>
+    <tr>
+     <td>[% LxERP.t8("Date") %]</td>
+     <td>[% L.date_tag("shop_part.show_date", SELF.shop_part.show_date) %]</td>
+    </tr>
+    <tr>
+     <td>[% LxERP.t8("Front page") %]</td>
+     <td>[% L.yes_no_tag('shop_part.front_page', SELF.shop_part.front_page) %]</td>
+    </tr>
+    <tr>
+     <td>[% LxERP.t8("Meta Tags") %]</td>
+     <td>[% L.input_tag("shop_part.meta_tags", SELF.shop_part.meta_tags, size=2) %]</td>
+    </tr>
+    <tr>
+     <td>[% LxERP.t8("Shop Category") %]</td>
+     <td>[% L.input_tag("shop_part.shop_category", SELF.shop_part.category, size=2) %]</td>
+    </tr>
+    </table>
+    [% # L.dump(SELF.shop_part) %]
 
- <table>
-  <tr>
-   <td>[% LxERP.t8("Description") %]</td>
-   <td>[% L.textarea_tag('shop_part.shop_description_as_restricted_html', SELF.shop_part.shop_description_as_restricted_html, style='width:100%', rows=20, class="texteditor") %]</td>
-     <td>[% L.textarea_tag('letter.body_as_restricted_html', letter.body_as_restricted_html, style='width:100%', rows=20, class="texteditor") %]</td>
-   <!--   <td>[% L.textarea_tag("shop_part.shop_description", SELF.shop_part.shop_description) %]</td> -->
-  </tr>
-  <tr>
-   <td>[% LxERP.t8("Active") %]</td>
-   <td>[% L.yes_no_tag("shop_part.active", SELF.shop_part.active) %]</td>
-  </tr>
-  <tr>
-   <td>[% LxERP.t8("Sort order") %]</td>
-   <td>[% L.input_tag("shop_part.sortorder", SELF.shop_part.sortorder, size=2) %]</td>
-  </tr>
-  <tr>
-   <td>[% LxERP.t8("Date") %]</td>
-   <td>[% L.date_tag("shop_part.show_date", SELF.shop_part.show_date) %]</td>
-  </tr>
-  <tr>
-   <td>[% LxERP.t8("Front page") %]</td>
-   <td>[% L.yes_no_tag('shop_part.front_page', SELF.shop_part.front_page) %]</td>
-  </tr>
-  <tr>
-   <td>[% LxERP.t8("Meta Tags") %]</td>
-   <td>[% L.input_tag("shop_part.meta_tags", SELF.shop_part.meta_tags, size=2) %]</td>
-  </tr>
-  <tr>
-   <td>[% LxERP.t8("Shop Category") %]</td>
-   <td>[% L.input_tag("shop_part.shop_category", SELF.shop_part.category, size=2) %]</td>
-  </tr>
-</table>
-[% # L.dump(SELF.shop_part) %]
+    [% IF SELF.shop_part.id %]
+    [% L.button_tag("kivi.shop_part.save_shop_part(" _ SELF.shop_part.id _ ")", LxERP.t8("Save"))  %]</td>
+    [% ELSE %]
+    [% L.button_tag("kivi.shop_part.add_shop_part(" _ FORM.part_id _", " _ FORM.shop_id _")", LxERP.t8("Save"))  %]</td>
+    [% END %]
+    [% # L.button_tag("kivi.shop_part.update_partnumber()", LxERP.t8("Update Partnumber"))  %]</td>
 
-[% IF SELF.shop_part.id %]
-[% L.button_tag("kivi.shop_part.save_shop_part(" _ SELF.shop_part.id _ ")", LxERP.t8("Save"))  %]</td>
-[% ELSE %]
-[% L.button_tag("kivi.shop_part.add_shop_part(" _ FORM.part_id _", " _ FORM.shop_id _")", LxERP.t8("Save"))  %]</td>
-[% END %]
-[% # L.button_tag("kivi.shop_part.update_partnumber()", LxERP.t8("Update Partnumber"))  %]</td>
+    [% # L.hidden_tag("action", "ShopPart/dispatch") %]
+    [% # L.submit_tag('action_update', LxERP.t8('Save')) %]
 
-[% # L.hidden_tag("action", "ShopPart/dispatch") %]
-[% # L.submit_tag('action_update', LxERP.t8('Save')) %]
 
-</div>
+  </div>
 </form>
+
+
+
 [%- IF SELF.shop_part.part.image && INSTANCE_CONF.get_parts_show_image %]
          <a href="[% SELF.shop_part.part.image | html %]" target="_blank"><img style="[% INSTANCE_CONF.get_parts_image_css %]" src="[% SELF.shop_part.part.image | html %]"/></a>
 [%- END %]

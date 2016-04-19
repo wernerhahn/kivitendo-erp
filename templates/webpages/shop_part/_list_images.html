@@ -4,6 +4,7 @@
 <table width="100%" id="images_list">
   <thead>
     <tr class="listheading">
+      <th width="10px"><img src="image/updown.png" alt="[%- LxERP.t8('reorder item') %]" class="dragdrop"></th>
       <th width="70px"></th>
       <th>[% 'Title' | $T8 %]</th>
       <th>[% 'Description' | $T8 %]</th>
@@ -13,14 +14,39 @@
   </thead>
   <tbody>
    [%-  FOREACH img = IMAGES %]
-   <tr class="listrow" id="image_id_[%  img.id %]">
-     <td><img src="data:[%  img.thumbnail_img_content_type %];base64,[%  img.thumbnail_img_content.encode_base64 %]" alt="[%  img.title %]"></td>
-     <td>[%  HTML.escape(img.title) %]</td>
-     <td>[%  HTML.escape(img.description) %]</td>
-     <td>[%  HTML.escape(img.filename) %]</td>
-     <td>[%  HTML.escape(img.thumbnail_img_width) _  ' x ' _ HTML.escape(img.thumbnail_img_height) %]</td>
-   </tr>
+    <tr class="listrow" id="image_id_[%  img.id %]">
+      <td><img src="image/updown.png" alt="[%- LxERP.t8('reorder item') %]" class="dragdrop"></td>
+      <td width="70px"><img src="data:[%  img.thumbnail_img_content_type %];base64,[%  img.thumbnail_img_content.encode_base64 %]" alt="[%  img.title %]"></td>
+      <td>[%  HTML.escape(img.title) %]</td>
+      <td>[%  HTML.escape(img.description) %]</td>
+      <td>[%  HTML.escape(img.filename) %]</td>
+      <td>[%  HTML.escape(img.thumbnail_img_width) _  ' x ' _ HTML.escape(img.thumbnail_img_height) %]</td>
+    </tr>
    [%  END %]
   </tbody>
 </table>
 
+[% L.sortable_element('#images_list tbody', url=SELF.url_for(action='reorder'), with='image_id') %]
+<p>
+[% L.button_tag("add_file(this.form.id.value,'shop_part')", 'Fileupload') %]
+</p>
+
+
+
+
+<script type='text/javascript'>
+<!--
+function add_file(id,modul) {
+  //var id = this.$('#part').val();
+  kivi.popup_dialog({
+        url :           'controller.pl?action=FileUploader/ajax_add_file',
+        data:           'id=' + id + '&modul=' + modul,
+        dialog:         { title: kivi.t8('File upload') }
+  } );
+   // var url = 'controller.pl?action=ShopPart/show_files?modul=shop_part&id=' + $('#id').val();
+   // $('#images_list').load(url);
+    //$('#jqueryui_popup_dialog').dialog('close');
+  return true;
+}
+-->
+</script>

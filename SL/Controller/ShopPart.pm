@@ -55,29 +55,21 @@ sub action_update_shop {
 
 sub action_show_files {
   my ($self) = @_;
-$main::lxdebug->dump(0, 'WH: Show_Files',\$::form);
+
   require SL::DB::File;
   my $images = SL::DB::Manager::File->get_all_sorted( where => [ trans_id => $::form->{id}, modul => $::form->{modul}, file_content_type => { like => 'image/%' } ], sort_by => 'position' );
-  $main::lxdebug->dump(0, 'WH: ',\$images);
-  #my $html = $self->render('shop_part/_list_images', { output => 0 }, IMAGES => $images);
+
   $self->render('shop_part/_list_images', { header => 0 }, IMAGES => $images);
-  #$main::lxdebug->dump(0, 'WH: ',\$html);
-
-  #$self->js->html('#shop_images', $html);
-  #$self->js->render;
-
-  # $self->render('customer_vendor_turnover/count_open_items_by_year', { layout => 0 });
-
 
 }
 
 sub action_get_categories {
   my ($self) = @_;
 
-  my $shop_part = SL::DB::Manager::ShopPart->find_by(id => $::form->{shop_part_id});
-  die unless $shop_part;
+#  my $shop_part = SL::DB::Manager::ShopPart->find_by(id => $::form->{shop_part_id});
+#  die unless $shop_part;
   require SL::Shop;
-  my $shop = SL::Shop->new( config => $shop_part->shop );
+  my $shop = SL::Shop->new( config => $self->shop_part->shop );
   my $categories = $shop->connector->get_categories;
 
   $self->js

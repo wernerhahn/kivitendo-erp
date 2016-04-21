@@ -7,6 +7,7 @@ use parent qw(SL::Controller::Base);
 use Data::Dumper;
 use SL::Locale::String qw(t8);
 use SL::DB::ShopPart;
+use SL::DB::File;
 use SL::DB::Default;
 use SL::Helper::Flash;
 
@@ -32,10 +33,26 @@ sub action_update_shop {
 
   my $shop_part = SL::DB::Manager::ShopPart->find_by(id => $::form->{shop_part_id});
   die unless $shop_part;
+  $main::lxdebug->dump(0, 'WH: ShopPart',\$shop_part);
+
+  #my $part = SL::DB::Manager::Part->find_by(id => $shop_part->{part_id});
+  #$main::lxdebug->dump(0, 'WH: Part',\$part);
+
+  #my $cvars = { map { ($_->config->name => { value => $_->value_as_text, is_valid => $_->is_valid }) } @{ $part->cvars_by_config } };
+  #$main::lxdebug->dump(0, 'WH: CVARS',\$cvars);
+
+  #my $images = SL::DB::Manager::File->get_all_sorted( where => [ trans_id => $shop_part->{part_id}, modul => 'shop_part', file_content_type => { like => 'image/%' } ], sort_by => 'position' );
+  #$main::lxdebug->dump(0, 'WH: Images',\$images);
+
+  #$part->{shop_part}  = $shop_part;
+  #$part->{cvars}      = $cvars;
+  #$part->{images}     = $images;
+
+  #$main::lxdebug->dump(0, 'WH: Part II',\$part);
   require SL::Shop;
   my $shop = SL::Shop->new( config => $shop_part->shop );
 
-  # TODO: generate data to upload to shop
+  # TODO: generate data to upload to shop. Goes to SL::Connector::XXXConnector. Here the object holds all data from parts, shop_parts, files, custom_variables for one article
   my $part_hash = $shop_part->part->as_tree;
   my $json      = SL::JSON::to_json($part_hash);
   my $return    = $shop->connector->update_part($self->shop_part, $json);
@@ -56,7 +73,6 @@ sub action_update_shop {
 sub action_show_files {
   my ($self) = @_;
 
-  require SL::DB::File;
   my $images = SL::DB::Manager::File->get_all_sorted( where => [ trans_id => $::form->{id}, modul => $::form->{modul}, file_content_type => { like => 'image/%' } ], sort_by => 'position' );
 
   $self->render('shop_part/_list_images', { header => 0 }, IMAGES => $images);
@@ -214,5 +230,5 @@ shop. Generates a  Calls some ClientJS functions to modifiy original page.
 =head1 AUTHORS
 
 G. Richardson E<lt>information@kivitendo-premium.deE<gt>
-
+W. Hahn E<lt>wh@futureworldsearch.netE<gt>
 =cut

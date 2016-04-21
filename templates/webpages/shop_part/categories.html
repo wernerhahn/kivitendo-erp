@@ -28,6 +28,7 @@
   [% END %]
   <div><h2>[% LxERP.t8("Shopcategories") %]</h2>
       [% FOREACH row = CATEGORIES %]
+<!-- TODO: Is still hardcoded 'Root' is shopware specified -->
         [% IF row.name == 'Root' %]
           [% IF row.childrenCount >= 1 %]
             [% INCLUDE recurse data=row.children %]

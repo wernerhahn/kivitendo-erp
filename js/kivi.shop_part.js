@@ -46,7 +46,7 @@ namespace('kivi.shop_part', function(ns) {
     var form = $('form').serializeArray();
     form.push( { name: 'action', value: 'ShopPart/update' }
     );
-
+alert(form.join('\n'));
     $.post('controller.pl', form, function(data) {
       kivi.eval_json_result(data);
     });

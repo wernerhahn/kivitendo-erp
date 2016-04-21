@@ -5,6 +5,7 @@ use strict;
 use parent qw(SL::ShopConnector::Base);
 
 use SL::JSON;
+use JSON;
 use LWP::UserAgent;
 use LWP::Authen::Digest;
 use SL::DB::ShopOrder;
@@ -26,10 +27,8 @@ sub get_new_orders {
   for(my $i=1;$i<=350;$i++) {
     my $data = $self->connector->get("https://$url/api/orders/$ordnumber?useNumberAsId=true");
     $ordnumber++;
-    $::lxdebug->dump(0, "WH: DATA ", \$data);
     my $data_json = $data->content;
     my $import = SL::JSON::decode_json($data_json);
-    $::lxdebug->dump(0, "WH: IMPORT ", \$import);
     # Mapping to table shoporders
     my %columns = (
       amount                  => $import->{data}->{invoiceAmount},
@@ -96,19 +95,14 @@ sub get_new_orders {
       shop_trans_id           => $import->{data}->{id},
       tax_included            => ($import->{data}->{net} == 0 ? 0 : 1)
     );
-    $::lxdebug->dump(0, "WH: COLUMNS ", \%columns);
     my $insert = SL::DB::ShopOrder->new(%columns);
     $insert->save;
     my $id = $insert->id;
-    #$::lxdebug->dump(0, "WH: ID ", $insert->id);
 
-    #my @positions = @{ $import->{data}->{details} };
     my @positions = sort { Sort::Naturally::ncmp($a->{"partnumber"}, $b->{"partnumber"}) } @{ $import->{data}->{details} };
-    # $::lxdebug->dump(0, "WH: POSITIONS ", \@positions);
     my $position = 1;
     foreach my $pos(@positions) {
       my %pos_columns = ( description => $pos->{articleName},
-        #     id          => $pos->{id},
                           partnumber  => $pos->{articleNumber},
                           price       => $pos->{price},
                           quantity    => $pos->{quantity},
@@ -120,7 +114,6 @@ sub get_new_orders {
       my $pos_insert = SL::DB::ShopOrderItem->new(%pos_columns);
       $pos_insert->save;
       $position++;
-      #$::lxdebug->dump(0,"WH: POS ", \%pos_columns);
     }
     # Versandkosten als Position am ende einfügen Dreschflegelspezifisch event. konfigurierbar machen
     if (my $shipping = $import->{data}->{dispatch}->{name}) {
@@ -130,9 +123,7 @@ sub get_new_orders {
                                   'Standard Versand'            => { 'partnumber' => '905500'},
                                   'Kostenloser Versand'         => { 'partnumber' => '905500'},
                                 );
-      $main::lxdebug->message(0, "WH: SHIPPING1: $shipping ");
       my %shipping_pos = ( description => $import->{data}->{dispatch}->{name},
-        #      id          => 0,
                            partnumber  => $shipping_partnumbers{$shipping}->{partnumber},
                            price       => $import->{data}->{invoiceShipping},
                            quantity    => 1,
@@ -141,12 +132,10 @@ sub get_new_orders {
                            shop_trans_id  => 0,
                            shop_order_id  => $id,
                          );
-      $main::lxdebug->dump(0, 'WH: SHIPPING: ', \%shipping_pos);
       my $shipping_pos_insert = SL::DB::ShopOrderItem->new(%shipping_pos);
       $shipping_pos_insert->save;
     }
   }
-  # return $import;
 };
 
 sub get_categories {
@@ -173,9 +162,57 @@ sub get_article {
 }
 
 sub get_articles {
+  my ($self, $json_data) = @_;
+  $main::lxdebug->dump(0, 'WH: JSON: ', \$json_data);
+
 }
 
-sub set_article {
+sub update_part {
+  my ($self, $json) = @_;
+  $main::lxdebug->dump(0, 'WH: UPDATE SELF: ', \$self);
+  $main::lxdebug->dump(0, 'WH: UPDATE PART: ', \$json);
+  my $url = $self->url;
+  my $part = SL::DB::Manager::Part->find_by(id => $json->{part_id});
+  $main::lxdebug->dump(0, 'WH: Part',\$part);
+
+  my $cvars = { map { ($_->config->name => { value => $_->value_as_text, is_valid => $_->is_valid }) } @{ $part->cvars_by_config } };
+  $main::lxdebug->dump(0, 'WH: CVARS',\$cvars);
+$main::lxdebug->dump(0, 'WH: Partnumber', $part->{partnumber});
+
+  my $data = $self->connector->get("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true");
+  my $data_json = $data->content;
+  my $import = SL::JSON::decode_json($data_json);
+  $main::lxdebug->dump(0, 'WH: IMPORT', \$import);
+
+  my $shop_data =  {  name        => $part->{description} ,
+                      taxId       => 1 ,
+                      mainDetail  => { number => $part->{partnumber}  ,
+                                        test        => 'test' ,
+                                     }
+                                 }
+                  ;
+#$main::lxdebug->dump(0, 'WH: SHOPDATA',\%shop_data);
+my $dataString = SL::JSON::encode_json($shop_data);
+$main::lxdebug->dump(0, 'WH: JSONDATA2',$dataString);
+#my $daten = SL::JSON::decode_json($dataString);
+#$dataString =~ s/{|}//g;
+#$dataString = "{".$dataString."}";
+#my $json_data      = SL::JSON::to_json($shop_data);
+#$main::lxdebug->dump(0, 'WH: JSONDATA3',$daten);
+#my $dataString2 = JSON::encode_json($shop_data);
+#$main::lxdebug->dump(0, 'WH: JSONDATA4',$dataString2);
+#$main::lxdebug->message(0, "WH: isuccess: ". $import->{success});
+my $json = '{"name": "foo", "taxId": 1}';
+  if($import->{success}){
+    #update
+$main::lxdebug->message(0, "WH: if success: ". $import->{success});
+  }else{
+    #upload
+$main::lxdebug->message(0, "WH: else success: ". $import->{success});
+    my $upload = $self->connector->post("http://$url/api/articles/",Content => $dataString);
+$main::lxdebug->dump(0, "WH:2 else success: ", \$upload);
+  }
+
 }
 
 sub init_url {

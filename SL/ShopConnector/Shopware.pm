@@ -5,13 +5,14 @@ use strict;
 use parent qw(SL::ShopConnector::Base);
 
 use SL::JSON;
-use JSON;
+#use JSON;
 use LWP::UserAgent;
 use LWP::Authen::Digest;
 use SL::DB::ShopOrder;
 use SL::DB::ShopOrderItem;
 use Data::Dumper;
 use Sort::Naturally ();
+use Encode qw(encode_utf8);
 
 use Rose::Object::MakeMethods::Generic (
   'scalar --get_set_init' => [ qw(connector url) ],
@@ -145,6 +146,7 @@ sub get_categories {
 
   my $data = $self->connector->get("http://$url/api/categories");
   my $data_json = $data->content;
+  $main::lxdebug->dump(0, 'WH: IMPORT', \$data_json);
   my $import = SL::JSON::decode_json($data_json);
   my @daten = @{$import->{data}};
   my %categories = map { ($_->{id} => $_) } @daten;
@@ -168,44 +170,67 @@ sub get_articles {
 }
 
 sub update_part {
-  my ($self, $json) = @_;
+  my ($self, $shop_part, $json) = @_;
+
+  #shop_part is passed as a param
+  die unless ref($shop_part) eq 'SL::DB::ShopPart';
+
+  $main::lxdebug->dump(0, 'WH: UPDATE SHOPPART: ', \$shop_part);
   $main::lxdebug->dump(0, 'WH: UPDATE SELF: ', \$self);
-  $main::lxdebug->dump(0, 'WH: UPDATE PART: ', \$json);
+  $main::lxdebug->dump(0, 'WH: UPDATE JSON: ', \$json);
   my $url = $self->url;
-  my $part = SL::DB::Manager::Part->find_by(id => $json->{part_id});
+  my $part = SL::DB::Part->new(id => $shop_part->{part_id})->load;
+  #my $part = $shop_part->part;
   $main::lxdebug->dump(0, 'WH: Part',\$part);
 
+  # TODO: Prices (pricerules, pricegroups,
   my $cvars = { map { ($_->config->name => { value => $_->value_as_text, is_valid => $_->is_valid }) } @{ $part->cvars_by_config } };
-  $main::lxdebug->dump(0, 'WH: CVARS',\$cvars);
+  my $categories = { map { ( name => $_) } @{ $shop_part->{shop_category} } };
+  $main::lxdebug->dump(0, 'WH: CATEGORIES',\$categories);
+  my $images = SL::DB::Manager::File->get_all( modul => 'shop_part', trans_id => $part->{id});
+  $main::lxdebug->dump(0, 'WH: IMAGES',\$images);
+  $images = { map { ( url => 'data:' . $_->{file_content_type} . ';base64,' . MIME::Base64::encode($_->{file_content}),
+                      description => $_->{title},
+                      position    => $_->{position},
+                      extension   => 'jpg',
+                      path        => $_->{filename},
+                    ) } @{ $images } };
+  $main::lxdebug->dump(0, 'WH: IMAGES 2 ',\$images);
 $main::lxdebug->dump(0, 'WH: Partnumber', $part->{partnumber});
 
   my $data = $self->connector->get("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true");
   my $data_json = $data->content;
   my $import = SL::JSON::decode_json($data_json);
   $main::lxdebug->dump(0, 'WH: IMPORT', \$import);
+  $main::lxdebug->dump(0, 'WH: Active', $shop_part->active);
 
-  my $shop_data =  {  name        => $part->{description} ,
-                      taxId       => 1 ,
-                      mainDetail  => { number => $part->{partnumber}  ,
-                                        test        => 'test' ,
-                                     }
-                                 }
+
+  my %shop_data =  (  name          => $part->{description},
+                      taxId         => 4, # TODO Hardcoded kann auch der taxwert sein zB. tax => 19.00
+                      mainDetail    => { number   => $part->{partnumber},
+                                         inStock  => $part->{onhand},
+                                         prices   =>  [ {          from   => 1,
+                                                                   price  => $part->{sellprice},
+                                                        customerGroupKey  => 'EK',
+                                                      },
+                                                    ],
+                                       },
+                      supplier      => $cvars->{freifeld_7}->{value},
+                      description   => $shop_part->{shop_description},
+                      active        => $shop_part->active,
+                      images        => [ $images ],
+                      #categories    => [ { name => 'Deutsch\test2' }, ], #[ $categories ],
+                    )
                   ;
-#$main::lxdebug->dump(0, 'WH: SHOPDATA',\%shop_data);
-my $dataString = SL::JSON::encode_json($shop_data);
-$main::lxdebug->dump(0, 'WH: JSONDATA2',$dataString);
-#my $daten = SL::JSON::decode_json($dataString);
-#$dataString =~ s/{|}//g;
-#$dataString = "{".$dataString."}";
-#my $json_data      = SL::JSON::to_json($shop_data);
-#$main::lxdebug->dump(0, 'WH: JSONDATA3',$daten);
-#my $dataString2 = JSON::encode_json($shop_data);
-#$main::lxdebug->dump(0, 'WH: JSONDATA4',$dataString2);
-#$main::lxdebug->message(0, "WH: isuccess: ". $import->{success});
-my $json = '{"name": "foo", "taxId": 1}';
+$main::lxdebug->dump(0, 'WH: SHOPDATA', \%shop_data );
+my $dataString = SL::JSON::to_json(\%shop_data);
+$dataString = encode_utf8($dataString);
+$main::lxdebug->message(0, 'WH: JSONDATA2 '.$dataString);
   if($import->{success}){
-    #update
 $main::lxdebug->message(0, "WH: if success: ". $import->{success});
+    #update
+    my $upload = $self->connector->put("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true",Content => $dataString);
+$main::lxdebug->dump(0, "WH:2 else success: ", \$upload);
   }else{
     #upload
 $main::lxdebug->message(0, "WH: else success: ". $import->{success});

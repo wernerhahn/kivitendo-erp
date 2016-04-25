@@ -21,7 +21,7 @@
    <td>[% L.html_tag('span', shop_part.shop_description, id => 'shop_part_description_' _ shop_part.id ) %]</td>
    <td>[% L.html_tag('span', shop_part.last_update.to_kivitendo('precision' => 'minute'), id => 'shop_part_last_update_' _ shop_part.id ) %]</td>
    <td>[% L.button_tag("kivi.shop_part.edit_shop_part(" _ shop_part.id _ ")", LxERP.t8("Edit"))  %]</td>
-   <td>[% L.button_tag("kivi.shop_part.update_shop_part(" _ shop_part.id _ ")", LxERP.t8("Update"))  %]</td>
+   <td>[% L.button_tag("kivi.shop_part.update_shop_part(" _ shop_part.id _ ")", LxERP.t8("Upload"))  %]</td>
    <td>[% L.button_tag("kivi.shop_part.get_all_categories(" _ shop_part.id _ ")", LxERP.t8("Shopcategories"))  %]</td>
   </tr>
   [%- END %]
@@ -48,9 +48,9 @@
      [%- FOREACH var = CUSTOM_VARIABLES %]
       [%- IF var.name.match('^shop_') %]
        <tr>
-        [%- IF !var.partsgroup_filtered %]
+        [% # IF !var.partsgroup_filtered %]
           <td align="right" valign="top">[% HTML.escape(var.description) %]</td>
-        [%- END %]
+        [% # END %]
         <td valign="top">[% var.HTML_CODE %]</td>
        </tr>
       [%- END %]
@@ -64,7 +64,7 @@
       var url = 'controller.pl?action=ShopPart/show_files&modul=shop_part&id=[% shop_part.part_id %]';
       $('#shop_images').load(url);
     }
-
+<!-- TODO -->
 $(window).load(function() {
         show_images();
 });

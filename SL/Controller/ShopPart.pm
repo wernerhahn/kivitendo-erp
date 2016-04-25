@@ -10,6 +10,7 @@ use SL::DB::ShopPart;
 use SL::DB::File;
 use SL::DB::Default;
 use SL::Helper::Flash;
+use MIME::Base64;
 
 use Rose::Object::MakeMethods::Generic
 (
@@ -48,7 +49,7 @@ sub action_update_shop {
   #$part->{cvars}      = $cvars;
   #$part->{images}     = $images;
 
-  #$main::lxdebug->dump(0, 'WH: Part II',\$part);
+  $main::lxdebug->dump(0, 'WH: ShopPart I',\$self->shop_part);
   require SL::Shop;
   my $shop = SL::Shop->new( config => $shop_part->shop );
 

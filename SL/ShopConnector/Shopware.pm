@@ -146,7 +146,6 @@ sub get_categories {
 
   my $data = $self->connector->get("http://$url/api/categories");
   my $data_json = $data->content;
-  $main::lxdebug->dump(0, 'WH: IMPORT', \$data_json);
   my $import = SL::JSON::decode_json($data_json);
   my @daten = @{$import->{data}};
   my %categories = map { ($_->{id} => $_) } @daten;
@@ -160,12 +159,8 @@ sub get_categories {
   return \@daten;
 }
 
-sub get_article {
-}
-
 sub get_articles {
   my ($self, $json_data) = @_;
-  $main::lxdebug->dump(0, 'WH: JSON: ', \$json_data);
 
 }
 
@@ -238,7 +233,7 @@ sub update_part {
                       active        => $shop_part->active,
                       images        => [ @images3 ],
                       __options_images => { replace => 1, },
-                      #categories    => [ { name => 'Deutsch\test2' }, ], #[ $categories ],
+                      categories    => [ { path => 'Deutsch|test2' }, ], #[ $categories ],
 
                     )
                   ;
@@ -253,12 +248,18 @@ $main::lxdebug->message(0, "WH: if success: ". $import->{success});
   #my $delImg = $self->connector->put("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true",Content => $del_imgString);
     #update
     my $upload = $self->connector->put("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true",Content => $dataString);
+    my $data_json = $upload->content;
+    my $upload_content = SL::JSON::decode_json($data_json);
 $main::lxdebug->dump(0, "WH:2 else success: ", \$upload);
+    return $upload_content->{success};
   }else{
     #upload
 $main::lxdebug->message(0, "WH: else success: ". $import->{success});
     my $upload = $self->connector->post("http://$url/api/articles/",Content => $dataString);
+    my $data_json = $upload->content;
+    my $upload_content = SL::JSON::decode_json($data_json);
 $main::lxdebug->dump(0, "WH:2 else success: ", \$upload);
+    return $upload_content->{success};
   }
 
 }

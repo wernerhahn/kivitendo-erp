@@ -156,7 +156,16 @@ sub action_save_categories {
   my ($self) = @_;
 
   my @categories =  @{ $::form->{categories} || [] };
-  my $categories->{shop_category} = \@categories;
+  $main::lxdebug->dump(0, 'WH: KATEGORIEN: ', \@categories);
+  my @cat = ();
+  foreach my $cat ( @categories) {
+    # TODO das koma macht Probleme z.B kategorie "Feldsalat, Rapunzel"
+    my @temp = [split(/,/,$cat)];
+    push( @cat, @temp );
+  }
+  $main::lxdebug->dump(0, 'WH: KAT2:',\@cat);
+
+  my $categories->{shop_category} = \@cat;
 
   my $params = delete($::form->{shop_part}) || { };
 

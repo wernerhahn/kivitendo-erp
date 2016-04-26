@@ -94,7 +94,6 @@ sub action_show {
   ####
 
   my $lastname = $shop_order->customer_lastname;
-  $main::lxdebug->message(0, "WH: HIER");
   my $proposals = SL::DB::Manager::Customer->get_all(
        where => [
                    or => [
@@ -162,7 +161,6 @@ sub action_mass_transfer {
 
    my $html = $self->render('shop_order/_transfer_status', { output => 0 }, job => $job);
 
-$main::lxdebug->dump(0, 'WH: iHTML: ',\$html);
    $self->js
       ->html('#status_mass_transfer', $html)
       ->run('kivi.ShopOrder.massTransferStarted')
@@ -171,8 +169,6 @@ $main::lxdebug->dump(0, 'WH: iHTML: ',\$html);
 
 sub action_transfer_status {
   my ($self)  = @_;
-  $main::lxdebug->dump(0, 'WH: STATUS1 ',\$self);
-  $main::lxdebug->dump(0, 'WH: STATUS2 ',\$::form);
   my $job     = SL::DB::BackgroundJob->new(id => $::form->{job_id})->load;
   my $html    = $self->render('shop_order/_transfer_status', { output => 0 }, job => $job);
 

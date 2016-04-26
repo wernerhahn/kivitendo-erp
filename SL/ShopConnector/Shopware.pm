@@ -169,45 +169,32 @@ sub update_part {
   #shop_part is passed as a param
   die unless ref($shop_part) eq 'SL::DB::ShopPart';
 
-  $main::lxdebug->dump(0, 'WH: UPDATE SHOPPART: ', \$shop_part);
-  $main::lxdebug->dump(0, 'WH: UPDATE SELF: ', \$self);
-  $main::lxdebug->dump(0, 'WH: UPDATE JSON: ', \$json);
   my $url = $self->url;
   my $part = SL::DB::Part->new(id => $shop_part->{part_id})->load;
-  #my $part = $shop_part->part;
-  $main::lxdebug->dump(0, 'WH: Part',\$part);
 
   # TODO: Prices (pricerules, pricegroups,
   my $cvars = { map { ($_->config->name => { value => $_->value_as_text, is_valid => $_->is_valid }) } @{ $part->cvars_by_config } };
-  #my $categories = { map { ( name => $_) } @{ $shop_part->{shop_category} } };
+
   my @cat = ();
   foreach my $row_cat ( @{ $shop_part->shop_category } ) {
-    $main::lxdebug->dump(0, 'WH:ROWCAT ',\$row_cat);
-
     my $temp = { ( id => @{$row_cat}[0], ) };
-    $main::lxdebug->dump(0, 'WH: TEMP: ', \$temp);
-
     push ( @cat, $temp );
     #push ( @cat, map { ( name => $_[1]) } @{ $row_cat } );
   }
-  $main::lxdebug->dump(0, 'WH: CATEGORIES',\@cat);
+
   my $images = SL::DB::Manager::File->get_all( where => [ modul => 'shop_part', trans_id => $part->{id} ]);
-  $main::lxdebug->dump(0, 'WH: IMAGES',\@{ $images } );
-  my $images2 = { map {
-                    ( link        => 'data:' . $_->{file_content_type} . ';base64,' . MIME::Base64::encode($_->{file_content},''),
-                      description => $_->{title},
-                      position    => $_->{position},
-                      extension   => 'jpg', # muss $extionsion sein
-                      path        => $_->{filename}, # muss $path sein
-                    ) } @{ $images } };
-  $main::lxdebug->dump(0, 'WH: IMAGES 2 ',\$images2);
 
-  my @images3 = ();
+  #my $images2 = { map {
+  #                  ( link        => 'data:' . $_->{file_content_type} . ';base64,' . MIME::Base64::encode($_->{file_content},''),
+  #                    description => $_->{title},
+  #                    position    => $_->{position},
+  #                    extension   => 'jpg', # muss $extionsion sein
+  #                    path        => $_->{filename}, # muss $path sein
+  #                  ) } @{ $images } };
+
+  my @upload_img = ();
   foreach my $img (@{ $images }) {
-    $main::lxdebug->dump(0, 'WH: FOR: ', \$img);
-
     my ($path, $extension) = (split /\./, $img->{filename});
-    $main::lxdebug->message(0, "WH: PATH: $path Ext: $extension");
 
     my $temp ={
                       ( link        => 'data:' . $img->{file_content_type} . ';base64,' . MIME::Base64::encode($img->{file_content},''),
@@ -216,16 +203,12 @@ sub update_part {
                         extension   => $extension,
                         path        => $path,
                       )}    ;
-    push( @images3, $temp);
+    push( @upload_img, $temp);
   }
-  $main::lxdebug->dump(0, 'WH: IMAGES 3 ',\@images3);
 
   my $data = $self->connector->get("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true");
   my $data_json = $data->content;
   my $import = SL::JSON::decode_json($data_json);
-  $main::lxdebug->dump(0, 'WH: IMPORT', \$import);
-  $main::lxdebug->dump(0, 'WH: Active', $shop_part->active);
-
 
   my %shop_data =  (  name          => $part->{description},
                       taxId         => 4, # TODO Hardcoded kann auch der taxwert sein zB. tax => 19.00
@@ -240,34 +223,26 @@ sub update_part {
                       supplier      => $cvars->{freifeld_7}->{value},
                       description   => $shop_part->{shop_description},
                       active        => $shop_part->active,
-                      images        => [ @images3 ],
+                      images        => [ @upload_img ],
                       __options_images => { replace => 1, },
                       categories    => [ @cat ], #{ path => 'Deutsch|test2' }, ], #[ $categories ],
 
                     )
                   ;
-$main::lxdebug->dump(0, 'WH: SHOPDATA', \%shop_data );
-my $dataString = SL::JSON::to_json(\%shop_data);
-$dataString = encode_utf8($dataString);
-$main::lxdebug->message(0, 'WH: JSONDATA2 '.$dataString);
+  my $dataString = SL::JSON::to_json(\%shop_data);
+  $dataString = encode_utf8($dataString);
+
   if($import->{success}){
-$main::lxdebug->message(0, "WH: if success: ". $import->{success});
-  my %del_img =  ( images        => [ {} ], ) ;
-  my $del_imgString = SL::JSON::to_json(\%del_img);
-  #my $delImg = $self->connector->put("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true",Content => $del_imgString);
     #update
     my $upload = $self->connector->put("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true",Content => $dataString);
     my $data_json = $upload->content;
     my $upload_content = SL::JSON::decode_json($data_json);
-$main::lxdebug->dump(0, "WH:2 else success: ", \$upload);
     return $upload_content->{success};
   }else{
     #upload
-$main::lxdebug->message(0, "WH: else success: ". $import->{success});
     my $upload = $self->connector->post("http://$url/api/articles/",Content => $dataString);
     my $data_json = $upload->content;
     my $upload_content = SL::JSON::decode_json($data_json);
-$main::lxdebug->dump(0, "WH:2 else success: ", \$upload);
     return $upload_content->{success};
   }
 
@@ -281,14 +256,12 @@ sub init_url {
 
 sub init_connector {
   my ($self) = @_;
-  $main::lxdebug->dump(0, 'WH: CONNECTOR: ',\$self);
   my $ua = LWP::UserAgent->new;
   $ua->credentials(
       $self->url,
       "Shopware REST-API",
       $self->config->login => $self->config->password
   );
-  $main::lxdebug->dump(0, 'WH: UA: ',\$ua);
   return $ua;
 };
 
@@ -311,5 +284,7 @@ SL::ShopConnecter::Shopware - connector for Shopware 4
 None yet. :)
 
 =head1 AUTHOR
+
+W. Hahn E<lt>wh@futureworldsearch.netE<gt>
 
 =cut

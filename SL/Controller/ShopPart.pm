@@ -34,22 +34,7 @@ sub action_update_shop {
 
   my $shop_part = SL::DB::Manager::ShopPart->find_by(id => $::form->{shop_part_id});
   die unless $shop_part;
-  $main::lxdebug->dump(0, 'WH: ShopPart',\$shop_part);
 
-  #my $part = SL::DB::Manager::Part->find_by(id => $shop_part->{part_id});
-  #$main::lxdebug->dump(0, 'WH: Part',\$part);
-
-  #my $cvars = { map { ($_->config->name => { value => $_->value_as_text, is_valid => $_->is_valid }) } @{ $part->cvars_by_config } };
-  #$main::lxdebug->dump(0, 'WH: CVARS',\$cvars);
-
-  #my $images = SL::DB::Manager::File->get_all_sorted( where => [ trans_id => $shop_part->{part_id}, modul => 'shop_part', file_content_type => { like => 'image/%' } ], sort_by => 'position' );
-  #$main::lxdebug->dump(0, 'WH: Images',\$images);
-
-  #$part->{shop_part}  = $shop_part;
-  #$part->{cvars}      = $cvars;
-  #$part->{images}     = $images;
-
-  $main::lxdebug->dump(0, 'WH: ShopPart I',\$self->shop_part);
   require SL::Shop;
   my $shop = SL::Shop->new( config => $shop_part->shop );
 
@@ -100,15 +85,6 @@ sub action_get_categories {
   $self->js->render;
 }
 
-# old:
-# sub action_edit {
-#   my ($self) = @_;
-#
-#   $self->render('shop_part/edit'); #, { output => 0 }); #, price_source => $price_source)
-# }
-#
-# used when saving existing ShopPart
-
 sub action_update {
   my ($self) = @_;
 
@@ -128,7 +104,6 @@ sub create_or_update {
   $self->shop_part->save;
 
   flash('info', $is_new ? t8('The shop part has been created.') : t8('The shop part has been saved.'));
-  # $self->js->val('#partnumber', 'ladida');
   $self->js->html('#shop_part_description_' . $self->shop_part->id, $self->shop_part->shop_description)
            ->html('#shop_part_active_' . $self->shop_part->id, $self->shop_part->active)
            ->run('kivi.shop_part.close_dialog')
@@ -156,14 +131,13 @@ sub action_save_categories {
   my ($self) = @_;
 
   my @categories =  @{ $::form->{categories} || [] };
-  $main::lxdebug->dump(0, 'WH: KATEGORIEN: ', \@categories);
+
   my @cat = ();
   foreach my $cat ( @categories) {
     # TODO das koma macht Probleme z.B kategorie "Feldsalat, Rapunzel"
     my @temp = [split(/,/,$cat)];
     push( @cat, @temp );
   }
-  $main::lxdebug->dump(0, 'WH: KAT2:',\@cat);
 
   my $categories->{shop_category} = \@cat;
 
@@ -183,10 +157,9 @@ sub action_save_categories {
 
 sub action_reorder {
   my ($self) = @_;
-$main::lxdebug->message(0, "WH:REORDER ");
+
   require SL::DB::File;
   SL::DB::File->reorder_list(@{ $::form->{image_id} || [] });
-  $main::lxdebug->message(0, "WH:REORDER II ");
 
   $self->render(\'', { type => 'json' });
 }
@@ -241,4 +214,5 @@ shop. Generates a  Calls some ClientJS functions to modifiy original page.
 
 G. Richardson E<lt>information@kivitendo-premium.deE<gt>
 W. Hahn E<lt>wh@futureworldsearch.netE<gt>
+
 =cut

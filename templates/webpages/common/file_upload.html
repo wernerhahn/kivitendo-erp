@@ -1,7 +1,7 @@
 [%- USE LxERP -%][%- USE L -%][%- USE HTML -%][%- USE JavaScript -%][% USE Base64 %]
 [% SET style="width: 500px" %]
 [% SET id_base = "fileupload" %]
-[% L.dump(DATA) %]
+[% # L.dump(DATA) %]
 <form method="post" id="fileupload_form" method="POST" enctype="multipart/form-data">
  [% L.hidden_tag('form_prefix',                    id_base,         id=id_base _ '_form_prefix') %]
  [% L.hidden_tag('id',                             DATA.id, no_id=1) %]

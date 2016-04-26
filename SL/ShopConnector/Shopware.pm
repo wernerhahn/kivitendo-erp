@@ -5,7 +5,6 @@ use strict;
 use parent qw(SL::ShopConnector::Base);
 
 use SL::JSON;
-#use JSON;
 use LWP::UserAgent;
 use LWP::Authen::Digest;
 use SL::DB::ShopOrder;
@@ -180,8 +179,18 @@ sub update_part {
 
   # TODO: Prices (pricerules, pricegroups,
   my $cvars = { map { ($_->config->name => { value => $_->value_as_text, is_valid => $_->is_valid }) } @{ $part->cvars_by_config } };
-  my $categories = { map { ( name => $_) } @{ $shop_part->{shop_category} } };
-  $main::lxdebug->dump(0, 'WH: CATEGORIES',\$categories);
+  #my $categories = { map { ( name => $_) } @{ $shop_part->{shop_category} } };
+  my @cat = ();
+  foreach my $row_cat ( @{ $shop_part->shop_category } ) {
+    $main::lxdebug->dump(0, 'WH:ROWCAT ',\$row_cat);
+
+    my $temp = { ( id => @{$row_cat}[0], ) };
+    $main::lxdebug->dump(0, 'WH: TEMP: ', \$temp);
+
+    push ( @cat, $temp );
+    #push ( @cat, map { ( name => $_[1]) } @{ $row_cat } );
+  }
+  $main::lxdebug->dump(0, 'WH: CATEGORIES',\@cat);
   my $images = SL::DB::Manager::File->get_all( where => [ modul => 'shop_part', trans_id => $part->{id} ]);
   $main::lxdebug->dump(0, 'WH: IMAGES',\@{ $images } );
   my $images2 = { map {
@@ -233,7 +242,7 @@ sub update_part {
                       active        => $shop_part->active,
                       images        => [ @images3 ],
                       __options_images => { replace => 1, },
-                      categories    => [ { path => 'Deutsch|test2' }, ], #[ $categories ],
+                      categories    => [ @cat ], #{ path => 'Deutsch|test2' }, ], #[ $categories ],
 
                     )
                   ;

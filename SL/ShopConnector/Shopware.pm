@@ -102,14 +102,14 @@ sub get_new_orders {
     my @positions = sort { Sort::Naturally::ncmp($a->{"partnumber"}, $b->{"partnumber"}) } @{ $import->{data}->{details} };
     my $position = 1;
     foreach my $pos(@positions) {
-      my %pos_columns = ( description => $pos->{articleName},
-                          partnumber  => $pos->{articleNumber},
-                          price       => $pos->{price},
-                          quantity    => $pos->{quantity},
-                          position    => $position,
-                          tax_rate    => $pos->{taxRate},
-                          shop_trans_id    => $pos->{articleId},
-                          shop_order_id    => $id,
+      my %pos_columns = ( description       => $pos->{articleName},
+                          partnumber        => $pos->{articleNumber},
+                          price             => $pos->{price},
+                          quantity          => $pos->{quantity},
+                          position          => $position,
+                          tax_rate          => $pos->{taxRate},
+                          shop_trans_id     => $pos->{articleId},
+                          shop_order_id     => $id,
                         );
       my $pos_insert = SL::DB::ShopOrderItem->new(%pos_columns);
       $pos_insert->save;
@@ -118,17 +118,17 @@ sub get_new_orders {
     # Versandkosten als Position am ende einfügen Dreschflegelspezifisch event. konfigurierbar machen
     if (my $shipping = $import->{data}->{dispatch}->{name}) {
       my %shipping_partnumbers = (
-                                  'Auslandsversand Einschreiben' => { 'partnumber' => '900650'},
-                                  'Auslandsversand'              => { 'partnumber' => '900650'},
-                                  'Standard Versand'            => { 'partnumber' => '905500'},
-                                  'Kostenloser Versand'         => { 'partnumber' => '905500'},
+                                  'Auslandsversand Einschreiben'  => { 'partnumber' => '900650'},
+                                  'Auslandsversand'               => { 'partnumber' => '900650'},
+                                  'Standard Versand'              => { 'partnumber' => '905500'},
+                                  'Kostenloser Versand'           => { 'partnumber' => '905500'},
                                 );
-      my %shipping_pos = ( description => $import->{data}->{dispatch}->{name},
-                           partnumber  => $shipping_partnumbers{$shipping}->{partnumber},
-                           price       => $import->{data}->{invoiceShipping},
-                           quantity    => 1,
-                           position    => $position,
-                           tax_rate    => 7,
+      my %shipping_pos = ( description    => $import->{data}->{dispatch}->{name},
+                           partnumber     => $shipping_partnumbers{$shipping}->{partnumber},
+                           price          => $import->{data}->{invoiceShipping},
+                           quantity       => 1,
+                           position       => $position,
+                           tax_rate       => 7,
                            shop_trans_id  => 0,
                            shop_order_id  => $id,
                          );
@@ -196,12 +196,11 @@ sub update_part {
   foreach my $img (@{ $images }) {
     my ($path, $extension) = (split /\./, $img->{filename});
 
-    my $temp ={
-                      ( link        => 'data:' . $img->{file_content_type} . ';base64,' . MIME::Base64::encode($img->{file_content},''),
-                        description => $img->{title},
-                        position    => $img->{position},
-                        extension   => $extension,
-                        path        => $path,
+    my $temp ={ ( link        => 'data:' . $img->{file_content_type} . ';base64,' . MIME::Base64::encode($img->{file_content},''),
+                  description => $img->{title},
+                  position    => $img->{position},
+                  extension   => $extension,
+                  path        => $path,
                       )}    ;
     push( @upload_img, $temp);
   }
@@ -209,10 +208,10 @@ sub update_part {
   my $data = $self->connector->get("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true");
   my $data_json = $data->content;
   my $import = SL::JSON::decode_json($data_json);
-
-  my %shop_data =  (  name          => $part->{description},
-                      taxId         => 4, # TODO Hardcoded kann auch der taxwert sein zB. tax => 19.00
-                      mainDetail    => { number   => $part->{partnumber},
+  # mapping to shopware
+  my %shop_data =  (  name              => $part->{description},
+                      taxId             => 4, # TODO Hardcoded kann auch der taxwert sein zB. tax => 19.00
+                      mainDetail        => { number   => $part->{partnumber},
                                          inStock  => $part->{onhand},
                                          prices   =>  [ {          from   => 1,
                                                                    price  => $part->{sellprice},
@@ -220,12 +219,12 @@ sub update_part {
                                                       },
                                                     ],
                                        },
-                      supplier      => $cvars->{freifeld_7}->{value},
-                      description   => $shop_part->{shop_description},
-                      active        => $shop_part->active,
-                      images        => [ @upload_img ],
-                      __options_images => { replace => 1, },
-                      categories    => [ @cat ], #{ path => 'Deutsch|test2' }, ], #[ $categories ],
+                      supplier          => $cvars->{freifeld_7}->{value},
+                      description       => $shop_part->{shop_description},
+                      active            => $shop_part->active,
+                      images            => [ @upload_img ],
+                      __options_images  => { replace => 1, },
+                      categories        => [ @cat ], #{ path => 'Deutsch|test2' }, ], #[ $categories ],
 
                     )
                   ;
@@ -234,6 +233,7 @@ sub update_part {
 
   if($import->{success}){
     #update
+    #TODO partnumber escapen slash uri_encode
     my $upload = $self->connector->put("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true",Content => $dataString);
     my $data_json = $upload->content;
     my $upload_content = SL::JSON::decode_json($data_json);

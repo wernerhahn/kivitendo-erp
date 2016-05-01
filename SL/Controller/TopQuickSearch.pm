@@ -2,13 +2,15 @@ package SL::Controller::TopQuickSearch;
 
 use strict;
 use parent qw(SL::Controller::Base);
+our $VERSION = 1;
 
 use SL::ClientJS;
 use SL::JSON;
 use SL::Locale::String qw(t8);
+use SL::Helper::UserPreferences;
 
 use Rose::Object::MakeMethods::Generic (
- 'scalar --get_set_init' => [ qw(module js) ],
+ 'scalar --get_set_init' => [ qw(module js prefs) ],
 );
 
 my @available_modules = (
@@ -66,7 +68,9 @@ sub available_modules {
 sub enabled_modules {
   my %enabled_names = map {
     $_ => 1
-  } @{ $::instance_conf->get_quick_search_modules };
+  } @{
+    $::instance_conf->get_quick_search_modules
+  };
 
   grep {
     $enabled_names{$_->name}
@@ -107,6 +111,13 @@ sub require_modules {
     }
     $self->{__modules_required} = 1;
   }
+}
+
+sub init_prefs {
+  SL::Helper::UserPreferences->new(
+    namespace         => __PACKAGE__,
+    upgrade_callbacks => {},
+  )
 }
 
 1;

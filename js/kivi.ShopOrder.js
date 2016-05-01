@@ -1,5 +1,5 @@
 namespace('kivi.ShopOrder', function(ns) {
-  this.massTransferInitialize = function() {
+  ns.massTransferInitialize = function() {
     kivi.popup_dialog({
       id: 'status_mass_transfer',
       dialog: {
@@ -9,7 +9,7 @@ namespace('kivi.ShopOrder', function(ns) {
     alert('Hallo');
   };
 
-  this.massTransferStarted = function() {
+  ns.massTransferStarted = function() {
     $('#status_mass_transfer').data('timerId', setInterval(function() {
       $.get("controller.pl", {
         action: 'ShopOrder/transfer_status',
@@ -18,12 +18,12 @@ namespace('kivi.ShopOrder', function(ns) {
     }, 5000));
   };
 
-  this.massTransferFinished = function() {
+  ns.massTransferFinished = function() {
     clearInterval($('#status_mass_transfer').data('timerId'));
     $('.ui-dialog-titlebar button.ui-dialog-titlebar-close').prop('disabled', '')
   };
 
-  this.setup = function() {
+  ns.setup = function() {
     kivi.ShopOrder.massTransferInitialize();
     kivi.submit_ajax_form('controller.pl?action=ShopOrder/mass_transfer','[name=shop_orders]');
   };

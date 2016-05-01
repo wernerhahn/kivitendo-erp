@@ -62,6 +62,7 @@
  </table>
 
  <p>
+ <!-- TODO action ändern in übergebene Variable, sodass jede xbelibiege Controller/Action aufgerufen werden kann -->
   [%- L.ajax_submit_tag('controller.pl?action=FileUploader/ajax_upload_file', '#fileupload_form', LxERP.t8('Save'), no_id=1) %]
   <a href="#" onclick="$('#jqueryui_popup_dialog').dialog('close');">[%- LxERP.t8("Cancel") %]</a>
  </p>

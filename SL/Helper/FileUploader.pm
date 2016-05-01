@@ -1,5 +1,5 @@
-package SL::Controller::FileUploader;
-
+package SL::Controller::Helper::FileUploader;
+# Controller will not be used if things for FILES needed they can go in Helpers
 use strict;
 use parent qw(SL::Controller::Base);
 
@@ -33,7 +33,7 @@ sub action_show_files {
 
 
 }
-
+# this can go in Helpers::Fileuploader
 sub action_ajax_add_file{
   my ($self) = @_;
   $self->file(SL::DB::File->new);

@@ -1660,7 +1660,7 @@ sub form_header {
     };
   };
 
-  $::request->layout->use_javascript("${_}.js") for qw(ckeditor/ckeditor ckeditor/adapters/jquery kivi.PriceRule kivi.shop_part);
+  $::request->layout->use_javascript("${_}.js") for qw(ckeditor/ckeditor ckeditor/adapters/jquery kivi.PriceRule kivi.shop_part kivi.FileUploader);
   $::request->layout->add_javascripts_inline("\$(function(){kivi.PriceRule.load_price_rules_for_part(@{[ $::form->{id} * 1 ]})});") if $::form->{id};
   $form->header;
   #print $form->parse_html_template('ic/form_header', { ALL_PRICE_FACTORS => $form->{ALL_PRICE_FACTORS},

@@ -15,7 +15,7 @@ __PACKAGE__->meta->initialize;
 
 __PACKAGE__->configure_acts_as_list(group_by => [qw(trans_id modul)]);
 
-__PACKAGE__->before_save(\&file_update_thumbnail);
+#__PACKAGE__->before_save(\&file_update_thumbnail);
 
 sub validate {
   my ( $self ) = @_;
@@ -40,7 +40,7 @@ __END__
 
 =head1 NAME
 
-SL::DB::File - Databaseclass for Fileuploader
+  SL::DB::File - Databaseclass for Fileuploader
 
 =head1 SYNOPSIS
 
@@ -50,7 +50,7 @@ SL::DB::File - Databaseclass for Fileuploader
 
 =head1 DESCRIPTION
 
-# longer description.
+  # longer description.
 
 
 =head1 INTERFACE
@@ -63,6 +63,6 @@ SL::DB::File - Databaseclass for Fileuploader
 
 =head1 AUTHOR
 
-Werner Hahn E<lt>wh@futureworldsearch.netE<gt>
+  Werner Hahn E<lt>wh@futureworldsearch.netE<gt>
 
 =cut

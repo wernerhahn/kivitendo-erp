@@ -1,17 +1,18 @@
 [%- USE LxERP -%][%- USE L -%][%- USE HTML -%][%- USE JavaScript -%][% USE Base64 %]
 [% SET style="width: 500px" %]
 [% SET id_base = "fileupload" %]
-[% # L.dump(DATA) %]
+[%  L.dump(data) %]
 <form method="post" id="fileupload_form" method="POST" enctype="multipart/form-data">
  [% L.hidden_tag('form_prefix',                    id_base,         id=id_base _ '_form_prefix') %]
- [% L.hidden_tag('id',                             DATA.id, no_id=1) %]
- [% L.hidden_tag('modul',                          DATA.modul) %]
+ [% L.hidden_tag('trans_id',                       data.id, no_id=1) %]
+ [% L.hidden_tag('modul',                          data.modul) %]
+ [% L.hidden_tag('aft',                            data.aft) %]
 
  <h2>
   [%- IF SELF.file.id %]
    [%- LxERP.t8("Edit file properties ", SELF.file.number) %]
   [%- ELSE %]
-   [%- LxERP.t8("Add file to webdav") %]
+   [%- LxERP.t8("Add file") %]
   [%- END %]
  </h2>
 
@@ -63,7 +64,7 @@
 
  <p>
  <!-- TODO action ändern in übergebene Variable, sodass jede xbelibiege Controller/Action aufgerufen werden kann -->
-  [%- L.ajax_submit_tag('controller.pl?action=FileUploader/ajax_upload_file', '#fileupload_form', LxERP.t8('Save'), no_id=1) %]
+  [%- L.ajax_submit_tag('controller.pl?action=' _ data.ca, '#fileupload_form', LxERP.t8('Save'), no_id=1) %]
   <a href="#" onclick="$('#jqueryui_popup_dialog').dialog('close');">[%- LxERP.t8("Cancel") %]</a>
  </p>
 

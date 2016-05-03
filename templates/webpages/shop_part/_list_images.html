@@ -20,7 +20,7 @@
       <td>[%  HTML.escape(img.title) %]</td>
       <td>[%  HTML.escape(img.description) %]</td>
       <td>[%  HTML.escape(img.filename) %]</td>
-      <td>[%  HTML.escape(img.thumbnail_img_width) _  ' x ' _ HTML.escape(img.thumbnail_img_height) %]</td>
+      <td>[%  HTML.escape(img.files_img_width) _  ' x ' _ HTML.escape(img.files_img_height) %]</td>
     </tr>
    [%  END %]
   </tbody>
@@ -28,25 +28,5 @@
 
 [% L.sortable_element('#images_list tbody', url=SELF.url_for(action='reorder'), with='image_id') %]
 <p>
-[% L.button_tag("add_file(this.form.id.value,'shop_part')", 'Fileupload') %]
+[% L.button_tag("kivi.FileUploader.add_file(this.form.id.value,'shop_part','ShopPart/ajax_upload_file','jpg|png|tif|gif')", 'Fileupload') %]
 </p>
-
-
-
-<!-- TODO javascript nach kivi.js id,modul,controller/action -->
-<script type='text/javascript'>
-<!--
-function add_file(id,modul) {
-  //var id = this.$('#part').val();
-  kivi.popup_dialog({
-        url :           'controller.pl?action=FileUploader/ajax_add_file',
-        data:           'id=' + id + '&modul=' + modul,
-        dialog:         { title: kivi.t8('File upload') }
-  } );
-   // var url = 'controller.pl?action=ShopPart/show_files?modul=shop_part&id=' + $('#id').val();
-   // $('#images_list').load(url);
-    //$('#jqueryui_popup_dialog').dialog('close');
-  return true;
-}
--->
-</script>

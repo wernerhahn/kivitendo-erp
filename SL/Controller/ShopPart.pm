@@ -8,13 +8,14 @@ use Data::Dumper;
 use SL::Locale::String qw(t8);
 use SL::DB::ShopPart;
 use SL::DB::File;
+use SL::Controller::FileUploader;
 use SL::DB::Default;
 use SL::Helper::Flash;
 use MIME::Base64;
 
 use Rose::Object::MakeMethods::Generic
 (
-  'scalar --get_set_init' => [ qw(shop_part js) ],
+  'scalar --get_set_init' => [ qw(shop_part file) ],
 );
 
 __PACKAGE__->run_before('check_auth');
@@ -65,6 +66,30 @@ sub action_show_files {
 
 }
 
+sub action_ajax_upload_file{
+  my ($self, %params) = @_;
+
+  my $attributes                  = $::form->{ $::form->{form_prefix} } || die "Missing FormPrefix";
+  $attributes->{trans_id}         = $::form->{trans_id} || die "Missing ID";
+  $attributes->{modul}            = $::form->{modul} || die "Missing Modul";
+  $attributes->{filename}         = $::form->{FILENAME} || die "Missing Filename";
+  $attributes->{title}            = $::form->{ $::form->{form_prefix} }->{title};
+  $attributes->{description}      = $::form->{ $::form->{form_prefix} }->{description};
+
+  my @errors;
+  my @file_errors = SL::DB::File->new(%{ $attributes })->validate;
+  push @errors,@file_errors if @file_errors;
+
+  my @type_error = SL::Controller::FileUploader->validate_filetype($attributes->{filename},$::form->{aft});
+  push @errors,@type_error if @type_error;
+
+  return $self->js->error(@errors)->render($self) if @errors;
+
+  $self->file->assign_attributes(%{ $attributes });
+  $self->file->file_update_type_and_dimensions;
+  $self->file->save;
+  #TODO return
+}
 sub action_get_categories {
   my ($self) = @_;
 
@@ -185,6 +210,12 @@ sub init_shop_part {
   };
 }
 
+sub init_file {
+   #my $price_rule = $::form->{price_rule}{id} ? SL::DB::PriceRule->new(id => $::form->{price_rule}{id})->load : SL::DB::PriceRule->new;
+   #return SL::DB::File->new();
+  my $file = $::form->{id} ? SL::DB::File->new(id => $::form->{id})->load : SL::DB::File->new;
+  return $file;
+}
 1;
 
 =pod

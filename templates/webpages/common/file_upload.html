@@ -4,7 +4,8 @@
 [%  L.dump(data) %]
 <form method="post" id="fileupload_form" method="POST" enctype="multipart/form-data">
  [% L.hidden_tag('form_prefix',                    id_base,         id=id_base _ '_form_prefix') %]
- [% L.hidden_tag('trans_id',                       data.id, no_id=1) %]
+ [% L.hidden_tag('id',                             data.id, no_id=1) %]
+ [% L.hidden_tag('trans_id',                       data.trans_id) %]
  [% L.hidden_tag('modul',                          data.modul) %]
  [% L.hidden_tag('aft',                            data.aft) %]
 
@@ -17,7 +18,7 @@
  </h2>
 
  <table>
-[% IF SELF.file.number %]
+[% IF SELF.file.id %]
   <tr>
    <th align="right">[%- LxERP.t8("Number") %]:</th>
    <td>[% HTML.escape(SELF.file.number) %]</td>

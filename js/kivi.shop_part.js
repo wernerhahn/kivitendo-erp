@@ -101,4 +101,10 @@ namespace('kivi.shop_part', function(ns) {
     if (discount_str) $('#discount_' + row).val(discount_str);
     $('#update_button').click();
   }
+
+  ns.show_images = function(id) {
+    var url = 'controller.pl?action=ShopPart/show_files&modul=shop_part&id='+id;
+    $('#shop_images').load(url);
+  }
+
 });

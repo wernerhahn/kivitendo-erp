@@ -26,7 +26,7 @@ sub action_test_page{
 # this action renders the popup dialog to upload the file
 sub action_ajax_add_file{
   my ($self) = @_;
-  $self->file(SL::DB::File->new);
+  $self->file( $::form->{id} ? SL::DB::File->new(id => $::form->{id})->load : SL::DB::File->new );
   $self->render('common/file_upload', { layout => 0}, data => $::form);
 }
 

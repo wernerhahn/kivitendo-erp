@@ -1,17 +1,18 @@
 [%- USE LxERP -%][%- USE L -%][%- USE HTML -%][%- USE JavaScript -%][% USE Base64 %]
 [% SET style="width: 500px" %]
-[% SET id_base = "fileupload" %]
+[% SET id_base_bak = "fileupload" %]
+[% SET id_base = 'fileupload_' _ (SELF.file.id ? SELF.file.id : 'new') %]
 [%  L.dump(data) %]
 <form method="post" id="fileupload_form" method="POST" enctype="multipart/form-data">
  [% L.hidden_tag('form_prefix',                    id_base,         id=id_base _ '_form_prefix') %]
- [% L.hidden_tag('id',                             data.id, no_id=1) %]
- [% L.hidden_tag('trans_id',                       data.trans_id) %]
- [% L.hidden_tag('modul',                          data.modul) %]
+ [% L.hidden_tag(id_base _ '.id',                             SELF.file.id, no_id=1) %]
+ [% L.hidden_tag(id_base _ '.trans_id',                       SELF.file.trans_id) %]
+ [% L.hidden_tag(id_base _ '.modul',                          SELF.file.modul) %]
  [% L.hidden_tag('aft',                            data.aft) %]
 
  <h2>
   [%- IF SELF.file.id %]
-   [%- LxERP.t8("Edit file properties ", SELF.file.number) %]
+   [%- LxERP.t8("Edit file properties ", SELF.file.position) %]
   [%- ELSE %]
    [%- LxERP.t8("Add file") %]
   [%- END %]
@@ -20,8 +21,8 @@
  <table>
 [% IF SELF.file.id %]
   <tr>
-   <th align="right">[%- LxERP.t8("Number") %]:</th>
-   <td>[% HTML.escape(SELF.file.number) %]</td>
+   <th align="right">[%- LxERP.t8("Position") %]:</th>
+   <td>[% HTML.escape(SELF.file.position) %]</td>
   </tr>
 [% END %]
 
@@ -38,7 +39,7 @@
 [% IF SELF.file.file_content %]
   <tr>
    <th align="right">[%- LxERP.t8("File name") %]:</th>
-   <td>[% HTML.escape(SELF.file.file_file_name) %]</td>
+   <td>[% HTML.escape(SELF.file.filename) %][% L.hidden_tag(id_base _ '.filename', SELF.file.filename) %][% L.hidden_tag('id',                             SELF.file.id, no_id=1) %]</td>
   </tr>
 
   <tr>
@@ -48,12 +49,12 @@
 
   <tr>
    <th align="right">[%- LxERP.t8("Dimensions") %]:</th>
-   <td>[% HTML.escape(SELF.file.file_width) %]x[% HTML.escape(SELF.file.file_height) %]</td>
+   <td>[% HTML.escape(SELF.file.files_img_width) %]x[% HTML.escape(SELF.file.files_img_height) %]</td>
   </tr>
 
   <tr>
    <th align="right">[%- LxERP.t8("Uploaded at") %]:</th>
-   <td>[% HTML.escape(SELF.file.file_mtime.to_kivitendo(precision='second')) %]</td>
+   <td>[% HTML.escape(SELF.file.files_mtime.to_kivitendo(precision='second')) %]</td>
   </tr>
 [% END %]
 

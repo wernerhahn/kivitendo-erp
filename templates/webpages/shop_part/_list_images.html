@@ -1,7 +1,7 @@
 [%- USE HTML %][%- USE L -%][%- USE P -%][%- USE LxERP -%]
 [%- USE T8 %][% USE Base64 %]
 [%- USE Dumper %]
-[% Dumper.dump(FORM) %]
+[% # Dumper.dump(FORM) %]
 <table width="100%" id="images_list">
   <thead>
     <tr class="listheading">
@@ -23,7 +23,7 @@
       <td>[% HTML.escape(img.description) %]</td>
       <td>[% HTML.escape(img.filename) %]</td>
       <td>[% HTML.escape(img.files_img_width) _  ' x ' _ HTML.escape(img.files_img_height) %]</td>
-      <td>[% L.button_tag("kivi.FileUploader.delete_file(" _ img.id _ ")", LxERP.t8('Delete')) %] [% L.button_tag("kivi.FileUploader.add_file(" _ img.id _ "," _ FORM.id _ ",'shop_part','ShopPart/ajax_upload_file','jpg|png|tif|gif')", LxERP.t8('Edit')) %] </td>
+      <td>[% L.button_tag("kivi.FileUploader.delete_file(" _ img.id _ ", 'ShopPart/ajax_delete_file')", LxERP.t8('Delete'), confirm=LxERP.t8("Are you sure?")) %] [% L.button_tag("kivi.FileUploader.add_file(" _ img.id _ "," _ FORM.id _ ",'shop_part','ShopPart/ajax_update_file','jpg|png|tif|gif')", LxERP.t8('Edit')) %] </td>
     </tr>
    [%  END %]
   </tbody>

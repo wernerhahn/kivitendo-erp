@@ -81,7 +81,7 @@ sub file_update_type_and_dimensions {
   my ($self) = @_;
 
   return () if !$self->file_content;
-  return () if $self->file_content_type && $self->file_img_width && $self->file_img_height && !Rose::DB::Object::Util::get_column_value_modified($self, 'file_content');
+  return () if $self->file_content_type && $self->files_img_width && $self->files_img_height && !Rose::DB::Object::Util::get_column_value_modified($self, 'file_content');
 
   my @errors = $self->file_probe_type;
   return @errors if @errors;

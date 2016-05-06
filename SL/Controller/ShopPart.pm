@@ -69,12 +69,8 @@ sub action_show_files {
 sub action_ajax_upload_file{
   my ($self, %params) = @_;
 
-  my $attributes                  = $::form->{ $::form->{form_prefix} } || die "Missing FormPrefix";
-  $attributes->{trans_id}         = $::form->{trans_id} || die "Missing ID";
-  $attributes->{modul}            = $::form->{modul} || die "Missing Modul";
-  $attributes->{filename}         = $::form->{FILENAME} || die "Missing Filename";
-  $attributes->{title}            = $::form->{ $::form->{form_prefix} }->{title};
-  $attributes->{description}      = $::form->{ $::form->{form_prefix} }->{description};
+  my $attributes                   = $::form->{ $::form->{form_prefix} } || die "Missing attributes";
+  $attributes->{filename} = ((($::form->{ATTACHMENTS} || {})->{ $::form->{form_prefix} } || {})->{file_content} || {})->{filename};
 
   my @errors;
   my @file_errors = SL::DB::File->new(%{ $attributes })->validate;
@@ -88,10 +84,55 @@ sub action_ajax_upload_file{
   $self->file->assign_attributes(%{ $attributes });
   $self->file->file_update_type_and_dimensions;
   $self->file->save;
-  #TODO return
+
+  $self->js
+    ->dialog->close('#jqueryui_popup_dialog')
+    ->run('kivi.shop_part.show_images',$self->file->trans_id)
+    ->render();
 }
+
+sub action_ajax_update_file{
+  my ($self, %params) = @_;
+
+  my $attributes                   = $::form->{ $::form->{form_prefix} } || die "Missing attributes";
+
+  if (!$attributes->{file_content}) {
+    delete $attributes->{file_content};
+  } else {
+    $attributes->{filename} = ((($::form->{ATTACHMENTS} || {})->{ $::form->{form_prefix} } || {})->{file_content} || {})->{filename};
+  }
+
+  my @errors;
+  $self->file->assign_attributes(%{ $attributes });
+  my @file_errors = $self->file->validate if $attributes->{file_content};;
+  push @errors,@file_errors if @file_errors;
+
+  my @type_error = SL::Controller::FileUploader->validate_filetype($attributes->{filename},$::form->{aft});
+  push @errors,@type_error if @type_error;
+
+  return $self->js->error(@errors)->render($self) if @errors;
+
+  $self->file->file_update_type_and_dimensions if $attributes->{file_content};
+  $self->file->save;
+
+  $self->js
+    ->dialog->close('#jqueryui_popup_dialog')
+    ->run('kivi.shop_part.show_images',$self->file->trans_id)
+    ->render();
+}
+
+sub action_ajax_delete_file {
+  my ( $self ) = @_;
+  $self->file->delete;
+
+  $self->js
+    ->run('kivi.shop_part.show_images',$self->file->trans_id)
+    ->render();
+}
+
 sub action_get_categories {
   my ($self) = @_;
+
 
 #  my $shop_part = SL::DB::Manager::ShopPart->find_by(id => $::form->{shop_part_id});
 #  die unless $shop_part;

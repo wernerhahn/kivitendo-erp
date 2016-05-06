@@ -16,7 +16,9 @@ namespace('kivi.FileUploader', function(ns) {
     return true;
   };
 
-  ns.delete_file = function(id) {
-    alert ("ID: "+id);
+  ns.delete_file = function(id,controller_action) {
+    $.post('controller.pl', { action: controller_action, id: id }, function(data) {
+      kivi.eval_json_result(data);
+    });
   };
 });

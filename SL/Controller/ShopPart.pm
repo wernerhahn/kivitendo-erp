@@ -70,6 +70,8 @@ sub action_ajax_upload_file{
   my ($self, %params) = @_;
 
   my $attributes                   = $::form->{ $::form->{form_prefix} } || die "Missing attributes";
+  $main::lxdebug->dump(0, 'WH: ATTRIBUTES: ', \$attributes);
+
   $attributes->{filename} = ((($::form->{ATTACHMENTS} || {})->{ $::form->{form_prefix} } || {})->{file_content} || {})->{filename};
 
   my @errors;
@@ -103,12 +105,12 @@ sub action_ajax_update_file{
   }
 
   my @errors;
+  my @type_error = SL::Controller::FileUploader->validate_filetype($attributes->{filename},$::form->{aft});
+  push @errors,@type_error if @type_error;
   $self->file->assign_attributes(%{ $attributes });
   my @file_errors = $self->file->validate if $attributes->{file_content};;
   push @errors,@file_errors if @file_errors;
 
-  my @type_error = SL::Controller::FileUploader->validate_filetype($attributes->{filename},$::form->{aft});
-  push @errors,@type_error if @type_error;
 
   return $self->js->error(@errors)->render($self) if @errors;
 

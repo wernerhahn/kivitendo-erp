@@ -2,6 +2,9 @@ package SL::DB::Helper::ThumbnailCreator;
 
 use strict;
 
+use parent qw(SL::Controller::Base);
+
+use SL::Locale::String qw(t8);
 use Carp;
 use GD;
 use Image::Info;

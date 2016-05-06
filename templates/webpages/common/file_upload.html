@@ -1,13 +1,15 @@
 [%- USE LxERP -%][%- USE L -%][%- USE HTML -%][%- USE JavaScript -%][% USE Base64 %]
 [% SET style="width: 500px" %]
-[% SET id_base_bak = "fileupload" %]
-[% SET id_base = 'fileupload_' _ (SELF.file.id ? SELF.file.id : 'new') %]
-[%  L.dump(data) %]
+[% SET id_base_bak  = "fileupload" %]
+[% SET id_base      = 'fileupload_' _ (SELF.file.id ? SELF.file.id : 'new') %]
+[% SET trans_id     = SELF.file.id ? SELF.file.trans_id : data.trans_id %]
+[% SET modul        = SELF.file.id ? SELF.file.modul : data.modul %]
+
 <form method="post" id="fileupload_form" method="POST" enctype="multipart/form-data">
- [% L.hidden_tag('form_prefix',                    id_base,         id=id_base _ '_form_prefix') %]
- [% L.hidden_tag(id_base _ '.id',                             SELF.file.id, no_id=1) %]
- [% L.hidden_tag(id_base _ '.trans_id',                       SELF.file.trans_id) %]
- [% L.hidden_tag(id_base _ '.modul',                          SELF.file.modul) %]
+ [% L.hidden_tag('form_prefix',                    id_base,      id=id_base _ '_form_prefix') %]
+ [% L.hidden_tag(id_base _ '.id',                  SELF.file.id, no_id=1) %]
+ [% L.hidden_tag(id_base _ '.trans_id',            trans_id) %]
+ [% L.hidden_tag(id_base _ '.modul',               modul) %]
  [% L.hidden_tag('aft',                            data.aft) %]
 
  <h2>
@@ -39,7 +41,7 @@
 [% IF SELF.file.file_content %]
   <tr>
    <th align="right">[%- LxERP.t8("File name") %]:</th>
-   <td>[% HTML.escape(SELF.file.filename) %][% L.hidden_tag(id_base _ '.filename', SELF.file.filename) %][% L.hidden_tag('id',                             SELF.file.id, no_id=1) %]</td>
+   <td>[% HTML.escape(SELF.file.filename) %][% L.hidden_tag(id_base _ '.filename', SELF.file.filename) %][% L.hidden_tag('id', SELF.file.id, no_id=1) %]</td>
   </tr>
 
   <tr>

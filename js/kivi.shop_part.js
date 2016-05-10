@@ -107,4 +107,17 @@ namespace('kivi.shop_part', function(ns) {
     $('#shop_images').load(url);
   }
 
+  //shows the Name and price in _shop.html. Pricerules not implemented yet, just master_data and pricegroups
+  ns.update_price_n_price_source = function(shop_part_id,price_source) {
+    $.post('controller.pl', { action: 'ShopPart/show_price_n_pricesource', shop_part_id: shop_part_id, pricesource: price_source }, function(data) {
+      kivi.eval_json_result(data);
+    });
+  }
+  //shows the local and the online stock
+  ns.update_stock = function(shop_part_id) {
+    $.post('controller.pl', { action: 'ShopPart/show_stock', shop_part_id: shop_part_id }, function(data) {
+      kivi.eval_json_result(data);
+    });
+  }
+
 });

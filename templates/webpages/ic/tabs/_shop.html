@@ -2,28 +2,41 @@
 [%- USE Dumper %]
 [%- USE JavaScript -%]
 <div id="shop_variables">
-[% LxERP.t8("Active shops:") %]
- <table>
+ <h2>[% LxERP.t8("Active shops:") %]</h2>
+ <table width="100%">
   <thead>
-  <tr>
+  <tr class="listheading">
    <th>[% LxERP.t8("Shop") %]</th>
    <th>[% LxERP.t8("Active") %]</th>
    <th>[% LxERP.t8("Shop part") %]</th>
+   <th>[% LxERP.t8("Price source") %]</th>
+   <th>[% LxERP.t8("Price") %]</th>
+   <th>[% LxERP.t8("Stock Local/Shop") %]</th>
    <th>[% LxERP.t8("Last update") %]</th>
+   <th>[% LxERP.t8("Action") %]</th>
    <th>[% LxERP.t8("Action") %]</th>
    <th>[% LxERP.t8("Action") %]</th>
   </tr>
   </thead>
   [%- FOREACH shop_part = SHOP_PARTS %]
-  <tr>
+  <tr class="listrow">
    <td>[% HTML.escape( shop_part.shop.description ) %]</td>
    <td>[% L.html_tag('span', shop_part.active, id => 'shop_part_active_' _ shop_part.id ) %]</td>
    <td>[% L.html_tag('span', shop_part.shop_description, id => 'shop_part_description_' _ shop_part.id ) %]</td>
+   <td> [% L.html_tag('span',LxERP.t8(), id => 'active_price_source_' _ shop_part.id) %] </td>
+   <td>[% L.html_tag('span','Price', id => 'price_' _ shop_part.id) %]</td>
+   <td>[% L.html_tag('span','Stock', id => 'stock_' _ shop_part.id) %]</td>
    <td>[% L.html_tag('span', shop_part.last_update.to_kivitendo('precision' => 'minute'), id => 'shop_part_last_update_' _ shop_part.id ) %]</td>
    <td>[% L.button_tag("kivi.shop_part.edit_shop_part(" _ shop_part.id _ ")", LxERP.t8("Edit"))  %]</td>
    <td>[% L.button_tag("kivi.shop_part.update_shop_part(" _ shop_part.id _ ")", LxERP.t8("Upload"))  %]</td>
    <td>[% L.button_tag("kivi.shop_part.get_all_categories(" _ shop_part.id _ ")", LxERP.t8("Shopcategories"))  %]</td>
   </tr>
+  <script type="text/javascript">
+    $(function() {
+      kivi.shop_part.update_price_n_price_source([% shop_part.id %],'[% shop_part.active_price_source %]');
+      kivi.shop_part.update_stock([% shop_part.id %]);
+    });
+  </script>
   [%- END %]
   [%- FOREACH shop = SHOPS_NOT_ASSIGNED %]
   <tr>
@@ -39,7 +52,7 @@
 
 
 [% # L.dump(shop_part) %]
-<hr>
+<h2>[% LxERP.t8("Shopvariables and Images - valid for all shops") %]</h2>
   [%- IF CUSTOM_VARIABLES.size %]
 [%  # L.dump(CUSTOM_VARIABLES) %]
   <div id="shop_custom_variables">
@@ -62,7 +75,7 @@
   [%- END %]
   <script type="text/javascript">
     $(function() {
-            kivi.shop_part.show_images([% shop_part.part_id %]);
+      kivi.shop_part.show_images([% shop_part.part_id %]);
     });
   </script>
   <div id="shop_images" border=1 >

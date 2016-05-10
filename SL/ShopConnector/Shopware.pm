@@ -171,36 +171,25 @@ sub update_part {
 
   my $url = $self->url;
   my $part = SL::DB::Part->new(id => $shop_part->{part_id})->load;
+$main::lxdebug->dump(0, 'WH: SHOPPART: ',\$part);
 
-  # TODO: Prices (pricerules, pricegroups,
+  # TODO: Prices (pricerules, pricegroups, multiple prices)
   my $cvars = { map { ($_->config->name => { value => $_->value_as_text, is_valid => $_->is_valid }) } @{ $part->cvars_by_config } };
 
   my @cat = ();
   foreach my $row_cat ( @{ $shop_part->shop_category } ) {
     my $temp = { ( id => @{$row_cat}[0], ) };
     push ( @cat, $temp );
-    #push ( @cat, map { ( name => $_[1]) } @{ $row_cat } );
   }
 
   my $images = SL::DB::Manager::File->get_all( where => [ modul => 'shop_part', trans_id => $part->{id} ]);
-
-  #my $images2 = { map {
-  #                  ( link        => 'data:' . $_->{file_content_type} . ';base64,' . MIME::Base64::encode($_->{file_content},''),
-  #                    description => $_->{title},
-  #                    position    => $_->{position},
-  #                    extension   => 'jpg', # muss $extionsion sein
-  #                    path        => $_->{filename}, # muss $path sein
-  #                  ) } @{ $images } };
-
   my @upload_img = ();
   foreach my $img (@{ $images }) {
     my ($path, $extension) = (split /\./, $img->{filename});
-
     my $temp ={ ( link        => 'data:' . $img->{file_content_type} . ';base64,' . MIME::Base64::encode($img->{file_content},''),
                   description => $img->{title},
                   position    => $img->{position},
                   extension   => $extension,
-                  path        => $path,
                       )}    ;
     push( @upload_img, $temp);
   }
@@ -231,21 +220,33 @@ sub update_part {
   my $dataString = SL::JSON::to_json(\%shop_data);
   $dataString = encode_utf8($dataString);
 
+  my $upload_content;
   if($import->{success}){
     #update
     #TODO partnumber escapen slash uri_encode
     my $upload = $self->connector->put("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true",Content => $dataString);
     my $data_json = $upload->content;
-    my $upload_content = SL::JSON::decode_json($data_json);
-    return $upload_content->{success};
+    $upload_content = SL::JSON::decode_json($data_json);
   }else{
     #upload
     my $upload = $self->connector->post("http://$url/api/articles/",Content => $dataString);
     my $data_json = $upload->content;
-    my $upload_content = SL::JSON::decode_json($data_json);
-    return $upload_content->{success};
+    $upload_content = SL::JSON::decode_json($data_json);
   }
+  if(@upload_img) {
+    $self->connector->put("http://$url/api/generateArticleImages/$part->{partnumber}?useNumberAsId=true");
+    #$self->connector->delete("http://$url/api/caches/");
+  }
+  return $upload_content->{success};
+}
 
+sub get_article {
+  my ($self,$partnumber) = @_;
+
+  my $url = $self->url;
+  my $data = $self->connector->get("http://$url/api/articles/$partnumber?useNumberAsId=true");
+  my $data_json = $data->content;
+  return SL::JSON::decode_json($data_json);
 }
 
 sub init_url {

@@ -127,16 +127,16 @@ sub load_types {
   # whether the shop presents its prices as brutto or netto
   $self->price_types( [ { id => "brutto", name => t8('brutto')}, { id => "netto", name => t8('netto') } ] );
 
-  # the possible price sources to use for the shops: sellprice, lastcost,
+  # the possible default price sources to use for the shops: sellprice, lastcost,
   # listprice, or one of the pricegroups
   my $pricesources;
-  push( @{ $pricesources } , { id => "sellprice", name => t8("Sellprice") },
-                             { id => "listprice", name => t8("Listprice") },
-                             { id => "lastcost",  name => t8("Lastcost") }
+  push( @{ $pricesources } , { id => "master_data/sellprice", name => t8("Master Data")." - ".t8("Sellprice") },
+                             { id => "master_data/listprice", name => t8("Master Data")." - ".t8("Listprice") },
+                             { id => "master_data/lastcost",  name => t8("Master Data")." - ".t8("Lastcost") }
                              );
   my $pricegroups = SL::DB::Manager::Pricegroup->get_all;
   foreach my $pg ( @$pricegroups ) {
-    push( @{ $pricesources } , { id => $pg->id, name => $pg->pricegroup} );
+    push( @{ $pricesources } , { id => "pricegroup/".$pg->id, name => t8("Pricegroup") . " - " . $pg->pricegroup} );
   };
 
   $self->price_sources( $pricesources );

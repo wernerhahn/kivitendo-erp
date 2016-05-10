@@ -3,10 +3,11 @@
 [%- USE L -%]
 [%- USE P -%]
 [%- USE LxERP -%]
+[%- USE Dumper -%]
 
 [% LxERP.t8("Part") %]: [% HTML.escape(SELF.shop_part.part.displayable_name) %]<br>
 [% LxERP.t8("Shop") %]: [% HTML.escape(SELF.shop_part.shop.description) %]
-
+[% Dumper.dump_html(SELF) %]
 <form action="controller.pl" method="post">
   <div>
     [% IF SELF.shop_part.id %]
@@ -27,6 +28,15 @@
      <td>[% L.yes_no_tag("shop_part.active", SELF.shop_part.active) %]</td>
     </tr>
     <tr>
+      <th align="right">[% 'Price Source' | $T8 %]</th>
+      [% IF SELF.shop_part.active_price_source %]
+        [% SET price_source = SELF.shop_part.active_price_source %]
+      [% ELSE %]
+        [% SET price_source = SELF.shop_part.shop.price_source %]
+      [% END %]
+      <td>[% L.select_tag('shop_part.active_price_source', SELF.price_sources, value_key = 'id', title_key = 'name', with_empty = 0, default = price_source, default_value_key='id' ) %]</td>
+    </tr>
+    <tr>
      <td>[% LxERP.t8("Sort order") %]</td>
      <td>[% L.input_tag("shop_part.sortorder", SELF.shop_part.sortorder, size=2) %]</td>
     </tr>
@@ -39,8 +49,16 @@
      <td>[% L.yes_no_tag('shop_part.front_page', SELF.shop_part.front_page) %]</td>
     </tr>
     <tr>
-     <td>[% LxERP.t8("Meta Tags") %]</td>
-     <td>[% L.input_tag("shop_part.meta_tags", SELF.shop_part.meta_tags, size=2) %]</td>
+     <td>[% LxERP.t8("Meta tag title") %]</td>
+     <td>[% L.input_tag("shop_part.metatag_title", SELF.shop_part.metatag_title, size=12) %]</td>
+    </tr>
+    <tr>
+     <td>[% LxERP.t8("Meta tag keywords") %]</td>
+     <td>[% L.input_tag("shop_part.metatag_keywords", SELF.shop_part.metatag_keywords, size=22) %]</td>
+    </tr>
+    <tr>
+     <td>[% LxERP.t8("Meta tag description") %]</td>
+     <td>[% L.textarea_tag("shop_part.metatag_description", SELF.shop_part.metatag_description, rows=4) %]</td>
     </tr>
     </table>
     [% # L.dump(SELF.shop_part) %]

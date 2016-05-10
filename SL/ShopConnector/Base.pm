@@ -13,6 +13,8 @@ sub get_new_orders { die 'get_order needs to be implemented' }
 
 sub update_part { die 'update_part needs to be implemented' }
 
+sub get_article { die 'get_article needs to be implemented' }
+
 sub get_categories { die 'get_order needs to be implemented' }
 1;
 

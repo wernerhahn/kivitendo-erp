@@ -1,10 +1,11 @@
 [%- USE HTML -%][%- USE LxERP -%][%- USE L -%][%- USE P -%][%- USE T8 -%]
+[%- USE Dumper -%]
 
 [% SET style="width: 400px" %]
 [% SET size=34 %]
 
 <h1>[% HTML.escape(title) %]</h1>
-
+[% # Dumper.dump_html(SELF.shop) %]
 <form action="controller.pl" method="post">
 
 [%- INCLUDE 'common/flash.html' %]
@@ -26,7 +27,7 @@
   </tr>
   <tr>
     <th align="right">[% 'Price Source' | $T8 %]</th>
-    <td>[% L.select_tag('shop.price_source', SELF.price_sources, value_key = 'id', title_key = 'name', with_empty = 1, default = SELF.shop.price_source, default_value_key='id' ) %]</td>
+    <td>[% L.select_tag('shop.price_source', SELF.price_sources, value_key = 'id', title_key = 'name', with_empty = 0, default = SELF.shop.price_source, default_value_key='id' ) %]</td>
   </tr>
   <tr>
     <th align="right">[% 'URL' | $T8 %]</th>
@@ -39,11 +40,18 @@
     <th align="right">[% 'User' | $T8 %]</th>
     <td>[%- L.input_tag("shop.login", SELF.shop.login, size=12) %]</td>
   </tr>
-    <tr>
+  <tr>
     <th align="right">[% 'Password' | $T8 %]</th>
     <td>[%- L.input_tag("shop.password", SELF.shop.password, size=12) %]</td>
   </tr>
- </tr>
+  <tr>
+    <th align="right">[% 'Last ordernumber' | $T8 %]</th>
+    <td>[%- L.input_tag("shop.last_order_number", SELF.shop.last_order_number, size=12) %]</td>
+  </tr>
+  <tr>
+    <th align="right">[% 'Orders to fetch' | $T8 %]</th>
+    <td>[%- L.input_tag("shop.orders_to_fetch", SELF.shop.orders_to_fetch, size=12) %]</td>
+  </tr>
   <tr>
     <th align="right">[% 'Obsolete' | $T8 %]</th>
     <td>[% L.checkbox_tag('shop.obsolete', checked = SELF.shop.obsolete, for_submit=1) %]</td>

@@ -12,6 +12,7 @@ use SL::DB::ShopOrderItem;
 use Data::Dumper;
 use Sort::Naturally ();
 use Encode qw(encode_utf8);
+use SL::Controller::ShopPart;
 
 use Rose::Object::MakeMethods::Generic (
   'scalar --get_set_init' => [ qw(connector url) ],
@@ -197,13 +198,25 @@ $main::lxdebug->dump(0, 'WH: SHOPPART: ',\$part);
   my $data = $self->connector->get("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true");
   my $data_json = $data->content;
   my $import = SL::JSON::decode_json($data_json);
-  # mapping to shopware
+
+  # get the right price
+  my ( $price_src_str, $price_src_id ) = split(/\//,$shop_part->active_price_source);
+  require SL::DB::Part;
+  my $price;
+  if ($price_src_str eq "master_data") {
+    my $part = SL::DB::Manager::Part->get_all( where => [id => $shop_part->part_id], with_objects => ['prices'],limit => 1)->[0];
+    $price = $part->$price_src_id;
+  }else{
+    my $part = SL::DB::Manager::Part->get_all( where => [id => $shop_part->part_id, 'prices.'.pricegroup_id => $price_src_id], with_objects => ['prices'],limit => 1)->[0];
+    $price =  $part->prices->[0]->price;
+  }
+  # mapping to shopware still missing attributes,metatags
   my %shop_data =  (  name              => $part->{description},
                       taxId             => 4, # TODO Hardcoded kann auch der taxwert sein zB. tax => 19.00
                       mainDetail        => { number   => $part->{partnumber},
                                          inStock  => $part->{onhand},
                                          prices   =>  [ {          from   => 1,
-                                                                   price  => $part->{sellprice},
+                                                                   price  => $price,
                                                         customerGroupKey  => 'EK',
                                                       },
                                                     ],

@@ -49,7 +49,6 @@ sub action_update_shop {
 
   # the connector deals with parsing/result verification, just needs to return success or failure
   if ( $return == 1 ) {
-    # TODO: write update time to DB
     my $now = DateTime->now;
     my $attributes->{last_update} = $now;
     $self->shop_part->assign_attributes(%{ $attributes });
@@ -69,7 +68,6 @@ sub action_show_files {
   my $images = SL::DB::Manager::File->get_all_sorted( where => [ trans_id => $::form->{id}, modul => $::form->{modul}, file_content_type => { like => 'image/%' } ], sort_by => 'position' );
 
   $self->render('shop_part/_list_images', { header => 0 }, IMAGES => $images);
-
 }
 
 sub action_ajax_upload_file{

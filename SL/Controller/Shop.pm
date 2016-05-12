@@ -144,3 +144,26 @@ sub load_types {
 
 
 1;
+
+__END__
+
+=encoding utf-8
+
+=head1 NAME
+
+  SL::Controller::Shop
+
+=head1 SYNOPSIS
+
+
+=head1 DESCRIPTION
+
+
+=head1 BUGS
+
+  None yet. :)
+
+=head1 AUTHOR
+
+  G. Richardson E<lt>information@kivitendo-premium.deE<gt>
+  W. Hahn E<lt>wh@futureworldsearch.netE<gt>

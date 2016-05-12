@@ -25,13 +25,15 @@ use Data::Dumper;
 
 sub action_get_orders {
   my ( $self ) = @_;
-
+  my $orders_fetched;
   my $active_shops = SL::DB::Manager::Shop->get_all(query => [ obsolete => 0 ]);
   foreach my $shop_config ( @{ $active_shops } ) {
     my $shop = SL::Shop->new( config => $shop_config );
     my $new_orders = $shop->connector->get_new_orders;
+    push @{ $orders_fetched },@{ $new_orders };
   };
   $self->action_list;
+  #TODO Flashinfo how many orders from wich shop have been fetched. infos in $orders_fetched
 }
 
 sub action_list {
@@ -236,3 +238,27 @@ sub init_transferred {
 }
 
 1;
+
+__END__
+
+=encoding utf-8
+
+=head1 NAME
+
+  SL::Controller::ShopOrder - Handles th imported shoporders
+
+=head1 SYNOPSIS
+
+
+=head1 DESCRIPTION
+
+
+=head1 BUGS
+
+  None yet. :)
+
+=head1 AUTHOR
+
+  W. Hahn E<lt>wh@futureworldsearch.netE<gt>
+
+=cut

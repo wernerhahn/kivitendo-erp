@@ -334,32 +334,33 @@ sub init_file {
 }
 1;
 
-=pod
+__END__
 
 =encoding utf-8
 
+
 =head1 NAME
 
-SL::Controller::ShopPart - Controller for managing ShopParts
+  SL::Controller::ShopPart - Controller for managing ShopParts
 
 =head1 SYNOPSIS
 
-ShopParts are configured in a tab of the corresponding part.
+  ShopParts are configured in a tab of the corresponding part.
 
 =head1 FUNCTIONS
 
+
 =over 4
+
 
 =item C<action_update_shop>
 
-To be called from the "Update" button, for manually syncing a part with its
-shop. Generates a  Calls some ClientJS functions to modifiy original page.
+  To be called from the "Update" button, for manually syncing a part with its shop. Generates a  Calls some ClientJS functions to modifiy original page.
 
-=back
 
 =head1 AUTHORS
 
-G. Richardson E<lt>information@kivitendo-premium.deE<gt>
-W. Hahn E<lt>wh@futureworldsearch.netE<gt>
+  G. Richardson E<lt>information@kivitendo-premium.deE<gt>
+  W. Hahn E<lt>wh@futureworldsearch.netE<gt>
 
 =cut

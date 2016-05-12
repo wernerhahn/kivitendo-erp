@@ -239,11 +239,11 @@ sub update_part {
                                                     ],
                                        },
                       supplier          => $cvars->{freifeld_7}->{value},
-                      description       => $shop_part->{shop_description},
+                      descriptionLong   => $shop_part->{shop_description},
                       active            => $shop_part->active,
                       images            => [ @upload_img ],
                       __options_images  => { replace => 1, },
-                      categories        => [ @cat ], #{ path => 'Deutsch|test2' }, ], #[ $categories ],
+                      categories        => [ @cat ],
 
                     )
                   ;
